@@ -1,0 +1,8 @@
+**/log*.txt
+**/*.swp
+**/*.pem
+**/.nfs*
+**/node_modules
+**/package-lock.json
+**/test*
+**/record*

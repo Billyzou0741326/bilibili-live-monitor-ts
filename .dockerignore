@@ -1,0 +1,6 @@
+**/.git
+**/.gitignore
+**/test*
+**/*.swp
+**/package-lock.json
+**/node_modules*
