@@ -63,8 +63,9 @@ export class AbstractRoomController extends EventEmitter {
     }
 
     clearClosed(): void {
-        if (this._recentlyClosed.length > 50) {
-            this._recentlyClosed.splice(25);
+        const len = this._recentlyClosed.length;
+        if (len > 50) {
+            this._recentlyClosed.splice(0, len - 25);
         }
     }
 

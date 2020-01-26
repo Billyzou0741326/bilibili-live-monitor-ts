@@ -3,6 +3,7 @@ import * as colors from 'colors/safe';
 import { EventEmitter } from 'events';
 import { cprint } from '../fmt/index';
 import { Bilibili } from '../bilibili/index';
+import { AppConfig } from '../global/index';
 import {
     RecurrentTask,
     DelayedTask, } from '../task/index';
@@ -235,8 +236,10 @@ export class AbstractDanmuTCP extends EventEmitter implements Startable, Stoppab
     }
 
     onError(error: Error): void {
-        const roomid = `${this.roomid}`;
-        cprint(`(TCP) @${roomid.padEnd(13)} ${this._remoteAddr} - ${error.message}`, colors.red);
+        if (config.tcp_error) {
+            const roomid = `${this.roomid}`;
+            cprint(`(TCP) @${roomid.padEnd(13)} ${this._remoteAddr} - ${error.message}`, colors.red);
+        }
     }
 
     /**
@@ -829,4 +832,7 @@ class DanmuTCPReader {
     }
 
 }
+
+const config = new AppConfig();
+config.readArgs();
 

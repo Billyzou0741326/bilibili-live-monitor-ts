@@ -80,6 +80,10 @@ var AbstractBuilder = /** @class */ (function () {
         this._roomid = roomid;
         return this;
     };
+    AbstractBuilder.prototype.withCategory = function (c) {
+        this._category = c;
+        return this;
+    };
     AbstractBuilder.prototype.withType = function (t) {
         this._type = t;
         return this;

@@ -5,6 +5,7 @@ var AppConfig = /** @class */ (function () {
     function AppConfig() {
         this._debug = false;
         this._verbose = false;
+        this._tcp_error = false;
         this._appkey = appkey;
         this._appSecret = appSecret;
         this._appCommon = appCommon;
@@ -27,6 +28,9 @@ var AppConfig = /** @class */ (function () {
         }
         if (process.argv.includes('--debug')) {
             this._debug = true;
+        }
+        if (process.argv.includes('--tcp-error')) {
+            this._tcp_error = true;
         }
         return this;
     };
@@ -61,6 +65,13 @@ var AppConfig = /** @class */ (function () {
     Object.defineProperty(AppConfig.prototype, "verbose", {
         get: function () {
             return this._verbose;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(AppConfig.prototype, "tcp_error", {
+        get: function () {
+            return this._tcp_error;
         },
         enumerable: true,
         configurable: true
@@ -106,15 +117,15 @@ exports.AppConfig = AppConfig;
 var statistics = {
     'appId': 1,
     'platform': 3,
-    'version': '5.51.1',
-    'abtest': '',
+    'version': '5.53.1',
+    'abtest': '507',
 };
 var appkey = '1d8b6e7d45233436';
 var appSecret = '560c52ccd288fed045859ed18bffd973';
 var appCommon = {
     'appkey': appkey,
-    'build': 5511400,
-    'channel': 'bili',
+    'build': 5531000,
+    'channel': 'html5_app_bili',
     'device': 'android',
     'mobi_app': 'android',
     'platform': 'android',
@@ -122,7 +133,7 @@ var appCommon = {
 };
 var appHeaders = {
     'Connection': 'close',
-    'User-Agent': 'Mozilla/5.0 BiliDroid/5.51.1 (bbcallen@gmail.com)',
+    'User-Agent': 'Mozilla/5.0 BiliDroid/5.53.1 (bbcallen@gmail.com)',
 };
 var webHeaders = {
     'Connection': 'close',
