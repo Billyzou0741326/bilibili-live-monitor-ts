@@ -18,8 +18,9 @@ var colors = require("colors/safe");
 var events_1 = require("events");
 var index_1 = require("../fmt/index");
 var index_2 = require("../bilibili/index");
-var index_3 = require("../task/index");
-var index_4 = require("./index");
+var index_3 = require("../global/index");
+var index_4 = require("../task/index");
+var index_5 = require("./index");
 var AbstractDanmuTCP = /** @class */ (function (_super) {
     __extends(AbstractDanmuTCP, _super);
     function AbstractDanmuTCP(addr, info) {
@@ -34,8 +35,8 @@ var AbstractDanmuTCP = /** @class */ (function (_super) {
         _this._socket = null;
         _this._remoteAddr = '';
         _this._lastRead = new Date();
-        _this._healthTask = new index_3.RecurrentTask();
-        _this._heartbeatTask = new index_3.RecurrentTask();
+        _this._healthTask = new index_4.RecurrentTask();
+        _this._heartbeatTask = new index_4.RecurrentTask();
         _this._reader = new DanmuTCPReader();
         _this._heartbeat = _this.prepareData(2);
         _this._handshake = _this.prepareData(7, JSON.stringify({
@@ -195,8 +196,10 @@ var AbstractDanmuTCP = /** @class */ (function (_super) {
     AbstractDanmuTCP.prototype.onEnd = function () {
     };
     AbstractDanmuTCP.prototype.onError = function (error) {
-        var roomid = "" + this.roomid;
-        index_1.cprint("(TCP) @" + roomid.padEnd(13) + " " + this._remoteAddr + " - " + error.message, colors.red);
+        if (config.tcp_error) {
+            var roomid = "" + this.roomid;
+            index_1.cprint("(TCP) @" + roomid.padEnd(13) + " " + this._remoteAddr + " - " + error.message, colors.red);
+        }
     };
     /**
      * @param   {Integer}   popularity  - # watching stream
@@ -309,7 +312,7 @@ var DanmuTCP = /** @class */ (function (_super) {
             var name_1 = data['title'] || '未知';
             var wait = data['time_wait'] > 0 ? data['time_wait'] : 0;
             var expireAt = data['time'] + Math.floor(0.001 * new Date().valueOf());
-            gift = (index_4.GiftBuilder.start()
+            gift = (index_5.GiftBuilder.start()
                 .withId(id)
                 .withRoomid(this.roomid)
                 .withType(t)
@@ -341,7 +344,7 @@ var DanmuTCP = /** @class */ (function (_super) {
             var name_2 = data['title'] || '未知';
             var wait = data['time_wait'] > 0 ? data['time_wait'] : 0;
             var expireAt = data['time'] + Math.floor(0.001 * new Date().valueOf());
-            gift = (index_4.GiftBuilder.start()
+            gift = (index_5.GiftBuilder.start()
                 .withId(id)
                 .withRoomid(this.roomid)
                 .withType(t)
@@ -379,7 +382,7 @@ var DanmuTCP = /** @class */ (function (_super) {
             var id = data['id'];
             var name_3 = nameOfType[data['privilege_type']];
             var expireAt = (lottery['time'] || 0) + Math.floor(0.001 * new Date().valueOf());
-            guard = (index_4.GuardBuilder.start()
+            guard = (index_5.GuardBuilder.start()
                 .withId(id)
                 .withRoomid(this.roomid)
                 .withType(t)
@@ -405,7 +408,7 @@ var DanmuTCP = /** @class */ (function (_super) {
         if (info['action'] === 'start') {
             var id = info['id'];
             var expireAt = info['time'] + Math.floor(0.001 * new Date().valueOf());
-            details = (index_4.StormBuilder.start()
+            details = (index_5.StormBuilder.start()
                 .withId(id)
                 .withRoomid(this.roomid)
                 .withType('storm')
@@ -437,7 +440,7 @@ var DanmuTCP = /** @class */ (function (_super) {
             var require_text = data['require_text'];
             var danmu = data['danmu'];
             var expireAt = data['time'] + Math.floor(0.001 * new Date().valueOf());
-            details = (index_4.AnchorBuilder.start()
+            details = (index_5.AnchorBuilder.start()
                 .withId(id)
                 .withRoomid(roomid)
                 .withGiftPrice(gift_price)
@@ -499,7 +502,7 @@ var FixedGuardMonitor = /** @class */ (function (_super) {
         var data = _super.prototype.onTV.call(this, msg);
         if (data !== null) {
             this.emit('add_to_db', this.roomid);
-            var t = new index_3.DelayedTask();
+            var t = new index_4.DelayedTask();
             t.withTime(data.wait * 1000).withCallback(function () { _this.emit('gift', data); });
             t.start();
         }
@@ -510,7 +513,7 @@ var FixedGuardMonitor = /** @class */ (function (_super) {
         var data = _super.prototype.onRaffle.call(this, msg);
         if (data !== null) {
             this.emit('add_to_db', this.roomid);
-            var t = new index_3.DelayedTask();
+            var t = new index_4.DelayedTask();
             t.withTime(data.wait * 1000).withCallback(function () { _this.emit('gift', data); });
             t.start();
         }
@@ -725,3 +728,5 @@ var DanmuTCPReader = /** @class */ (function () {
     };
     return DanmuTCPReader;
 }());
+var config = new index_3.AppConfig();
+config.readArgs();

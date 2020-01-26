@@ -22,7 +22,6 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var AbstractTask = /** @class */ (function () {
     function AbstractTask() {
-        this._running = false;
         this._time = 0;
         this._callback = function () { };
     }
@@ -32,7 +31,7 @@ var AbstractTask = /** @class */ (function () {
     };
     Object.defineProperty(AbstractTask.prototype, "running", {
         get: function () {
-            return this._running;
+            return false;
         },
         enumerable: true,
         configurable: true
@@ -67,19 +66,22 @@ var RecurrentTask = /** @class */ (function (_super) {
         _this._stopper = null;
         return _this;
     }
+    Object.defineProperty(RecurrentTask.prototype, "running", {
+        get: function () {
+            return this._stopper !== null;
+        },
+        enumerable: true,
+        configurable: true
+    });
     RecurrentTask.prototype.start = function () {
-        if (this._running === false) {
-            this._running = true;
+        if (this._stopper === null) {
             this._stopper = setInterval.apply(void 0, __spreadArrays([this._callback, this.time], this._args));
         }
     };
     RecurrentTask.prototype.stop = function () {
-        if (this._running === true) {
-            this._running = false;
-            if (this._stopper !== null) {
-                clearInterval(this._stopper);
-                this._stopper = null;
-            }
+        if (this._stopper !== null) {
+            clearInterval(this._stopper);
+            this._stopper = null;
         }
     };
     return RecurrentTask;
@@ -92,24 +94,26 @@ var DelayedTask = /** @class */ (function (_super) {
         _this._stopper = null;
         return _this;
     }
+    Object.defineProperty(DelayedTask.prototype, "running", {
+        get: function () {
+            return this._stopper !== null;
+        },
+        enumerable: true,
+        configurable: true
+    });
     DelayedTask.prototype.start = function () {
         var _this = this;
-        if (this._running === false) {
-            this._running = true;
+        if (this._stopper === null) {
             this._stopper = setTimeout(function () {
                 _this._stopper = null;
-                _this._running = false;
                 _this._callback.apply(_this, _this._args);
             }, this.time);
         }
     };
     DelayedTask.prototype.stop = function () {
-        if (this._running === true) {
-            this._running = false;
-            if (this._stopper !== null) {
-                clearTimeout(this._stopper);
-                this._stopper = null;
-            }
+        if (this._stopper !== null) {
+            clearTimeout(this._stopper);
+            this._stopper = null;
         }
     };
     return DelayedTask;

@@ -10,11 +10,9 @@ class AbstractTask implements Startable, Stoppable {
 
     private _time:          number;
     protected _args:        any;
-    protected _running:     boolean;
     protected _callback:    (...args: any) => any;
 
     constructor() {
-        this._running = false;
         this._time = 0;
         this._callback = () => {};
     }
@@ -26,7 +24,7 @@ class AbstractTask implements Startable, Stoppable {
     }
 
     get running(): boolean {
-        return this._running;
+        return false;
     }
 
     get time(): number {
@@ -55,20 +53,20 @@ export class RecurrentTask extends AbstractTask {
         this._stopper = null;
     }
 
+    get running(): boolean {
+        return this._stopper !== null;
+    }
+
     start(): void {
-        if (this._running === false) {
-            this._running = true;
+        if (this._stopper === null) {
             this._stopper = setInterval(this._callback, this.time, ...this._args);
         }
     }
 
     stop(): void {
-        if (this._running === true) {
-            this._running = false;
-            if (this._stopper !== null) {
-                clearInterval(this._stopper);
-                this._stopper = null;
-            }
+        if (this._stopper !== null) {
+            clearInterval(this._stopper);
+            this._stopper = null;
         }
     }
 }
@@ -82,24 +80,23 @@ export class DelayedTask extends AbstractTask {
         this._stopper = null;
     }
 
+    get running(): boolean {
+        return this._stopper !== null;
+    }
+
     start(): void {
-        if (this._running === false) {
-            this._running = true;
+        if (this._stopper === null) {
             this._stopper = setTimeout((): void => {
                 this._stopper = null;
-                this._running = false;
                 this._callback(...this._args);
             }, this.time);
         }
     }
 
     stop(): void {
-        if (this._running === true) {
-            this._running = false;
-            if (this._stopper !== null) {
-                clearTimeout(this._stopper);
-                this._stopper = null;
-            }
+        if (this._stopper !== null) {
+            clearTimeout(this._stopper);
+            this._stopper = null;
         }
     }
 }

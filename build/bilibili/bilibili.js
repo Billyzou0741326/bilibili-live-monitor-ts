@@ -292,12 +292,13 @@ var Bilibili = /** @class */ (function (_super) {
             room_count = Math.min(count, room_count);
             var PAGES = Math.round(room_count / page_size) + 2;
             for (var i = 1; i < PAGES; ++i) {
-                params.page = i;
+                var p = Object.assign(new Object(), params);
+                p.page = i;
                 var request = (index_1.RequestBuilder.start()
                     .withHost('api.live.bilibili.com')
                     .withPath('/room/v3/area/getRoomList')
                     .withMethod(index_1.RequestMethods.GET)
-                    .withParams(params)
+                    .withParams(p)
                     .withHeaders(config.webHeaders)
                     .build());
                 var task = (Bilibili.request(request)

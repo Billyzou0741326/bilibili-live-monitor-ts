@@ -96,8 +96,9 @@ var AbstractRoomController = /** @class */ (function (_super) {
     AbstractRoomController.prototype.setupRoom = function (roomid, areaid) {
     };
     AbstractRoomController.prototype.clearClosed = function () {
-        if (this._recentlyClosed.length > 50) {
-            this._recentlyClosed.splice(25);
+        var len = this._recentlyClosed.length;
+        if (len > 50) {
+            this._recentlyClosed.splice(0, len - 25);
         }
     };
     return AbstractRoomController;

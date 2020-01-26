@@ -4,6 +4,7 @@ export interface AppSettings {
 
     readonly debug:         boolean;
     readonly verbose:       boolean;
+    readonly tcp_error:     boolean;
     readonly appkey:        string;
     readonly appSecret:     string;
     readonly appCommon:     {[key: string]: any};
@@ -22,6 +23,7 @@ export class AppConfig implements AppSettings {
 
     private _debug:         boolean;
     private _verbose:       boolean;
+    private _tcp_error:     boolean;
     private _appkey:        string;
     private _appSecret:     string;
     private _appCommon:     {[key: string]: any};
@@ -35,6 +37,7 @@ export class AppConfig implements AppSettings {
     constructor() {
         this._debug = false;
         this._verbose = false;
+        this._tcp_error = false;
         this._appkey = appkey;
         this._appSecret = appSecret;
         this._appCommon = appCommon;
@@ -60,6 +63,9 @@ export class AppConfig implements AppSettings {
         if (process.argv.includes('--debug')) {
             this._debug = true;
         }
+        if (process.argv.includes('--tcp-error')) {
+            this._tcp_error = true;
+        }
         return this;
     }
 
@@ -81,6 +87,10 @@ export class AppConfig implements AppSettings {
 
     get verbose(): boolean {
         return this._verbose;
+    }
+
+    get tcp_error(): boolean {
+        return this._tcp_error;
     }
 
     get appkey(): string {
@@ -107,15 +117,15 @@ export class AppConfig implements AppSettings {
 const statistics: {[key:string]:string|number} = {
     'appId': 1,
     'platform': 3,
-    'version': '5.51.1',
-    'abtest': '',
+    'version': '5.53.1',
+    'abtest': '507',
 };
 const appkey: string = '1d8b6e7d45233436';
 const appSecret: string = '560c52ccd288fed045859ed18bffd973';
 const appCommon: {[key:string]:string|number} = {
     'appkey': appkey,
-    'build': 5511400,
-    'channel': 'bili',
+    'build': 5531000,
+    'channel': 'html5_app_bili',
     'device': 'android',
     'mobi_app': 'android',
     'platform': 'android',
@@ -123,7 +133,7 @@ const appCommon: {[key:string]:string|number} = {
 };
 const appHeaders: {[key:string]:string} = {
     'Connection': 'close',
-    'User-Agent': 'Mozilla/5.0 BiliDroid/5.51.1 (bbcallen@gmail.com)',
+    'User-Agent': 'Mozilla/5.0 BiliDroid/5.53.1 (bbcallen@gmail.com)',
 };
 
 const webHeaders: {[key:string]:string} = {

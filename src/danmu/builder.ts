@@ -114,6 +114,11 @@ class AbstractBuilder {
         return this;
     }
 
+    withCategory(c: string): AbstractBuilder | any {
+        this._category = c;
+        return this;
+    }
+
     withType(t: string): AbstractBuilder | any{
         this._type = t;
         return this;

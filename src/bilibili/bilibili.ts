@@ -331,13 +331,14 @@ export class Bilibili extends BilibiliBase {
             const PAGES: number = Math.round(room_count / page_size) + 2;
 
             for (let i = 1; i < PAGES; ++i) {
-                params.page = i;
+                const p: any = Object.assign(new Object(), params);
+                p.page = i;
 
                 const request: Request = (RequestBuilder.start()
                     .withHost('api.live.bilibili.com')
                     .withPath('/room/v3/area/getRoomList')
                     .withMethod(RequestMethods.GET)
-                    .withParams(params)
+                    .withParams(p)
                     .withHeaders(config.webHeaders)
                     .build()
                 );
