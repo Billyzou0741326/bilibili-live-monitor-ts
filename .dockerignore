@@ -1,5 +1,6 @@
 **/.git
 **/.gitignore
+**/.gitattributes
 **/test*
 **/*.swp
 **/package-lock.json
