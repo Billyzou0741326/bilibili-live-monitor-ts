@@ -7,6 +7,7 @@ import { AppConfig } from '../global/index';
 import { DelayedTask } from '../task/index';
 import {
     WsServer,
+    WsServerBilive,
     HttpServer, } from '../server/index';
 import {
     PK,
@@ -31,6 +32,7 @@ export class App {
     private _dynamicController:     DynamicGuardController;
     private _emitter:               EventEmitter;
     private _wsServer:              WsServer;
+    private _biliveServer:          WsServerBilive;
     private _httpServer:            HttpServer;
     private _appConfig:             AppConfig;
     private _dynamicRefreshTask:    DelayedTask;
@@ -43,6 +45,7 @@ export class App {
         this._history = new History();
         this._emitter = new EventEmitter();
         this._wsServer = new WsServer(this._appConfig.wsAddr);
+        this._biliveServer = new WsServerBilive(this._appConfig.biliveAddr);
         this._httpServer = new HttpServer(this._appConfig.httpAddr);
         this._roomCollector = new RoomCollector();
         this._fixedController = new FixedGuardController();
@@ -54,13 +57,19 @@ export class App {
         this._dynamicRefreshTask.withTime(120 * 1000).withCallback((): void => {
             const dynamicTask = this._roomCollector.getDynamicRooms();
             (async () => {
-                const roomids: number[] = await dynamicTask;
-                const establishedFix: number[] = this._fixedController.connected;
-                const establishedDyn: number[] = this._dynamicController.connected;
-                const newIds: number[] = roomids.filter((roomid: number): boolean => establishedFix.includes(roomid) === false);
-                cprint(`Monitoring (静态) ${establishedFix.length} + (动态) ${establishedDyn.length}`, colors.green);
-                this._dynamicController.add(newIds);
-                this._dynamicRefreshTask.start();
+                try {
+                    const roomids: number[] = await dynamicTask;
+                    const establishedFix: number[] = this._fixedController.connected;
+                    const establishedDyn: number[] = this._dynamicController.connected;
+                    const newIds: number[] = roomids.filter((roomid: number): boolean => establishedFix.includes(roomid) === false);
+                    cprint(`Monitoring (静态) ${establishedFix.length} + (动态) ${establishedDyn.length}`, colors.green);
+                    this._dynamicController.add(newIds);
+                    this._dynamicRefreshTask.start();
+                }
+                catch (error) {
+                    cprint(`(Dynamic) - ${error.message}`, colors.red);
+                    this._dynamicRefreshTask.start();
+                }
             })();
         });
     }
@@ -95,20 +104,24 @@ export class App {
             .on('guard', (g: Guard): void => {
                 this.printGift(g);
                 this._wsServer.broadcast(this._wsServer.parseMessage(g));
+                this._biliveServer.broadcast(this._biliveServer.parseMessage(g));
             })
             .on('gift', (g: Gift): void => {
                 this.printGift(g);
                 const gift: any = Object.assign(new Object(), g);
                 delete gift['wait'];
                 this._wsServer.broadcast(this._wsServer.parseMessage(gift));
+                this._biliveServer.broadcast(this._biliveServer.parseMessage(gift));
             })
             .on('pk', (g: PK): void => {
                 this.printGift(g);
                 this._wsServer.broadcast(this._wsServer.parseMessage(g));
+                this._biliveServer.broadcast(this._biliveServer.parseMessage(g));
             })
             .on('storm', (g: Storm): void => {
                 this.printGift(g);
                 this._wsServer.broadcast(this._wsServer.parseMessage(g));
+                this._biliveServer.broadcast(this._biliveServer.parseMessage(g));
             })
             .on('anchor', (g: Anchor): void => {
                 this.printGift(g);
@@ -128,10 +141,11 @@ export class App {
             this.setupListeners();
             this.setupServer();
             this._wsServer.start();
+            this._biliveServer.start();
             this._httpServer.start();
+            this._raffleController.start();
             const fixedTask = this._roomCollector.getFixedRooms();
             const dynamicTask = this._roomCollector.getDynamicRooms();
-            this._raffleController.start();
             (async () => {
                 const fixedRooms: number[] = await fixedTask;
                 const dynamicRooms: number[] = await dynamicTask;
@@ -147,6 +161,7 @@ export class App {
         if (this._running === true) {
             this._wsServer.stop();
             this._httpServer.stop();
+            this._biliveServer.stop();
             this._db.stop();
             this._history.stop();
             this._fixedController.removeAllListeners();

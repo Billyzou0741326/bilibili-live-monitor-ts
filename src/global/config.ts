@@ -32,6 +32,7 @@ export class AppConfig implements AppSettings {
     private _initialized:   boolean;
     private _danmuAddr:     TCPAddress;
     private _wsAddr:        TCPAddress;
+    private _biliveAddr:    TCPAddress;
     private _httpAddr:      TCPAddress;
 
     constructor() {
@@ -47,6 +48,7 @@ export class AppConfig implements AppSettings {
         this._danmuAddr = settings['bilibili-danmu'] as TCPAddress;
         this._wsAddr = settings['default-ws-server'] as TCPAddress;
         this._httpAddr = settings['default-http-server'] as TCPAddress;
+        this._biliveAddr = settings['bilive-ws-server'] as TCPAddress;
     }
 
     init() {
@@ -79,6 +81,10 @@ export class AppConfig implements AppSettings {
 
     get httpAddr(): TCPAddress {
         return this._httpAddr;
+    }
+
+    get biliveAddr(): TCPAddress {
+        return this._biliveAddr;
     }
 
     get debug(): boolean {
