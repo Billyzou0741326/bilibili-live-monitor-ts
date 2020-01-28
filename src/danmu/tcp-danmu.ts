@@ -1,5 +1,5 @@
 import * as net from 'net';
-import * as colors from 'colors/safe';
+import * as chalk from 'chalk';
 import { EventEmitter } from 'events';
 import { cprint } from '../fmt/index';
 import { Bilibili } from '../bilibili/index';
@@ -238,7 +238,7 @@ export class AbstractDanmuTCP extends EventEmitter implements Startable, Stoppab
     onError(error: Error): void {
         if (config.tcp_error) {
             const roomid = `${this.roomid}`;
-            cprint(`(TCP) @${roomid.padEnd(13)} ${this._remoteAddr} - ${error.message}`, colors.red);
+            cprint(`(TCP) @${roomid.padEnd(13)} ${this._remoteAddr} - ${error.message}`, chalk.red);
         }
     }
 
@@ -783,7 +783,7 @@ export class RaffleMonitor extends DanmuTCP {
                     this.close(true);
                 }
             }).catch((error: Error) => {
-                cprint(`${Bilibili.isLive.name} - ${error.message}`, colors.red);
+                cprint(`${Bilibili.isLive.name} - ${error.message}`, chalk.red);
             });
         }
         return result;

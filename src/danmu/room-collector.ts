@@ -1,4 +1,4 @@
-import * as colors from 'colors/safe';
+import * as chalk from 'chalk';
 import { Database } from '../db/index';
 import { Bilibili } from '../bilibili/index';
 import { cprint } from '../fmt/index';
@@ -15,13 +15,13 @@ export class RoomCollector {
         const dbTask = this._db.getRooms();
         const sailsTask = (Bilibili.getAllSailboatRooms()
             .catch((error: Error): Promise<number[]> => {
-                cprint(`(Collector) - ${error.message}`, colors.red);
+                cprint(`(Collector) - ${error.message}`, chalk.red);
                 return Promise.resolve([] as number[]);
             })
         );
         const genkiTask = (Bilibili.getAllGenkiRooms()
             .catch((error: Error): Promise<number[]> => {
-                cprint(`(Collector) - ${error.message}`, colors.red);
+                cprint(`(Collector) - ${error.message}`, chalk.red);
                 return Promise.resolve([] as number[]);
             })
         );
@@ -37,7 +37,7 @@ export class RoomCollector {
                 return resp.map((entry: any) => entry['roomid']);
             })
             .catch((error: Error): Promise<number[]> => {
-                cprint(`(Collector) - ${error.message}`, colors.red);
+                cprint(`(Collector) - ${error.message}`, chalk.red);
                 return Promise.resolve([] as number[]);
             })
         );

@@ -14,7 +14,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var WebSocket = require("ws");
-var colors = require("colors/safe");
+var chalk = require("chalk");
 var index_1 = require("../task/index");
 var index_2 = require("../fmt/index");
 var AbstractWsServer = /** @class */ (function () {
@@ -32,7 +32,7 @@ var AbstractWsServer = /** @class */ (function () {
                     var client = clientStatus.client;
                     var addr = clientStatus.addr;
                     if (!clientStatus.isAlive) {
-                        index_2.cprint("Client disconnected at " + addr, colors.blue);
+                        index_2.cprint("Client disconnected at " + addr, chalk.blueBright);
                         client.removeAllListeners();
                         client.terminate();
                         return false;
@@ -84,7 +84,7 @@ var AbstractWsServer = /** @class */ (function () {
             }
         }
         catch (error) {
-            index_2.cprint("Failed to setup WS server: " + error.message, colors.red);
+            index_2.cprint("Failed to setup WS server: " + error.message, chalk.red);
         }
     };
     AbstractWsServer.prototype.createServer = function () {
@@ -94,7 +94,7 @@ var AbstractWsServer = /** @class */ (function () {
             'perMessageDeflate': false,
             'maxPayload': 4 * 1024,
         });
-        index_2.cprint("WS server listening on " + this.host + ":" + this.port, colors.green);
+        index_2.cprint("WS server listening on " + this.host + ":" + this.port, chalk.green);
         return ws;
     };
     AbstractWsServer.prototype.listen = function (ws) {
@@ -108,13 +108,13 @@ var AbstractWsServer = /** @class */ (function () {
                 addr: remoteAddr,
             };
             _this._clients.push(clientStatus);
-            index_2.cprint("Client \u8FDE\u63A5\u5EFA\u7ACB\u4E8E @" + remoteAddr, colors.magenta);
+            index_2.cprint("Client connected at " + remoteAddr, chalk.blueBright);
             (socket
                 .on('pong', function () {
                 clientStatus.isAlive = true;
             })
                 .on('error', function (error) {
-                index_2.cprint("(WS client) - " + error.message, colors.red);
+                index_2.cprint("(WS client) - " + error.message, chalk.red);
                 socket.close();
             })
                 .on('message', function (in_message) { })
@@ -126,12 +126,12 @@ var AbstractWsServer = /** @class */ (function () {
         ws.on('error', function (error) {
             ws.close(function () {
                 if (error.code === 'EADDRINUSE') {
-                    index_2.cprint("\u672A\u80FD\u5EFA\u7ACBws\u670D\u52A1 - \u7AEF\u53E3" + _this.port + "\u5DF2\u88AB\u5360\u7528", colors.red);
-                    index_2.cprint('建议修改``settings.json``中的port值', colors.red);
+                    index_2.cprint("\u672A\u80FD\u5EFA\u7ACBws\u670D\u52A1 - \u7AEF\u53E3" + _this.port + "\u5DF2\u88AB\u5360\u7528", chalk.red);
+                    index_2.cprint('建议修改``settings.json``中的port值', chalk.red);
                     _this._errored = true;
                 }
                 else {
-                    index_2.cprint("(WS) - " + error.message, colors.red);
+                    index_2.cprint("(WS) - " + error.message, chalk.red);
                 }
             });
         });

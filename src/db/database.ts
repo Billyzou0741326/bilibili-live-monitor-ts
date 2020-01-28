@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as colors from 'colors/safe';
+import * as chalk from 'chalk';
 import { DelayedTask } from '../task/index';
 import { cprint } from '../fmt/index';
 
@@ -61,7 +61,7 @@ export class Database {
         const data: string = JSON.stringify(this._roomData, null, 4);
         fs.writeFile(this._filename, data, (error: any): void => {
             if (error) {
-                cprint(`(Database) - ${error.message}`, colors.red);
+                cprint(`(Database) - ${error.message}`, chalk.red);
             }
         });
     }
@@ -93,7 +93,7 @@ export class Database {
                 });
             }
             catch (error) {
-                cprint(`(Database) - ${error.message}`, colors.red);
+                cprint(`(Database) - ${error.message}`, chalk.red);
             }
             return result;
         });
@@ -115,7 +115,7 @@ export class Database {
             .then((data: RoomData): RoomData => this.filter(data))
             .then((data: RoomData): number[] => Object.keys(data).map((d: string): number => +d))
             .catch((error: Error): Promise<number[]> => {
-                cprint(`(Database) - ${error.message}`, colors.red);
+                cprint(`(Database) - ${error.message}`, chalk.red);
                 return Promise.resolve([]);
             })
         );

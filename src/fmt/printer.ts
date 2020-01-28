@@ -1,8 +1,6 @@
-import * as colors from 'colors/safe';
+import * as chalk from 'chalk';
 
-type colorType = (str: string) => string;
-
-export function cprint(msg: string, color: colorType = colors.reset): void {
+export function cprint(msg: string, color: chalk.Chalk = chalk.reset): void {
     const now = new Date();
     const year = now.getFullYear();
     const mon = now.getMonth() + 1;

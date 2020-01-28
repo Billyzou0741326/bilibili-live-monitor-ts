@@ -14,7 +14,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var net = require("net");
-var colors = require("colors/safe");
+var chalk = require("chalk");
 var events_1 = require("events");
 var index_1 = require("../fmt/index");
 var index_2 = require("../bilibili/index");
@@ -198,7 +198,7 @@ var AbstractDanmuTCP = /** @class */ (function (_super) {
     AbstractDanmuTCP.prototype.onError = function (error) {
         if (config.tcp_error) {
             var roomid = "" + this.roomid;
-            index_1.cprint("(TCP) @" + roomid.padEnd(13) + " " + this._remoteAddr + " - " + error.message, colors.red);
+            index_1.cprint("(TCP) @" + roomid.padEnd(13) + " " + this._remoteAddr + " - " + error.message, chalk.red);
         }
     };
     /**
@@ -685,7 +685,7 @@ var RaffleMonitor = /** @class */ (function (_super) {
                     _this.close(true);
                 }
             }).catch(function (error) {
-                index_1.cprint(index_2.Bilibili.isLive.name + " - " + error.message, colors.red);
+                index_1.cprint(index_2.Bilibili.isLive.name + " - " + error.message, chalk.red);
             });
         }
         return result;

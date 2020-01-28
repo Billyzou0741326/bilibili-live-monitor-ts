@@ -1,5 +1,5 @@
 import * as WebSocket from 'ws';
-import * as colors from 'colors/safe';
+import * as chalk from 'chalk';
 import * as http from 'http';
 import { DelayedTask } from '../task/index';
 import { cprint } from '../fmt/index';
@@ -40,7 +40,7 @@ abstract class AbstractWsServer {
                     const client = clientStatus.client;
                     const addr = clientStatus.addr;
                     if (!clientStatus.isAlive) {
-                        cprint(`Client disconnected at ${addr}`, colors.blue);
+                        cprint(`Client disconnected at ${addr}`, chalk.blueBright);
                         client.removeAllListeners();
                         client.terminate();
                         return false;
@@ -90,7 +90,7 @@ abstract class AbstractWsServer {
             }
         }
         catch (error) {
-            cprint(`Failed to setup WS server: ${error.message}`, colors.red);
+            cprint(`Failed to setup WS server: ${error.message}`, chalk.red);
         }
     }
 
@@ -101,7 +101,7 @@ abstract class AbstractWsServer {
             'perMessageDeflate': false,
             'maxPayload': 4 * 1024,
         });
-        cprint(`WS server listening on ${this.host}:${this.port}`, colors.green);
+        cprint(`WS server listening on ${this.host}:${this.port}`, chalk.green);
         return ws;
     }
 
@@ -120,7 +120,7 @@ abstract class AbstractWsServer {
             };
             this._clients.push(clientStatus);
 
-            cprint(`Client 连接建立于 @${remoteAddr}`, colors.magenta);
+            cprint(`Client connected at ${remoteAddr}`, chalk.blueBright);
 
 
             (socket
@@ -128,7 +128,7 @@ abstract class AbstractWsServer {
                     clientStatus.isAlive = true;
                 })
                 .on('error', (error: Error) => {
-                    cprint(`(WS client) - ${error.message}`, colors.red);
+                    cprint(`(WS client) - ${error.message}`, chalk.red);
                     socket.close();
                 })
                 .on('message', (in_message: string | Buffer | ArrayBuffer | Buffer[]): void => {})
@@ -144,11 +144,11 @@ abstract class AbstractWsServer {
         ws.on('error', (error: Error | any) => {
             ws.close((): void => {
                 if (error.code === 'EADDRINUSE') {
-                    cprint(`未能建立ws服务 - 端口${this.port}已被占用`, colors.red);
-                    cprint('建议修改``settings.json``中的port值', colors.red);
+                    cprint(`未能建立ws服务 - 端口${this.port}已被占用`, chalk.red);
+                    cprint('建议修改``settings.json``中的port值', chalk.red);
                     this._errored = true;
                 } else {
-                    cprint(`(WS) - ${error.message}`, colors.red);
+                    cprint(`(WS) - ${error.message}`, chalk.red);
                 }
             });
         });

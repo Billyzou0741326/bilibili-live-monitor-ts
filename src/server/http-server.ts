@@ -1,6 +1,6 @@
 import * as http from 'http';
 import * as express from 'express';
-import * as colors from 'colors';
+import * as chalk from 'chalk';
 import { cprint } from '../fmt/index';
 import {
     Gift,
@@ -124,16 +124,16 @@ export class HttpServer extends Router implements HttpAddress {
             this._server.on('error', (error: any): void => {
                 if (error) {
                     if (error.code === 'EADDRINUSE') {
-                        cprint(`未能建立http服务 - 端口${this.port}已被占用`, colors.red);
-                        cprint('建议修改``settings.json``中的httpServer.port值', colors.red);
+                        cprint(`未能建立http服务 - 端口${this.port}已被占用`, chalk.red);
+                        cprint('建议修改``settings.json``中的httpServer.port值', chalk.red);
                     }
                     else {
-                        cprint(`(Http) - ${error.message}`, colors.red);
+                        cprint(`(Http) - ${error.message}`, chalk.red);
                     }
                 }
             });
             this._server.listen(this.port, this.host);
-            cprint(`Http server listening on ${this.host}:${this.port}`, colors.green);
+            cprint(`Http server listening on ${this.host}:${this.port}`, chalk.green);
         }
     }
 
