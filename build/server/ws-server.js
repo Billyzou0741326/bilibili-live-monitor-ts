@@ -1,11 +1,24 @@
 "use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 var WebSocket = require("ws");
 var colors = require("colors/safe");
 var index_1 = require("../task/index");
 var index_2 = require("../fmt/index");
-var WsServer = /** @class */ (function () {
-    function WsServer(addr) {
+var AbstractWsServer = /** @class */ (function () {
+    function AbstractWsServer(addr) {
         var _this = this;
         this._host = addr.host || '127.0.0.1';
         this._port = addr.port;
@@ -37,21 +50,21 @@ var WsServer = /** @class */ (function () {
             }
         });
     }
-    Object.defineProperty(WsServer.prototype, "host", {
+    Object.defineProperty(AbstractWsServer.prototype, "host", {
         get: function () {
             return this._host;
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(WsServer.prototype, "port", {
+    Object.defineProperty(AbstractWsServer.prototype, "port", {
         get: function () {
             return this._port;
         },
         enumerable: true,
         configurable: true
     });
-    WsServer.prototype.reset = function () {
+    AbstractWsServer.prototype.reset = function () {
         this._ws = null;
         this._errored = false;
         this._healthTask.stop();
@@ -61,10 +74,10 @@ var WsServer = /** @class */ (function () {
         });
         this._clients = [];
     };
-    WsServer.prototype.stop = function () {
+    AbstractWsServer.prototype.stop = function () {
         this.reset();
     };
-    WsServer.prototype.start = function () {
+    AbstractWsServer.prototype.start = function () {
         try {
             if (this._ws === null) {
                 this.listen(this.createServer());
@@ -74,7 +87,7 @@ var WsServer = /** @class */ (function () {
             index_2.cprint("Failed to setup WS server: " + error.message, colors.red);
         }
     };
-    WsServer.prototype.createServer = function () {
+    AbstractWsServer.prototype.createServer = function () {
         var ws = new WebSocket.Server({
             'host': this.host,
             'port': this.port,
@@ -84,7 +97,7 @@ var WsServer = /** @class */ (function () {
         index_2.cprint("WS server listening on " + this.host + ":" + this.port, colors.green);
         return ws;
     };
-    WsServer.prototype.listen = function (ws) {
+    AbstractWsServer.prototype.listen = function (ws) {
         var _this = this;
         this._ws = ws;
         ws.on('connection', function (socket, req) {
@@ -124,6 +137,13 @@ var WsServer = /** @class */ (function () {
         });
         ws.on('close', function () { });
     };
+    return AbstractWsServer;
+}());
+var WsServer = /** @class */ (function (_super) {
+    __extends(WsServer, _super);
+    function WsServer(addr) {
+        return _super.call(this, addr) || this;
+    }
     WsServer.prototype.broadcast = function (payload) {
         this._clients.forEach(function (clientStatus) {
             var client = clientStatus.client;
@@ -140,5 +160,49 @@ var WsServer = /** @class */ (function () {
         return data;
     };
     return WsServer;
-}());
+}(AbstractWsServer));
 exports.WsServer = WsServer;
+var WsServerBilive = /** @class */ (function (_super) {
+    __extends(WsServerBilive, _super);
+    function WsServerBilive(addr) {
+        return _super.call(this, addr) || this;
+    }
+    WsServerBilive.prototype.broadcast = function (payload) {
+        this._clients.forEach(function (clientStatus) {
+            var client = clientStatus.client;
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(payload);
+            }
+        });
+    };
+    WsServerBilive.prototype.parseMessage = function (data) {
+        var toKey = {
+            'id': 'id',
+            'roomid': 'roomID',
+            'name': 'title',
+            'type': 'type',
+        };
+        var translated = {};
+        Object.keys(toKey).forEach(function (key) {
+            translated[toKey[key]] = data[key];
+        });
+        switch (data['category']) {
+            case 'gift':
+                translated['cmd'] = 'raffle';
+                break;
+            case 'guard':
+                translated['cmd'] = 'lottery';
+                break;
+            case 'storm':
+                translated['cmd'] = 'beatStorm';
+                break;
+            case 'pk':
+                translated['cmd'] = 'pklottery';
+                break;
+        }
+        var str = JSON.stringify(translated);
+        return str;
+    };
+    return WsServerBilive;
+}(AbstractWsServer));
+exports.WsServerBilive = WsServerBilive;

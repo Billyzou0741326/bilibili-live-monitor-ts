@@ -17,14 +17,15 @@ interface ClientStatus {
     readonly addr:      string;
 }
 
-export class WsServer {
+
+abstract class AbstractWsServer {
 
     private _host:          string;
     private _port:          number;
     private _ws:            WebSocket.Server | null;
     private _errored:       boolean;
     private _healthTask:    DelayedTask;
-    private _clients:       ClientStatus[];
+    protected _clients:     ClientStatus[];
 
     constructor(addr: WsAddress) {
         this._host = addr.host || '127.0.0.1';
@@ -57,6 +58,7 @@ export class WsServer {
             }
         });
     }
+
 
     get host(): string {
         return this._host;
@@ -154,6 +156,18 @@ export class WsServer {
         ws.on('close', (): void => {});
     }
 
+    abstract broadcast(msg: any): any;
+
+    abstract parseMessage(data: any): any;
+
+}
+
+export class WsServer extends AbstractWsServer {
+
+    constructor(addr: WsAddress) {
+        super(addr);
+    }
+
     broadcast(payload: Buffer): void {
         this._clients.forEach((clientStatus: ClientStatus): void => {
             const client = clientStatus.client;
@@ -169,6 +183,55 @@ export class WsServer {
         const str = JSON.stringify(message);
         const data = Buffer.from(str);
         return data;
+    }
+
+}
+
+export class WsServerBilive extends AbstractWsServer {
+
+    constructor(addr: WsAddress) {
+        super(addr);
+    }
+
+    broadcast(payload: string): void {
+        this._clients.forEach((clientStatus: any): void => {
+            const client: any = clientStatus.client;
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(payload);
+            }
+        });
+    }
+
+    parseMessage(data: any): string {
+        const toKey: any = {
+            'id':       'id',
+            'roomid':   'roomID',
+            'name':     'title',
+            'type':     'type',
+        };
+
+        const translated: any = {};
+        Object.keys(toKey).forEach((key: string): void => {
+            translated[toKey[key]] = data[key];
+        });
+
+        switch (data['category']) {
+            case 'gift':
+                translated['cmd'] = 'raffle';
+                break;
+            case 'guard':
+                translated['cmd'] = 'lottery';
+                break;
+            case 'storm':
+                translated['cmd'] = 'beatStorm';
+                break;
+            case 'pk':
+                translated['cmd'] = 'pklottery';
+                break;
+        }
+
+        const str: string = JSON.stringify(translated);
+        return str;
     }
 
 }

@@ -53,6 +53,7 @@ var App = /** @class */ (function () {
         this._history = new index_6.History();
         this._emitter = new events_1.EventEmitter();
         this._wsServer = new index_5.WsServer(this._appConfig.wsAddr);
+        this._biliveServer = new index_5.WsServerBilive(this._appConfig.biliveAddr);
         this._httpServer = new index_5.HttpServer(this._appConfig.httpAddr);
         this._roomCollector = new index_6.RoomCollector();
         this._fixedController = new index_6.FixedGuardController();
@@ -63,19 +64,27 @@ var App = /** @class */ (function () {
         this._dynamicRefreshTask.withTime(120 * 1000).withCallback(function () {
             var dynamicTask = _this._roomCollector.getDynamicRooms();
             (function () { return __awaiter(_this, void 0, void 0, function () {
-                var roomids, establishedFix, establishedDyn, newIds;
+                var roomids, establishedFix_1, establishedDyn, newIds, error_1;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
-                        case 0: return [4 /*yield*/, dynamicTask];
+                        case 0:
+                            _a.trys.push([0, 2, , 3]);
+                            return [4 /*yield*/, dynamicTask];
                         case 1:
                             roomids = _a.sent();
-                            establishedFix = this._fixedController.connected;
+                            establishedFix_1 = this._fixedController.connected;
                             establishedDyn = this._dynamicController.connected;
-                            newIds = roomids.filter(function (roomid) { return establishedFix.includes(roomid) === false; });
-                            index_1.cprint("Monitoring (\u9759\u6001) " + establishedFix.length + " + (\u52A8\u6001) " + establishedDyn.length, colors.green);
+                            newIds = roomids.filter(function (roomid) { return establishedFix_1.includes(roomid) === false; });
+                            index_1.cprint("Monitoring (\u9759\u6001) " + establishedFix_1.length + " + (\u52A8\u6001) " + establishedDyn.length, colors.green);
                             this._dynamicController.add(newIds);
                             this._dynamicRefreshTask.start();
-                            return [2 /*return*/];
+                            return [3 /*break*/, 3];
+                        case 2:
+                            error_1 = _a.sent();
+                            index_1.cprint("(Dynamic) - " + error_1.message, colors.red);
+                            this._dynamicRefreshTask.start();
+                            return [3 /*break*/, 3];
+                        case 3: return [2 /*return*/];
                     }
                 });
             }); })();
@@ -112,20 +121,24 @@ var App = /** @class */ (function () {
             .on('guard', function (g) {
             _this.printGift(g);
             _this._wsServer.broadcast(_this._wsServer.parseMessage(g));
+            _this._biliveServer.broadcast(_this._biliveServer.parseMessage(g));
         })
             .on('gift', function (g) {
             _this.printGift(g);
             var gift = Object.assign(new Object(), g);
             delete gift['wait'];
             _this._wsServer.broadcast(_this._wsServer.parseMessage(gift));
+            _this._biliveServer.broadcast(_this._biliveServer.parseMessage(gift));
         })
             .on('pk', function (g) {
             _this.printGift(g);
             _this._wsServer.broadcast(_this._wsServer.parseMessage(g));
+            _this._biliveServer.broadcast(_this._biliveServer.parseMessage(g));
         })
             .on('storm', function (g) {
             _this.printGift(g);
             _this._wsServer.broadcast(_this._wsServer.parseMessage(g));
+            _this._biliveServer.broadcast(_this._biliveServer.parseMessage(g));
         })
             .on('anchor', function (g) {
             _this.printGift(g);
@@ -144,10 +157,11 @@ var App = /** @class */ (function () {
             this.setupListeners();
             this.setupServer();
             this._wsServer.start();
+            this._biliveServer.start();
             this._httpServer.start();
+            this._raffleController.start();
             var fixedTask_1 = this._roomCollector.getFixedRooms();
             var dynamicTask_1 = this._roomCollector.getDynamicRooms();
-            this._raffleController.start();
             (function () { return __awaiter(_this, void 0, void 0, function () {
                 var fixedRooms, dynamicRooms, filtered;
                 return __generator(this, function (_a) {
@@ -172,6 +186,7 @@ var App = /** @class */ (function () {
         if (this._running === true) {
             this._wsServer.stop();
             this._httpServer.stop();
+            this._biliveServer.stop();
             this._db.stop();
             this._history.stop();
             this._fixedController.removeAllListeners();

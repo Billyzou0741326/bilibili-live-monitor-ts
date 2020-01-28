@@ -15,6 +15,7 @@ var AppConfig = /** @class */ (function () {
         this._danmuAddr = settings['bilibili-danmu'];
         this._wsAddr = settings['default-ws-server'];
         this._httpAddr = settings['default-http-server'];
+        this._biliveAddr = settings['bilive-ws-server'];
     }
     AppConfig.prototype.init = function () {
         if (this._initialized === false) {
@@ -51,6 +52,13 @@ var AppConfig = /** @class */ (function () {
     Object.defineProperty(AppConfig.prototype, "httpAddr", {
         get: function () {
             return this._httpAddr;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(AppConfig.prototype, "biliveAddr", {
+        get: function () {
+            return this._biliveAddr;
         },
         enumerable: true,
         configurable: true
