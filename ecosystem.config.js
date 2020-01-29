@@ -4,7 +4,12 @@ module.exports = {
     script: './build/main.js',
 
     // Options reference: https://pm2.keymetrics.io/docs/usage/application-declaration/
-    args: '',
+    args: [
+        '--color'
+    ],
+    env: {
+        FORCE_COLOR: 1
+    },
     instances: 1,
     exec_mode: 'fork',
     autorestart: true,
