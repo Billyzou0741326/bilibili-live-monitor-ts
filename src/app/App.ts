@@ -1,4 +1,5 @@
 import * as chalk from 'chalk';
+import { table } from 'table';
 import { EventEmitter } from 'events';
 import { cprint } from '../fmt/index';
 import { Database } from '../db/index';
@@ -203,9 +204,15 @@ export class App {
                 const gift_price = `${anchor.gift_price}`;
                 const requirement = `${anchor.requirement}`;
                 const danmu = `${anchor.danmu}`;
+                const dataTable = [
+                    [ '奖品名称', name ],
+                    [ '奖品数量', award_num ],
+                    [ '弹幕', danmu ],
+                    [ '限制条件', requirement ],
+                    [ '投喂', `${gift_num}个${gift_name}(${gift_price}金瓜子)` ],
+                ];
                 msg = (`${id.padEnd(13)}@${roomid.padEnd(13)}${t.padEnd(13)}`
-                    + `\n\t奖品名称: ${name} \n\t奖品数量: ${award_num} \n\t弹幕: ${danmu} \n\t限制条件: ${requirement}`
-                    + `\n\t投喂: ${gift_num}个${gift_name}(${gift_price}金瓜子)`);
+                    + `\n${table(dataTable)}`);
                 break;
             case '':
                 return;

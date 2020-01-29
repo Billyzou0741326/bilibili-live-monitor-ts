@@ -37,6 +37,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var chalk = require("chalk");
+var table_1 = require("table");
 var events_1 = require("events");
 var index_1 = require("../fmt/index");
 var index_2 = require("../db/index");
@@ -226,9 +227,15 @@ var App = /** @class */ (function () {
                 var gift_price = "" + anchor.gift_price;
                 var requirement = "" + anchor.requirement;
                 var danmu = "" + anchor.danmu;
+                var dataTable = [
+                    ['奖品名称', name],
+                    ['奖品数量', award_num],
+                    ['弹幕', danmu],
+                    ['限制条件', requirement],
+                    ['投喂', gift_num + "\u4E2A" + gift_name + "(" + gift_price + "\u91D1\u74DC\u5B50)"],
+                ];
                 msg = (id.padEnd(13) + "@" + roomid.padEnd(13) + t.padEnd(13)
-                    + ("\n\t\u5956\u54C1\u540D\u79F0: " + name + " \n\t\u5956\u54C1\u6570\u91CF: " + award_num + " \n\t\u5F39\u5E55: " + danmu + " \n\t\u9650\u5236\u6761\u4EF6: " + requirement)
-                    + ("\n\t\u6295\u5582: " + gift_num + "\u4E2A" + gift_name + "(" + gift_price + "\u91D1\u74DC\u5B50)"));
+                    + ("\n" + table_1.table(dataTable)));
                 break;
             case '':
                 return;
