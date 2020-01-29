@@ -13,7 +13,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var colors = require("colors/safe");
+var chalk = require("chalk");
 var index_1 = require("../fmt/index");
 var events_1 = require("events");
 var index_2 = require("../bilibili/index");
@@ -51,7 +51,7 @@ var RoomidHandler = /** @class */ (function (_super) {
                     throw new Error("" + resp['message']);
                 }
             }).catch(function (error) {
-                index_1.cprint("RoomidHandler - " + error.message, colors.red);
+                index_1.cprint("RoomidHandler - " + error.message, chalk.red);
             });
         });
     };

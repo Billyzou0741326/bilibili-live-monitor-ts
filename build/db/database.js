@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs = require("fs");
 var path = require("path");
-var colors = require("colors/safe");
+var chalk = require("chalk");
 var index_1 = require("../task/index");
 var index_2 = require("../fmt/index");
 var Database = /** @class */ (function () {
@@ -44,7 +44,7 @@ var Database = /** @class */ (function () {
         var data = JSON.stringify(this._roomData, null, 4);
         fs.writeFile(this._filename, data, function (error) {
             if (error) {
-                index_2.cprint("(Database) - " + error.message, colors.red);
+                index_2.cprint("(Database) - " + error.message, chalk.red);
             }
         });
     };
@@ -76,7 +76,7 @@ var Database = /** @class */ (function () {
                 });
             }
             catch (error) {
-                index_2.cprint("(Database) - " + error.message, colors.red);
+                index_2.cprint("(Database) - " + error.message, chalk.red);
             }
             return result;
         });
@@ -97,7 +97,7 @@ var Database = /** @class */ (function () {
             .then(function (data) { return _this.filter(data); })
             .then(function (data) { return Object.keys(data).map(function (d) { return +d; }); })
             .catch(function (error) {
-            index_2.cprint("(Database) - " + error.message, colors.red);
+            index_2.cprint("(Database) - " + error.message, chalk.red);
             return Promise.resolve([]);
         }));
     };

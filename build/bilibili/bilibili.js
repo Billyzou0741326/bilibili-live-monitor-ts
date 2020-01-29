@@ -14,7 +14,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var crypto = require("crypto");
-var colors = require("colors/safe");
+var chalk = require("chalk");
 var index_1 = require("../net/index");
 var index_2 = require("../fmt/index");
 var index_3 = require("../bilibili/index");
@@ -115,7 +115,7 @@ var Bilibili = /** @class */ (function (_super) {
                 return roomids;
             })
                 .catch(function (error) {
-                index_2.cprint(Bilibili.getSailboatRooms.name + " - " + error.message, colors.red);
+                index_2.cprint(Bilibili.getSailboatRooms.name + " - " + error.message, chalk.red);
                 return Promise.resolve([]);
             }));
             promises.push(task);
@@ -169,7 +169,7 @@ var Bilibili = /** @class */ (function (_super) {
                 return roomids;
             })
                 .catch(function (error) {
-                index_2.cprint(Bilibili.getGenkiRooms.name + " - " + error.message, colors.red);
+                index_2.cprint(Bilibili.getGenkiRooms.name + " - " + error.message, chalk.red);
                 return Promise.resolve([]);
             }));
             promises.push(task);
@@ -286,7 +286,7 @@ var Bilibili = /** @class */ (function (_super) {
         };
         var promises = [];
         var promise = Bilibili.getLiveCount().catch(function (error) {
-            index_2.cprint(Bilibili.getLiveCount.name + " - " + error.message, colors.red);
+            index_2.cprint(Bilibili.getLiveCount.name + " - " + error.message, chalk.red);
             return Promise.resolve(5000); // on error return 5000
         }).then(function (room_count) {
             room_count = Math.min(count, room_count);
@@ -317,7 +317,7 @@ var Bilibili = /** @class */ (function (_super) {
                     return Promise.resolve(roomInfo);
                 })
                     .catch(function (error) {
-                    index_2.cprint("getAllRoomsInArea - " + error.message, colors.red);
+                    index_2.cprint("getAllRoomsInArea - " + error.message, chalk.red);
                     return Promise.resolve([]);
                 }));
                 promises.push(task);

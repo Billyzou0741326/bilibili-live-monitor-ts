@@ -1,4 +1,4 @@
-import * as colors from 'colors/safe';
+import * as chalk from 'chalk';
 import { EventEmitter } from 'events';
 import { Queue } from '../container/index';
 import { cprint } from '../fmt/index';
@@ -103,7 +103,7 @@ class GuardController extends AbstractRoomController {
                 this._connections.delete(roomid);
                 this._recentlyClosed.push(roomid);
                 if ((listener as DynamicGuardMonitor).toFixed === true) {
-                    cprint(`Adding ${roomid} to fixed`, colors.green);
+                    cprint(`Adding ${roomid} to fixed`, chalk.green);
                     this.emit('to_fixed', roomid);
                 }
             })
@@ -178,7 +178,7 @@ export class RaffleController extends AbstractRoomController {
                 return roomInfoList.map((roomInfo: any): number => roomInfo['roomid']);
             })
             .catch((error: Error) => {
-                cprint(`${Bilibili.getRoomsInArea.name} - ${error.message}`, colors.red);
+                cprint(`${Bilibili.getRoomsInArea.name} - ${error.message}`, chalk.red);
                 return Promise.resolve([] as number[]);
             })
         );
@@ -202,7 +202,7 @@ export class RaffleController extends AbstractRoomController {
                     }
                 }
                 catch (error) {
-                    cprint(`${Bilibili.isLive.name} - ${error.message}`, colors.red);
+                    cprint(`${Bilibili.isLive.name} - ${error.message}`, chalk.red);
                 }
             }
         };
@@ -225,14 +225,14 @@ export class RaffleController extends AbstractRoomController {
         const msg = (`Setting up monitor @room `
                     + `${roomid.toString().padEnd(13)}`
                     + `in ${this._nameOfArea[areaid]}区`);
-        cprint(msg, colors.green);
+        cprint(msg, chalk.green);
 
         this._taskQueue.add((): void => { listener.start() });
         this._connections.set(areaid, listener);
         (listener
             .on('close', (): void => {
                 const reason = `@room ${roomid} in ${this._nameOfArea[areaid]}区 is closed.`;
-                cprint(reason, colors.yellow);
+                cprint(reason, chalk.yellowBright);
                 this._connections.delete(areaid);
                 this.getRoomsInArea(areaid).then(
                     (rooms: number[]): void => this.setupMonitorInArea(areaid, rooms));

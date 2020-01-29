@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var colors = require("colors/safe");
+var chalk = require("chalk");
 var events_1 = require("events");
 var index_1 = require("../fmt/index");
 var index_2 = require("../db/index");
@@ -75,13 +75,13 @@ var App = /** @class */ (function () {
                             establishedFix_1 = this._fixedController.connected;
                             establishedDyn = this._dynamicController.connected;
                             newIds = roomids.filter(function (roomid) { return establishedFix_1.includes(roomid) === false; });
-                            index_1.cprint("Monitoring (\u9759\u6001) " + establishedFix_1.length + " + (\u52A8\u6001) " + establishedDyn.length, colors.green);
+                            index_1.cprint("Monitoring (\u9759\u6001) " + establishedFix_1.length + " + (\u52A8\u6001) " + establishedDyn.length, chalk.green);
                             this._dynamicController.add(newIds);
                             this._dynamicRefreshTask.start();
                             return [3 /*break*/, 3];
                         case 2:
                             error_1 = _a.sent();
-                            index_1.cprint("(Dynamic) - " + error_1.message, colors.red);
+                            index_1.cprint("(Dynamic) - " + error_1.message, chalk.red);
                             this._dynamicRefreshTask.start();
                             return [3 /*break*/, 3];
                         case 3: return [2 /*return*/];
@@ -235,7 +235,7 @@ var App = /** @class */ (function () {
             default:
                 msg = id.padEnd(13) + "@" + roomid.padEnd(13) + t.padEnd(13) + name;
         }
-        index_1.cprint(msg, colors.cyan);
+        index_1.cprint(msg, chalk.cyan);
     };
     return App;
 }());

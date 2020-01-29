@@ -15,7 +15,7 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var http = require("http");
 var express = require("express");
-var colors = require("colors");
+var chalk = require("chalk");
 var index_1 = require("../fmt/index");
 var Router = /** @class */ (function () {
     function Router() {
@@ -119,16 +119,16 @@ var HttpServer = /** @class */ (function (_super) {
             this._server.on('error', function (error) {
                 if (error) {
                     if (error.code === 'EADDRINUSE') {
-                        index_1.cprint("\u672A\u80FD\u5EFA\u7ACBhttp\u670D\u52A1 - \u7AEF\u53E3" + _this.port + "\u5DF2\u88AB\u5360\u7528", colors.red);
-                        index_1.cprint('建议修改``settings.json``中的httpServer.port值', colors.red);
+                        index_1.cprint("\u672A\u80FD\u5EFA\u7ACBhttp\u670D\u52A1 - \u7AEF\u53E3" + _this.port + "\u5DF2\u88AB\u5360\u7528", chalk.red);
+                        index_1.cprint('建议修改``settings.json``中的httpServer.port值', chalk.red);
                     }
                     else {
-                        index_1.cprint("(Http) - " + error.message, colors.red);
+                        index_1.cprint("(Http) - " + error.message, chalk.red);
                     }
                 }
             });
             this._server.listen(this.port, this.host);
-            index_1.cprint("Http server listening on " + this.host + ":" + this.port, colors.green);
+            index_1.cprint("Http server listening on " + this.host + ":" + this.port, chalk.green);
         }
     };
     HttpServer.prototype.stop = function () {

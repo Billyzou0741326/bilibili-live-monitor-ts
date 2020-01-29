@@ -1,4 +1,4 @@
-import * as colors from 'colors/safe';
+import * as chalk from 'chalk';
 import { cprint } from '../fmt/index';
 import { EventEmitter } from 'events';
 import { Bilibili } from '../bilibili/index';
@@ -49,7 +49,7 @@ export class RoomidHandler extends EventEmitter {
                     throw new Error(`${resp['message']}`);
                 }
             }).catch((error: Error) => {
-                cprint(`RoomidHandler - ${error.message}`, colors.red);
+                cprint(`RoomidHandler - ${error.message}`, chalk.red);
             });
         });
     }

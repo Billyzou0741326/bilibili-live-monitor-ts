@@ -1,5 +1,5 @@
 import * as crypto from 'crypto';
-import * as colors from 'colors/safe';
+import * as chalk from 'chalk';
 import {
     Request,
     RequestBuilder,
@@ -128,7 +128,7 @@ export class Bilibili extends BilibiliBase {
                     return roomids;
                 })
                 .catch((error: any) => {
-                    cprint(`${Bilibili.getSailboatRooms.name} - ${error.message}`, colors.red);
+                    cprint(`${Bilibili.getSailboatRooms.name} - ${error.message}`, chalk.red);
                     return Promise.resolve([]);
                 })
             );
@@ -190,7 +190,7 @@ export class Bilibili extends BilibiliBase {
                     return roomids;
                 })
                 .catch((error: any) => {
-                    cprint(`${Bilibili.getGenkiRooms.name} - ${error.message}`, colors.red);
+                    cprint(`${Bilibili.getGenkiRooms.name} - ${error.message}`, chalk.red);
                     return Promise.resolve([]);
                 })
             );
@@ -322,7 +322,7 @@ export class Bilibili extends BilibiliBase {
 
         const promise = Bilibili.getLiveCount().catch((error: any): Promise<number> => {
 
-            cprint(`${Bilibili.getLiveCount.name} - ${error.message}`, colors.red);
+            cprint(`${Bilibili.getLiveCount.name} - ${error.message}`, chalk.red);
             return Promise.resolve(5000);    // on error return 5000
 
         }).then((room_count: number): Promise<any> => {
@@ -360,7 +360,7 @@ export class Bilibili extends BilibiliBase {
                         return Promise.resolve(roomInfo);
                     })
                     .catch((error: any) => {
-                        cprint(`getAllRoomsInArea - ${error.message}`, colors.red);
+                        cprint(`getAllRoomsInArea - ${error.message}`, chalk.red);
                         return Promise.resolve([]);
                     })
                 );

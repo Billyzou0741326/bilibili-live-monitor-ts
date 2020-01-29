@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var colors = require("colors/safe");
+var chalk = require("chalk");
 var index_1 = require("../db/index");
 var index_2 = require("../bilibili/index");
 var index_3 = require("../fmt/index");
@@ -12,12 +12,12 @@ var RoomCollector = /** @class */ (function () {
         var dbTask = this._db.getRooms();
         var sailsTask = (index_2.Bilibili.getAllSailboatRooms()
             .catch(function (error) {
-            index_3.cprint("(Collector) - " + error.message, colors.red);
+            index_3.cprint("(Collector) - " + error.message, chalk.red);
             return Promise.resolve([]);
         }));
         var genkiTask = (index_2.Bilibili.getAllGenkiRooms()
             .catch(function (error) {
-            index_3.cprint("(Collector) - " + error.message, colors.red);
+            index_3.cprint("(Collector) - " + error.message, chalk.red);
             return Promise.resolve([]);
         }));
         var tasks = [dbTask, sailsTask, genkiTask];
@@ -32,7 +32,7 @@ var RoomCollector = /** @class */ (function () {
             return resp.map(function (entry) { return entry['roomid']; });
         })
             .catch(function (error) {
-            index_3.cprint("(Collector) - " + error.message, colors.red);
+            index_3.cprint("(Collector) - " + error.message, chalk.red);
             return Promise.resolve([]);
         }));
         return task;

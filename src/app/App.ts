@@ -1,4 +1,4 @@
-import * as colors from 'colors/safe';
+import * as chalk from 'chalk';
 import { EventEmitter } from 'events';
 import { cprint } from '../fmt/index';
 import { Database } from '../db/index';
@@ -62,12 +62,12 @@ export class App {
                     const establishedFix: number[] = this._fixedController.connected;
                     const establishedDyn: number[] = this._dynamicController.connected;
                     const newIds: number[] = roomids.filter((roomid: number): boolean => establishedFix.includes(roomid) === false);
-                    cprint(`Monitoring (静态) ${establishedFix.length} + (动态) ${establishedDyn.length}`, colors.green);
+                    cprint(`Monitoring (静态) ${establishedFix.length} + (动态) ${establishedDyn.length}`, chalk.green);
                     this._dynamicController.add(newIds);
                     this._dynamicRefreshTask.start();
                 }
                 catch (error) {
-                    cprint(`(Dynamic) - ${error.message}`, colors.red);
+                    cprint(`(Dynamic) - ${error.message}`, chalk.red);
                     this._dynamicRefreshTask.start();
                 }
             })();
@@ -213,7 +213,7 @@ export class App {
                 msg = `${id.padEnd(13)}@${roomid.padEnd(13)}${t.padEnd(13)}${name}`;
         }
 
-        cprint(msg, colors.cyan);
+        cprint(msg, chalk.cyan);
     }
 
 }

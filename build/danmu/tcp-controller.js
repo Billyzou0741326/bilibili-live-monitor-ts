@@ -49,7 +49,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var colors = require("colors/safe");
+var chalk = require("chalk");
 var events_1 = require("events");
 var index_1 = require("../fmt/index");
 var index_2 = require("../bilibili/index");
@@ -134,7 +134,7 @@ var GuardController = /** @class */ (function (_super) {
             _this._connections.delete(roomid);
             _this._recentlyClosed.push(roomid);
             if (listener.toFixed === true) {
-                index_1.cprint("Adding " + roomid + " to fixed", colors.green);
+                index_1.cprint("Adding " + roomid + " to fixed", chalk.green);
                 _this.emit('to_fixed', roomid);
             }
         })
@@ -205,7 +205,7 @@ var RaffleController = /** @class */ (function (_super) {
             return roomInfoList.map(function (roomInfo) { return roomInfo['roomid']; });
         })
             .catch(function (error) {
-            index_1.cprint(index_2.Bilibili.getRoomsInArea.name + " - " + error.message, colors.red);
+            index_1.cprint(index_2.Bilibili.getRoomsInArea.name + " - " + error.message, chalk.red);
             return Promise.resolve([]);
         }));
     };
@@ -236,7 +236,7 @@ var RaffleController = /** @class */ (function (_super) {
                         return [3 /*break*/, 5];
                     case 4:
                         error_1 = _a.sent();
-                        index_1.cprint(index_2.Bilibili.isLive.name + " - " + error_1.message, colors.red);
+                        index_1.cprint(index_2.Bilibili.isLive.name + " - " + error_1.message, chalk.red);
                         return [3 /*break*/, 5];
                     case 5:
                         ++i;
@@ -261,13 +261,13 @@ var RaffleController = /** @class */ (function (_super) {
         var msg = ("Setting up monitor @room "
             + ("" + roomid.toString().padEnd(13))
             + ("in " + this._nameOfArea[areaid] + "\u533A"));
-        index_1.cprint(msg, colors.green);
+        index_1.cprint(msg, chalk.green);
         this._taskQueue.add(function () { listener.start(); });
         this._connections.set(areaid, listener);
         (listener
             .on('close', function () {
             var reason = "@room " + roomid + " in " + _this._nameOfArea[areaid] + "\u533A is closed.";
-            index_1.cprint(reason, colors.yellow);
+            index_1.cprint(reason, chalk.yellowBright);
             _this._connections.delete(areaid);
             _this.getRoomsInArea(areaid).then(function (rooms) { return _this.setupMonitorInArea(areaid, rooms); });
         })

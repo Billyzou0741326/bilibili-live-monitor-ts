@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var colors = require("colors/safe");
+var chalk = require("chalk");
 function cprint(msg, color) {
-    if (color === void 0) { color = colors.reset; }
+    if (color === void 0) { color = chalk.reset; }
     var now = new Date();
     var year = now.getFullYear();
     var mon = now.getMonth() + 1;
