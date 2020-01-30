@@ -332,7 +332,7 @@ var DanmuTCP = /** @class */ (function (_super) {
      * @param   {Integer}   msg.data.time_wait
      * @param   {String}    msg.data.type
      * @param   {String}    msg.data.title
-     * @returns {Gift}      gift info
+     * @returns {Gift|null}
      */
     DanmuTCP.prototype.onTV = function (msg) {
         var data = msg['data'];
@@ -364,7 +364,7 @@ var DanmuTCP = /** @class */ (function (_super) {
      * @param   {String}    msg.data.type
      * @param   {Object}    msg.data.lottery
      * @param   {Integer}   msg.data.lottery.time
-     * @returns {Guard}     guard info
+     * @returns {Guard|null}
      */
     DanmuTCP.prototype.onGuard = function (msg) {
         var data = msg['data'];
@@ -393,7 +393,7 @@ var DanmuTCP = /** @class */ (function (_super) {
         return guard;
     };
     /**
-     * @returns     {Object}    .id .roomid .type .name
+     * @returns     {Storm|null}
      */
     DanmuTCP.prototype.onSpecialGift = function (msg) {
         var data = msg['data'];
@@ -418,12 +418,29 @@ var DanmuTCP = /** @class */ (function (_super) {
         }
         return details;
     };
+    /**
+     * @returns     {PK|null}
+     */
     DanmuTCP.prototype.onPkLottery = function (msg) {
-        // TODO:
-        return null;
+        var data = msg['data'];
+        var dataOk = typeof data !== 'undefined';
+        var pk = null;
+        if (dataOk) {
+            var id = data['id'];
+            var roomid = data['room_id'];
+            var expireAt = data['time'] + Math.floor(0.001 * new Date().valueOf());
+            pk = (index_5.PKBuilder.start()
+                .withId(id)
+                .withRoomid(roomid)
+                .withType('pk')
+                .withName('大乱斗')
+                .withExpireAt(expireAt)
+                .build());
+        }
+        return pk;
     };
     /**
-     * @returns     {Object}    .name .roomid .price .num
+     * @returns     {Anchor|null}
      */
     DanmuTCP.prototype.onAnchorLottery = function (msg) {
         var data = msg['data'];

@@ -384,7 +384,7 @@ export class DanmuTCP extends AbstractDanmuTCP {
      * @param   {Integer}   msg.data.time_wait
      * @param   {String}    msg.data.type
      * @param   {String}    msg.data.title
-     * @returns {Gift}      gift info
+     * @returns {Gift|null}
      */
     onTV(msg: any): Gift | null {
         const data: any = msg['data'];
@@ -419,7 +419,7 @@ export class DanmuTCP extends AbstractDanmuTCP {
      * @param   {String}    msg.data.type
      * @param   {Object}    msg.data.lottery
      * @param   {Integer}   msg.data.lottery.time
-     * @returns {Guard}     guard info
+     * @returns {Guard|null}
      */
     onGuard(msg: any): Guard | null {
         const data: any = msg['data'];
@@ -453,7 +453,7 @@ export class DanmuTCP extends AbstractDanmuTCP {
     }
 
     /**
-     * @returns     {Object}    .id .roomid .type .name
+     * @returns     {Storm|null}
      */
     onSpecialGift(msg: any): Storm | null {
         const data: any = msg['data'];
@@ -482,13 +482,33 @@ export class DanmuTCP extends AbstractDanmuTCP {
         return details;
     }
 
+    /**
+     * @returns     {PK|null}
+     */
     onPkLottery(msg: any): PK | null {
-        // TODO:
-        return null;
+        const data: any = msg['data'];
+        const dataOk: boolean = typeof data !== 'undefined';
+
+        let pk: PK | null = null;
+        if (dataOk) {
+            const id: number = data['id'];
+            const roomid: number = data['room_id'];
+            const expireAt: number = data['time'] + Math.floor(0.001 * new Date().valueOf());
+            pk = (PKBuilder.start()
+                .withId(id)
+                .withRoomid(roomid)
+                .withType('pk')
+                .withName('大乱斗')
+                .withExpireAt(expireAt)
+                .build()
+            );
+        }
+
+        return pk;
     }
 
     /**
-     * @returns     {Object}    .name .roomid .price .num
+     * @returns     {Anchor|null}
      */
     onAnchorLottery(msg: any): Anchor | null {
         const data: any = msg['data'];
