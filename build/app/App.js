@@ -207,8 +207,12 @@ var App = /** @class */ (function () {
         var id = "" + g.id;
         var roomid = "" + g.roomid;
         var t = "" + g.type;
+        var category = "" + g.category;
         var name = "" + g.name;
-        switch (g.type) {
+        switch (category) {
+            case 'gift':
+                msg = id.padEnd(13) + "@" + roomid.padEnd(13) + t.padEnd(13) + name;
+                break;
             case 'guard':
                 msg = id.padEnd(13) + "@" + roomid.padEnd(13) + t.padEnd(13) + name;
                 break;
@@ -240,7 +244,7 @@ var App = /** @class */ (function () {
             case '':
                 return;
             default:
-                msg = id.padEnd(13) + "@" + roomid.padEnd(13) + t.padEnd(13) + name;
+                return;
         }
         index_1.cprint(msg, chalk.cyan);
     };

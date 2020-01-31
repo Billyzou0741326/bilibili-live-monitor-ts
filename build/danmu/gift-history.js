@@ -41,12 +41,17 @@ var History = /** @class */ (function () {
     };
     History.prototype.add = function (g) {
         var _this = this;
-        var t = g.type;
+        var t = g.category;
         var now = new Date().valueOf();
         var removeTask = new index_1.DelayedTask();
         removeTask.withTime(g.expireAt * 1000 - now);
         this._tasks.push(removeTask);
         switch (t) {
+            case 'gift':
+                this._active.gifts.set(g.id, g);
+                removeTask.withCallback(function () { _this._active.gifts.delete(g.id); });
+                removeTask.start();
+                break;
             case 'guard':
                 this._active.guards.set(g.id, g);
                 removeTask.withCallback(function () { _this._active.guards.delete(g.id); });
@@ -70,9 +75,7 @@ var History = /** @class */ (function () {
             case '':
                 return;
             default:
-                this._active.gifts.set(g.id, g);
-                removeTask.withCallback(function () { _this._active.gifts.delete(g.id); });
-                removeTask.start();
+                return;
         }
         if (this._tasks.length > this._CLEAR_ON_EXCEEDS) {
             this._tasks = this._tasks.filter(function (t) { return t.running; });
@@ -80,7 +83,11 @@ var History = /** @class */ (function () {
     };
     History.prototype.has = function (g) {
         var exists = false;
-        switch (g.type) {
+        switch (g.category) {
+            case 'gift':
+                var giftId = g.id;
+                exists = this._active.gifts.has(giftId);
+                break;
             case 'guard':
                 var guardId = g.id;
                 exists = this._active.guards.has(guardId);
@@ -101,8 +108,6 @@ var History = /** @class */ (function () {
                 exists = true;
                 break;
             default:
-                var giftId = g.id;
-                exists = this._active.gifts.has(giftId);
                 break;
         }
         return exists;
