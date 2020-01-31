@@ -22,6 +22,7 @@ interface RequestOptions {
     readonly method?:   string;
     readonly headers?:  {[key: string]: any};
     readonly agent?:    http.Agent | https.Agent;
+    readonly timeout?:  number;
     [propName: string]: any;
 }
 
@@ -38,6 +39,7 @@ class Request {
     protected _cookies:     object | string;
     protected _contentType: string;
     protected _agent:       http.Agent;
+    protected _timeout:     number;
 
     constructor() {
         this._host = '';
@@ -51,13 +53,15 @@ class Request {
         this._cookies = {};
         this._contentType = '';
         this._agent = httpAgent;
+        this._timeout = 4000;
     }
 
     toHttpOptions(): RequestOptions {
         let path:       string = this.path;
         let paramstr:   string = '';
         let cookiestr:  string = '';
-        let headers:    {[key:string]:string} = {};
+        let headers:    {[key: string]: string} = {};
+        let timeout:    number = 4000;
         if (typeof this._params !== 'string') {
             paramstr = formatParams(this._params);
         }
@@ -72,15 +76,19 @@ class Request {
         if (this._contentType) {
             headers['Content-Type'] = this._contentType;
         }
+        if (this._timeout && this._timeout > 0) {
+            timeout = this._timeout;
+        }
         Object.assign(headers, this.headers);
         this._headers = headers;
         return {
-            host: this.host,
-            path: path,
-            port: this.port,
-            method: this.method,
-            headers: this.headers,
-            agent: this.agent,
+            host:       this.host,
+            path:       path,
+            port:       this.port,
+            method:     this.method,
+            headers:    this.headers,
+            agent:      this.agent,
+            timeout:    timeout,
         };
     }
 
@@ -122,6 +130,10 @@ class Request {
 
     get contentType(): string {
         return this._contentType;
+    }
+
+    get timeout(): number {
+        return this._timeout;
     }
 
 }
@@ -192,6 +204,11 @@ class RequestBuilder extends Request {
 
     withAgent(agent: http.Agent): RequestBuilder {
         this._agent = agent;
+        return this;
+    }
+
+    withTimeout(timeout: number): RequestBuilder {
+        this._timeout = timeout;
         return this;
     }
 

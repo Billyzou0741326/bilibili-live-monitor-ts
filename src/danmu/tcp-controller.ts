@@ -178,7 +178,7 @@ export class RaffleController extends AbstractRoomController {
                 return roomInfoList.map((roomInfo: any): number => roomInfo['roomid']);
             })
             .catch((error: Error) => {
-                cprint(`${Bilibili.getRoomsInArea.name} - ${error.message}`, chalk.red);
+                cprint(`Bilibili.getRoomsInArea - ${error.message}`, chalk.red);
                 return Promise.resolve([] as number[]);
             })
         );
@@ -202,7 +202,7 @@ export class RaffleController extends AbstractRoomController {
                     }
                 }
                 catch (error) {
-                    cprint(`${Bilibili.isLive.name} - ${error.message}`, chalk.red);
+                    cprint(`Bilibili.isLive - ${error.message}`, chalk.red);
                 }
             }
         };

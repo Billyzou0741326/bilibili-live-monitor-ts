@@ -205,7 +205,7 @@ var RaffleController = /** @class */ (function (_super) {
             return roomInfoList.map(function (roomInfo) { return roomInfo['roomid']; });
         })
             .catch(function (error) {
-            index_1.cprint(index_2.Bilibili.getRoomsInArea.name + " - " + error.message, chalk.red);
+            index_1.cprint("Bilibili.getRoomsInArea - " + error.message, chalk.red);
             return Promise.resolve([]);
         }));
     };
@@ -236,7 +236,7 @@ var RaffleController = /** @class */ (function (_super) {
                         return [3 /*break*/, 5];
                     case 4:
                         error_1 = _a.sent();
-                        index_1.cprint(index_2.Bilibili.isLive.name + " - " + error_1.message, chalk.red);
+                        index_1.cprint("Bilibili.isLive - " + error_1.message, chalk.red);
                         return [3 /*break*/, 5];
                     case 5:
                         ++i;

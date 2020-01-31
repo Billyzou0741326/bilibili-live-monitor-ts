@@ -15,7 +15,11 @@ var Database = /** @class */ (function () {
         this._roomData = {};
         this._saveTask = new index_1.DelayedTask();
         this._saveTask.withTime(2 * 60 * 1000).withCallback(function () {
-            _this.load().then(function () { _this.save(); });
+            (_this.load()
+                .then(function () { _this.save(); })
+                .catch(function (error) {
+                index_2.cprint("(Database) - " + error.message, chalk.red);
+            }));
         });
         this.setup();
     }

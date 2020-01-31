@@ -4,11 +4,13 @@
   "main": "build/main.js",
   "dependencies": {
     "@types/express": "^4.17.2",
+    "@types/follow-redirects": "^1.8.0",
     "@types/node": "^13.1.6",
     "@types/table": "^4.0.7",
     "@types/ws": "^7.2.0",
     "chalk": "^3.0.0",
     "express": "^4.17.1",
+    "follow-redirects": "^1.10.0",
     "table": "^5.4.6",
     "typescript": "^3.7.4",
     "ws": "^7.2.0"
