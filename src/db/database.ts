@@ -27,7 +27,11 @@ export class Database {
         this._roomData = {};
         this._saveTask = new DelayedTask();
         this._saveTask.withTime(2 * 60 * 1000).withCallback((): void => {
-            this.load().then((): void => { this.save() });
+            (this.load()
+                .then((): void => { this.save() })
+                .catch((error: Error): void => {
+                    cprint(`(Database) - ${error.message}`, chalk.red);
+                }));
         });
         this.setup();
     }

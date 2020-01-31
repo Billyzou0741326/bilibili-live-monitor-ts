@@ -37,30 +37,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var index_1 = require("../net/index");
-var sender = {
-    limited: new index_1.RateLimitedXhr(50, 1000),
-    unlimited: new index_1.Xhr(),
-};
-var xhr = sender.limited;
+var index_2 = require("../task/index");
+var xhr = new index_1.Xhr().withRateLimiter(new index_2.RateLimiter(50, 1000));
 var BilibiliBase = /** @class */ (function () {
     function BilibiliBase() {
     }
-    BilibiliBase.withNoLimit = function (r) {
-        if (r) {
-            xhr = r;
-        }
-        else {
-            xhr = sender.unlimited;
-        }
-    };
-    BilibiliBase.withLimit = function (r) {
-        if (r) {
-            xhr = r;
-        }
-        else {
-            xhr = sender.limited;
-        }
-    };
     BilibiliBase.request = function (request) {
         var _this = this;
         var noRetryCode = [412];

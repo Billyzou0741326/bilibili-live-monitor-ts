@@ -1,7 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var chalk = require("chalk");
 var index_1 = require("../container/index");
-var index_2 = require("./index");
+var index_2 = require("../fmt/index");
+var index_3 = require("./index");
 var RateLimiter = /** @class */ (function () {
     function RateLimiter(count, milliseconds) {
         var _this = this;
@@ -9,7 +11,7 @@ var RateLimiter = /** @class */ (function () {
         this._interval = 1000;
         this._limit = Infinity;
         this._dispatched = 0;
-        this._refreshTask = new index_2.DelayedTask();
+        this._refreshTask = new index_3.DelayedTask();
         this._refreshTask.withTime(this._interval).withCallback(function () {
             _this._dispatched = 0;
             _this.dispatch();
@@ -41,7 +43,8 @@ var RateLimiter = /** @class */ (function () {
                 task && task();
             }
             catch (error) {
-                // TODO: emit error?
+                // TODO: turn this into EventEmitter and emit error?
+                index_2.cprint("(RateLimiter) - " + error.message, chalk.red);
             }
             ++this._dispatched;
         }

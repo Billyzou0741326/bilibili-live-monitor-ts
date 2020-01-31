@@ -41,12 +41,14 @@ var Request = /** @class */ (function () {
         this._cookies = {};
         this._contentType = '';
         this._agent = httpAgent;
+        this._timeout = 4000;
     }
     Request.prototype.toHttpOptions = function () {
         var path = this.path;
         var paramstr = '';
         var cookiestr = '';
         var headers = {};
+        var timeout = 4000;
         if (typeof this._params !== 'string') {
             paramstr = formatParams(this._params);
         }
@@ -61,6 +63,9 @@ var Request = /** @class */ (function () {
         if (this._contentType) {
             headers['Content-Type'] = this._contentType;
         }
+        if (this._timeout && this._timeout > 0) {
+            timeout = this._timeout;
+        }
         Object.assign(headers, this.headers);
         this._headers = headers;
         return {
@@ -70,6 +75,7 @@ var Request = /** @class */ (function () {
             method: this.method,
             headers: this.headers,
             agent: this.agent,
+            timeout: timeout,
         };
     };
     Object.defineProperty(Request.prototype, "host", {
@@ -142,6 +148,13 @@ var Request = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(Request.prototype, "timeout", {
+        get: function () {
+            return this._timeout;
+        },
+        enumerable: true,
+        configurable: true
+    });
     return Request;
 }());
 exports.Request = Request;
@@ -199,6 +212,10 @@ var RequestBuilder = /** @class */ (function (_super) {
     };
     RequestBuilder.prototype.withAgent = function (agent) {
         this._agent = agent;
+        return this;
+    };
+    RequestBuilder.prototype.withTimeout = function (timeout) {
+        this._timeout = timeout;
         return this;
     };
     RequestBuilder.prototype.build = function () {

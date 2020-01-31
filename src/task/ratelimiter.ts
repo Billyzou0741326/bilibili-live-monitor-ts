@@ -1,4 +1,6 @@
+import * as chalk from 'chalk';
 import { Queue } from '../container/index';
+import { cprint } from '../fmt/index';
 import { DelayedTask } from './index';
 
 export class RateLimiter {
@@ -50,7 +52,8 @@ export class RateLimiter {
                 task && task();
             }
             catch (error) {
-                // TODO: emit error?
+                // TODO: turn this into EventEmitter and emit error?
+                cprint(`(RateLimiter) - ${error.message}`, chalk.red);
             }
             ++this._dispatched;
         }

@@ -115,7 +115,7 @@ var Bilibili = /** @class */ (function (_super) {
                 return roomids;
             })
                 .catch(function (error) {
-                index_2.cprint(Bilibili.getSailboatRooms.name + " - " + error.message, chalk.red);
+                index_2.cprint("Bilibili.getSailboatRooms - " + error.message, chalk.red);
                 return Promise.resolve([]);
             }));
             promises.push(task);
@@ -169,7 +169,7 @@ var Bilibili = /** @class */ (function (_super) {
                 return roomids;
             })
                 .catch(function (error) {
-                index_2.cprint(Bilibili.getGenkiRooms.name + " - " + error.message, chalk.red);
+                index_2.cprint("Bilibili.getGenkiRooms - " + error.message, chalk.red);
                 return Promise.resolve([]);
             }));
             promises.push(task);
@@ -286,7 +286,7 @@ var Bilibili = /** @class */ (function (_super) {
         };
         var promises = [];
         var promise = Bilibili.getLiveCount().catch(function (error) {
-            index_2.cprint(Bilibili.getLiveCount.name + " - " + error.message, chalk.red);
+            index_2.cprint("Bilibili.getLiveCount - " + error.message, chalk.red);
             return Promise.resolve(5000); // on error return 5000
         }).then(function (room_count) {
             room_count = Math.min(count, room_count);
@@ -317,7 +317,7 @@ var Bilibili = /** @class */ (function (_super) {
                     return Promise.resolve(roomInfo);
                 })
                     .catch(function (error) {
-                    index_2.cprint("getAllRoomsInArea - " + error.message, chalk.red);
+                    index_2.cprint("Bilibili.getRoomsInArea - " + error.message, chalk.red);
                     return Promise.resolve([]);
                 }));
                 promises.push(task);

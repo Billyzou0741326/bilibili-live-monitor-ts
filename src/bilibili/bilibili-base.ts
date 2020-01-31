@@ -3,34 +3,14 @@ import {
     HttpError,
     Request,
     Response,
-    Xhr,
-    RateLimitedXhr, } from '../net/index';
+    Xhr, } from '../net/index';
+import {
+    RateLimiter, } from '../task/index';
 
-const sender: any = {
-    limited: new RateLimitedXhr(50, 1000),
-    unlimited: new Xhr(),
-};
-let xhr: Sender = sender.limited;
+
+let xhr: Sender = new Xhr().withRateLimiter(new RateLimiter(50, 1000));
 
 export class BilibiliBase {
-
-    static withNoLimit(r?: Xhr): void {
-        if (r) {
-            xhr = r;
-        }
-        else {
-            xhr = sender.unlimited;
-        }
-    }
-
-    static withLimit(r?: RateLimitedXhr): void {
-        if (r) {
-            xhr = r;
-        }
-        else {
-            xhr = sender.limited;
-        }
-    }
 
     static request(request: Request): Promise<any> {
         const noRetryCode: Array<number> = [ 412 ];
