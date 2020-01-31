@@ -61,13 +61,18 @@ export class History {
     }
 
     add(g: PK | Gift | Guard | Storm): void {
-        const t: string = g.type;
+        const t: string = g.category;
         const now: number = new Date().valueOf();
         let removeTask = new DelayedTask();
         removeTask.withTime(g.expireAt * 1000 - now);
         this._tasks.push(removeTask);
 
         switch (t) {
+            case 'gift':
+                this._active.gifts.set(g.id as number, g as Gift);
+                removeTask.withCallback((): void => { this._active.gifts.delete(g.id as number) });
+                removeTask.start();
+                break;
             case 'guard':
                 this._active.guards.set(g.id as number, g as Guard);
                 removeTask.withCallback((): void => { this._active.guards.delete(g.id as number) });
@@ -91,9 +96,7 @@ export class History {
             case '':
                 return;
             default:
-                this._active.gifts.set(g.id as number, g as Gift);
-                removeTask.withCallback((): void => { this._active.gifts.delete(g.id as number) });
-                removeTask.start();
+                return;
         }
 
         if (this._tasks.length > this._CLEAR_ON_EXCEEDS) {
@@ -104,7 +107,11 @@ export class History {
     has(g: PK | Gift | Guard | Storm): boolean {
         let exists: boolean = false;
 
-        switch (g.type) {
+        switch (g.category) {
+            case 'gift':
+                let giftId : number = (g as Gift).id;
+                exists = this._active.gifts.has(giftId);
+                break;
             case 'guard':
                 let guardId: number = (g as Guard).id;
                 exists = this._active.guards.has(guardId);
@@ -125,8 +132,6 @@ export class History {
                 exists = true;
                 break;
             default:
-                let giftId : number = (g as Gift).id;
-                exists = this._active.gifts.has(giftId);
                 break;
         }
 

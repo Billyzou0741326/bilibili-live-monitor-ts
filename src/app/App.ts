@@ -183,9 +183,13 @@ export class App {
         const id = `${g.id}`;
         const roomid = `${g.roomid}`;
         const t = `${g.type}`;
+        const category = `${g.category}`;
         const name = `${g.name}`;
 
-        switch (g.type) {
+        switch (category) {
+            case 'gift':
+                msg = `${id.padEnd(13)}@${roomid.padEnd(13)}${t.padEnd(13)}${name}`;
+                break;
             case 'guard':
                 msg = `${id.padEnd(13)}@${roomid.padEnd(13)}${t.padEnd(13)}${name}`;
                 break;
@@ -217,7 +221,7 @@ export class App {
             case '':
                 return;
             default:
-                msg = `${id.padEnd(13)}@${roomid.padEnd(13)}${t.padEnd(13)}${name}`;
+                return;
         }
 
         cprint(msg, chalk.cyan);
