@@ -6,3 +6,4 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./bilibili-base"));
 __export(require("./bilibili-error"));
 __export(require("./bilibili"));
+__export(require("./account"));

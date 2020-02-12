@@ -359,6 +359,53 @@ var Bilibili = /** @class */ (function (_super) {
         });
         return promises; // a list of promises, each element is list of rooms in an area
     };
+    Bilibili.sendDanmu = function (webSession, danmu) {
+        var data = {
+            'color': 0xFFFFFF,
+            'fontsize': 25,
+            'mode': 1,
+            'msg': danmu.msg,
+            'rnd': Math.floor(0.001 * new Date().valueOf()),
+            'roomid': danmu.roomid,
+            'bubble': 0,
+            'csrf': webSession.bili_jct,
+            'csrf_token': webSession.bili_jct,
+        };
+        var payload = index_2.Params.stringify(data);
+        var request = (index_1.RequestBuilder.start()
+            .withHost('api.live.bilibili.com')
+            .withPath('/msg/send')
+            .withMethod(index_1.RequestMethods.POST)
+            .withContentType('application/x-www-form-urlencoded')
+            .withHeaders(config.webHeaders)
+            .withCookies(webSession)
+            .withData(payload)
+            .build());
+        return Bilibili.request(request);
+    };
+    Bilibili.sessionInfo = function (appSession) {
+        var params = Object.assign(new Object(), config.appCommon);
+        params['access_token'] = appSession.access_token;
+        var paramstr = Bilibili.parseAppParams(sort(params));
+        var request = (index_1.RequestBuilder.start()
+            .withHost('passport.bilibili.com')
+            .withPath('/api/v3/oauth2/info')
+            .withMethod(index_1.RequestMethods.GET)
+            .withHeaders(config.appHeaders)
+            .withParams(paramstr)
+            .build());
+        return Bilibili.request(request);
+    };
+    Bilibili.isLoggedIn = function (webSession) {
+        var request = (index_1.RequestBuilder.start()
+            .withHost('account.bilibili.com')
+            .withPath('/home/userInfo')
+            .withMethod(index_1.RequestMethods.GET)
+            .withHeaders(config.webHeaders)
+            .withCookies(webSession)
+            .build());
+        return Bilibili.request(request);
+    };
     Bilibili.appSign = function (str) {
         return crypto.createHash('md5').update(str + config.appSecret).digest('hex');
     };

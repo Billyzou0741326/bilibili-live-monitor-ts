@@ -231,6 +231,7 @@ var DanmuTarget;
     DanmuTarget[DanmuTarget["STORM"] = 4] = "STORM";
     DanmuTarget[DanmuTarget["ANCHOR"] = 8] = "ANCHOR";
     DanmuTarget[DanmuTarget["NOTICE"] = 16] = "NOTICE";
+    DanmuTarget[DanmuTarget["DANMU"] = 32] = "DANMU";
 })(DanmuTarget || (DanmuTarget = {}));
 var DanmuTCP = /** @class */ (function (_super) {
     __extends(DanmuTCP, _super);
@@ -247,6 +248,10 @@ var DanmuTCP = /** @class */ (function (_super) {
         }
         var cmd = msg['cmd'];
         switch (cmd) {
+            case 'DANMU_MSG':
+                if ((this.targets & DanmuTarget.DANMU) === DanmuTarget.DANMU)
+                    this.onDanmu(msg);
+                break;
             case 'GUARD_LOTTERY_START':
                 if ((this.targets & DanmuTarget.GUARD) === DanmuTarget.GUARD)
                     this.onGuard(msg);
@@ -290,6 +295,24 @@ var DanmuTCP = /** @class */ (function (_super) {
             default:
                 break;
         }
+    };
+    DanmuTCP.prototype.onDanmu = function (msg) {
+        var data = msg['info'];
+        var dataOk = typeof data !== 'undefined';
+        var result = null;
+        if (dataOk) {
+            var msg_1 = data[1];
+            var uid = data[2][0];
+            var sender = data[2][1];
+            var time = data[9]['ts'];
+            result = {
+                uid: uid,
+                msg: msg_1,
+                sender: sender,
+                time: time,
+            };
+        }
+        return result;
     };
     /**
      * @param   {Object}    msg
@@ -490,6 +513,21 @@ var DanmuTCP = /** @class */ (function (_super) {
     return DanmuTCP;
 }(AbstractDanmuTCP));
 exports.DanmuTCP = DanmuTCP;
+var DanmuMonitor = /** @class */ (function (_super) {
+    __extends(DanmuMonitor, _super);
+    function DanmuMonitor(addr, info) {
+        return _super.call(this, addr, info, DanmuTarget.DANMU) || this;
+    }
+    DanmuMonitor.prototype.onDanmu = function (msg) {
+        var data = _super.prototype.onDanmu.call(this, msg);
+        if (data !== null) {
+            this.emit('danmu', data);
+        }
+        return data;
+    };
+    return DanmuMonitor;
+}(DanmuTCP));
+exports.DanmuMonitor = DanmuMonitor;
 var FixedGuardMonitor = /** @class */ (function (_super) {
     __extends(FixedGuardMonitor, _super);
     function FixedGuardMonitor(addr, info) {

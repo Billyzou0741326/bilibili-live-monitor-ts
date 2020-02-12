@@ -1,6 +1,9 @@
 import * as crypto from 'crypto';
 import * as chalk from 'chalk';
 import {
+    AppSession,
+    WebSession, } from './index';
+import {
     Request,
     RequestBuilder,
     RequestMethods,
@@ -15,7 +18,14 @@ import {
 import {
     AppConfig, } from '../global/index';
 
+
 const config = new AppConfig();
+
+
+export interface DanmuSettings {
+    readonly roomid:        number;
+    readonly msg:           string;
+}
 
 export class Bilibili extends BilibiliBase {
 
@@ -411,6 +421,62 @@ export class Bilibili extends BilibiliBase {
         });
 
         return promises;    // a list of promises, each element is list of rooms in an area
+    }
+
+    static sendDanmu(webSession: WebSession, danmu: DanmuSettings): Promise<any> {
+        const data: any = {
+            'color':        0xFFFFFF,
+            'fontsize':     25,
+            'mode':         1,
+            'msg':          danmu.msg,
+            'rnd':          Math.floor(0.001 * new Date().valueOf()),
+            'roomid':       danmu.roomid,
+            'bubble':       0,
+            'csrf':         webSession.bili_jct,
+            'csrf_token':   webSession.bili_jct,
+        };
+        const payload = Params.stringify(data);
+
+        const request = (RequestBuilder.start()
+            .withHost('api.live.bilibili.com')
+            .withPath('/msg/send')
+            .withMethod(RequestMethods.POST)
+            .withContentType('application/x-www-form-urlencoded')
+            .withHeaders(config.webHeaders)
+            .withCookies(webSession)
+            .withData(payload)
+            .build()
+        );
+
+        return Bilibili.request(request);
+    }
+
+    static sessionInfo(appSession: AppSession): Promise<any> {
+        const params: any = Object.assign(new Object(), config.appCommon);
+        params['access_token'] = appSession.access_token;
+        const paramstr = Bilibili.parseAppParams(sort(params));
+
+        const request = (RequestBuilder.start()
+            .withHost('passport.bilibili.com')
+            .withPath('/api/v3/oauth2/info')
+            .withMethod(RequestMethods.GET)
+            .withHeaders(config.appHeaders)
+            .withParams(paramstr)
+            .build()
+        );
+        return Bilibili.request(request);
+    }
+
+    static isLoggedIn(webSession: WebSession): Promise<any> {
+        const request = (RequestBuilder.start()
+            .withHost('account.bilibili.com')
+            .withPath('/home/userInfo')
+            .withMethod(RequestMethods.GET)
+            .withHeaders(config.webHeaders)
+            .withCookies(webSession)
+            .build()
+        );
+        return Bilibili.request(request);
     }
 
     static appSign(str: string): string {

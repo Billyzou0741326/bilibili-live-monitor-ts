@@ -35,18 +35,30 @@
     * hard nofile 60000
     * soft nofile 60000
     ```
+### 自行编译 (Optional)
+ - 执行`npm install -g typescript`
+ - 命令行切换到package.json所在的目录
+ - 执行`typescript`
 
-### 运行方式
+### 普通运行
  1. 命令行切换到package.json所在的目录
  2. `npm install`                       (执行一次就好)
  3. `node ./build/main.js`              (正常运行)
  4. 运行后可以进浏览器<http://{ip}:9001/guard>查看可领取范围内的舰长, <http://{ip}:9001/gift>查看可领取范围内的抽奖 (可能要等会), <http://{ip}:9001/anchor>查看进行中的天选抽奖
  5. Client端用WS连接8999端口接收推送
 
+### pm2运行
+> 详情前往[pm2官网](https://pm2.io/docs/plus/overview/)
+ 1. 命令行切换到package.json所在的目录
+ 2. `npm install`                       (执行一次就好)
+ 3. `npm install -g pm2`                (执行一次就好)
+ 4. `pm2 start ecosystem.config.js`
+
 ### Docker
 docker run --publish 8999:8999 --publish 9001:9001 <image-name>
 
 ## Config file 设置 (src/settings.json)
+> 修改settings后务必[重新编译](#自行编译-Optional)
 
 ### 服务器版、需公网ip
 ```javascript

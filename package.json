@@ -12,7 +12,6 @@
     "express": "^4.17.1",
     "follow-redirects": "^1.10.0",
     "table": "^5.4.6",
-    "typescript": "^3.7.4",
     "ws": "^7.2.0"
   },
   "devDependencies": {},
