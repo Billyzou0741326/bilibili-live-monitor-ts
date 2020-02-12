@@ -1,3 +1,10 @@
+export interface Danmu {
+    readonly uid:       number;
+    readonly msg:       string;
+    readonly sender:    string;
+    readonly time:      number;
+}
+
 export interface Gift {
     readonly id:        number;
     readonly roomid:    number;
