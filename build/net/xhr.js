@@ -33,7 +33,7 @@ var Xhr = /** @class */ (function () {
                     response.on('aborted', function () { return reject(new index_1.HttpError('Http request aborted')); });
                     response.on('error', function (error) { return reject(new index_1.HttpError(error.message)); });
                     response.on('data', function (data) { return dataSequence.push(data); });
-                    if (code === 200) {
+                    if (code >= 200 && code < 300) {
                         response.on('end', function () {
                             var url = "" + request.host + request.path;
                             var method = request.method;

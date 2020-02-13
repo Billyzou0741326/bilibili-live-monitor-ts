@@ -54,7 +54,7 @@ export class Xhr implements Sender {
                         response.on('error', (error: Error) => reject(new HttpError(error.message)));
                         response.on('data', (data: Buffer) => dataSequence.push(data));
 
-                        if (code === 200) {
+                        if (code >= 200 && code < 300) {
                             response.on('end', () => {
                                 let url = `${request.host}${request.path}`;
                                 let method = request.method;
