@@ -62,7 +62,7 @@ export class Database {
     }
 
     save(): void {
-        const data: string = JSON.stringify(this._roomData, null, 4);
+        const data: string = JSON.stringify(this.filter(this._roomData), null, 4);
         fs.writeFile(this._filename, data, (error: any): void => {
             if (error) {
                 cprint(`(Database) - ${error.message}`, chalk.red);
@@ -104,10 +104,10 @@ export class Database {
     }
 
     filter(data: RoomData): RoomData {
-        const thirtyDays: number = 1000 * 60 * 60 * 24 * 30;
+        const threshold: number = new Date().valueOf() - 1000 * 60 * 60 * 24 * 30;
         const result: any = Object.assign(new Object(), data);
         Object.entries(result).forEach((entry: any): void => {
-            if (new Date().valueOf() - entry[1].updated_at > thirtyDays) {
+            if (entry[1].updated_at < threshold) {
                 delete result[entry[0]];
             }
         });
