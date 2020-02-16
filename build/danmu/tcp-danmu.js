@@ -191,8 +191,6 @@ var AbstractDanmuTCP = /** @class */ (function (_super) {
                 break;
         }
     };
-    AbstractDanmuTCP.prototype.processMsg = function (msg) {
-    };
     AbstractDanmuTCP.prototype.onEnd = function () {
     };
     AbstractDanmuTCP.prototype.onError = function (error) {
@@ -300,7 +298,7 @@ var DanmuTCP = /** @class */ (function (_super) {
      * @param   {Integer}   msg.data.time_wait
      * @param   {String}    msg.data.type
      * @param   {String}    msg.data.title
-     * @returns {Gift}      gift info
+     * @returns {Raffle|null} gift info
      */
     DanmuTCP.prototype.onRaffle = function (msg) {
         var data = msg['data'];
@@ -312,14 +310,13 @@ var DanmuTCP = /** @class */ (function (_super) {
             var name_1 = data['title'] || '未知';
             var wait = data['time_wait'] > 0 ? data['time_wait'] : 0;
             var expireAt = data['time'] + Math.floor(0.001 * new Date().valueOf());
-            gift = (index_5.GiftBuilder.start()
+            gift = new index_5.Gift()
                 .withId(id)
                 .withRoomid(this.roomid)
                 .withType(t)
                 .withName(name_1)
                 .withWait(wait)
-                .withExpireAt(expireAt)
-                .build());
+                .withExpireAt(expireAt);
         }
         return gift;
     };
@@ -332,7 +329,7 @@ var DanmuTCP = /** @class */ (function (_super) {
      * @param   {Integer}   msg.data.time_wait
      * @param   {String}    msg.data.type
      * @param   {String}    msg.data.title
-     * @returns {Gift|null}
+     * @returns {Raffle|null}
      */
     DanmuTCP.prototype.onTV = function (msg) {
         var data = msg['data'];
@@ -344,14 +341,13 @@ var DanmuTCP = /** @class */ (function (_super) {
             var name_2 = data['title'] || '未知';
             var wait = data['time_wait'] > 0 ? data['time_wait'] : 0;
             var expireAt = data['time'] + Math.floor(0.001 * new Date().valueOf());
-            gift = (index_5.GiftBuilder.start()
+            gift = new index_5.Gift()
                 .withId(id)
                 .withRoomid(this.roomid)
                 .withType(t)
                 .withName(name_2)
                 .withWait(wait)
-                .withExpireAt(expireAt)
-                .build());
+                .withExpireAt(expireAt);
         }
         return gift;
     };
@@ -382,18 +378,17 @@ var DanmuTCP = /** @class */ (function (_super) {
             var id = data['id'];
             var name_3 = nameOfType[data['privilege_type']];
             var expireAt = (lottery['time'] || 0) + Math.floor(0.001 * new Date().valueOf());
-            guard = (index_5.GuardBuilder.start()
+            guard = new index_5.Guard()
                 .withId(id)
                 .withRoomid(this.roomid)
                 .withType(t)
                 .withName(name_3)
-                .withExpireAt(expireAt)
-                .build());
+                .withExpireAt(expireAt);
         }
         return guard;
     };
     /**
-     * @returns     {Storm|null}
+     * @returns     {Raffle|null}
      */
     DanmuTCP.prototype.onSpecialGift = function (msg) {
         var data = msg['data'];
@@ -408,18 +403,17 @@ var DanmuTCP = /** @class */ (function (_super) {
         if (info['action'] === 'start') {
             var id = info['id'];
             var expireAt = info['time'] + Math.floor(0.001 * new Date().valueOf());
-            details = (index_5.StormBuilder.start()
+            details = new index_5.Storm()
                 .withId(id)
                 .withRoomid(this.roomid)
                 .withType('storm')
                 .withName('节奏风暴')
-                .withExpireAt(expireAt)
-                .build());
+                .withExpireAt(expireAt);
         }
         return details;
     };
     /**
-     * @returns     {PK|null}
+     * @returns     {Raffle|null}
      */
     DanmuTCP.prototype.onPkLottery = function (msg) {
         var data = msg['data'];
@@ -429,18 +423,17 @@ var DanmuTCP = /** @class */ (function (_super) {
             var id = data['id'];
             var roomid = data['room_id'];
             var expireAt = data['time'] + Math.floor(0.001 * new Date().valueOf());
-            pk = (index_5.PKBuilder.start()
+            pk = new index_5.PK()
                 .withId(id)
                 .withRoomid(roomid)
                 .withType('pk')
                 .withName('大乱斗')
-                .withExpireAt(expireAt)
-                .build());
+                .withExpireAt(expireAt);
         }
         return pk;
     };
     /**
-     * @returns     {Anchor|null}
+     * @returns     {Raffle|null}
      */
     DanmuTCP.prototype.onAnchorLottery = function (msg) {
         var data = msg['data'];
@@ -457,7 +450,7 @@ var DanmuTCP = /** @class */ (function (_super) {
             var require_text = data['require_text'];
             var danmu = data['danmu'];
             var expireAt = data['time'] + Math.floor(0.001 * new Date().valueOf());
-            details = (index_5.AnchorBuilder.start()
+            details = new index_5.Anchor()
                 .withId(id)
                 .withRoomid(roomid)
                 .withGiftPrice(gift_price)
@@ -468,8 +461,7 @@ var DanmuTCP = /** @class */ (function (_super) {
                 .withName(name_4)
                 .withAwardNum(award_num)
                 .withType('anchor')
-                .withExpireAt(expireAt)
-                .build());
+                .withExpireAt(expireAt);
         }
         return details;
     };
@@ -702,7 +694,7 @@ var RaffleMonitor = /** @class */ (function (_super) {
                     _this.close(true);
                 }
             }).catch(function (error) {
-                index_1.cprint(index_2.Bilibili.isLive.name + " - " + error.message, chalk.red);
+                index_1.cprint("Bilibili.isLive - " + error.message, chalk.red);
             });
         }
         return result;

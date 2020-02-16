@@ -13,8 +13,15 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var AbstractBuilder = /** @class */ (function () {
-    function AbstractBuilder() {
+exports.RaffleCategories = [
+    'gift',
+    'guard',
+    'pk',
+    'storm',
+    'anchor',
+];
+var Raffle = /** @class */ (function () {
+    function Raffle() {
         this._id = 0;
         this._roomid = 0;
         this._type = '';
@@ -23,99 +30,117 @@ var AbstractBuilder = /** @class */ (function () {
         this._expireAt = 0;
         this._category = '';
     }
-    Object.defineProperty(AbstractBuilder.prototype, "id", {
+    Object.defineProperty(Raffle.prototype, "id", {
         get: function () {
             return this._id;
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(AbstractBuilder.prototype, "category", {
+    Object.defineProperty(Raffle.prototype, "category", {
         get: function () {
             return this._category;
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(AbstractBuilder.prototype, "roomid", {
+    Object.defineProperty(Raffle.prototype, "roomid", {
         get: function () {
             return this._roomid;
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(AbstractBuilder.prototype, "type", {
+    Object.defineProperty(Raffle.prototype, "type", {
         get: function () {
             return this._type;
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(AbstractBuilder.prototype, "name", {
+    Object.defineProperty(Raffle.prototype, "name", {
         get: function () {
             return this._name;
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(AbstractBuilder.prototype, "wait", {
+    Object.defineProperty(Raffle.prototype, "wait", {
         get: function () {
             return this._wait;
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(AbstractBuilder.prototype, "expireAt", {
+    Object.defineProperty(Raffle.prototype, "expireAt", {
         get: function () {
             return this._expireAt;
         },
         enumerable: true,
         configurable: true
     });
-    AbstractBuilder.prototype.withId = function (id) {
+    Raffle.prototype.withId = function (id) {
         this._id = id;
         return this;
     };
-    AbstractBuilder.prototype.withRoomid = function (roomid) {
+    Raffle.prototype.withRoomid = function (roomid) {
         this._roomid = roomid;
         return this;
     };
-    AbstractBuilder.prototype.withCategory = function (c) {
+    Raffle.prototype.withCategory = function (c) {
         this._category = c;
         return this;
     };
-    AbstractBuilder.prototype.withType = function (t) {
+    Raffle.prototype.withType = function (t) {
         this._type = t;
         return this;
     };
-    AbstractBuilder.prototype.withName = function (n) {
+    Raffle.prototype.withName = function (n) {
         this._name = n;
         return this;
     };
-    AbstractBuilder.prototype.withWait = function (w) {
+    Raffle.prototype.withWait = function (w) {
         this._wait = w;
         return this;
     };
-    AbstractBuilder.prototype.withExpireAt = function (e) {
+    Raffle.prototype.withExpireAt = function (e) {
         this._expireAt = e;
         return this;
     };
-    AbstractBuilder.prototype.build = function () {
-        return null;
+    Raffle.prototype.convert = function () {
+        // Convert to an object that is backward compatible with old HTTP handler
+        return {
+            id: this.id,
+            roomid: this.roomid,
+            category: this.category,
+            type: this.type,
+            name: this.name,
+            expireAt: this.expireAt,
+        };
     };
-    return AbstractBuilder;
+    Raffle.prototype.toJson = function () {
+        // For now, exclude wait in the serialized JSON
+        return JSON.stringify({
+            id: this.id,
+            roomid: this.roomid,
+            category: this.category,
+            type: this.type,
+            name: this.name,
+            expireAt: this.expireAt,
+        });
+    };
+    return Raffle;
 }());
-var GiftBuilder = /** @class */ (function (_super) {
-    __extends(GiftBuilder, _super);
-    function GiftBuilder() {
+exports.Raffle = Raffle;
+var Gift = /** @class */ (function (_super) {
+    __extends(Gift, _super);
+    function Gift() {
         var _this = _super.call(this) || this;
         _this._category = 'gift';
         return _this;
     }
-    GiftBuilder.start = function () {
-        return new GiftBuilder();
-    };
-    GiftBuilder.prototype.build = function () {
+    Gift.prototype.convert = function () {
+        // Convert to an object that is backward compatible with old HTTP handler
         return {
             id: this.id,
             roomid: this.roomid,
@@ -126,145 +151,42 @@ var GiftBuilder = /** @class */ (function (_super) {
             expireAt: this.expireAt,
         };
     };
-    return GiftBuilder;
-}(AbstractBuilder));
-exports.GiftBuilder = GiftBuilder;
-var GuardBuilder = /** @class */ (function (_super) {
-    __extends(GuardBuilder, _super);
-    function GuardBuilder() {
+    return Gift;
+}(Raffle));
+exports.Gift = Gift;
+var Guard = /** @class */ (function (_super) {
+    __extends(Guard, _super);
+    function Guard() {
         var _this = _super.call(this) || this;
         _this._category = 'guard';
         return _this;
     }
-    GuardBuilder.start = function () {
-        return new GuardBuilder();
-    };
-    GuardBuilder.prototype.build = function () {
-        return {
-            id: this.id,
-            roomid: this.roomid,
-            category: this.category,
-            type: this.type,
-            name: this.name,
-            expireAt: this.expireAt,
-        };
-    };
-    return GuardBuilder;
-}(AbstractBuilder));
-exports.GuardBuilder = GuardBuilder;
-var PKBuilder = /** @class */ (function (_super) {
-    __extends(PKBuilder, _super);
-    function PKBuilder() {
+    return Guard;
+}(Raffle));
+exports.Guard = Guard;
+var PK = /** @class */ (function (_super) {
+    __extends(PK, _super);
+    function PK() {
         var _this = _super.call(this) || this;
         _this._category = 'pk';
         return _this;
     }
-    PKBuilder.start = function () {
-        return new PKBuilder();
-    };
-    PKBuilder.prototype.build = function () {
-        return {
-            id: this.id,
-            roomid: this.roomid,
-            category: this.category,
-            type: this.type,
-            name: this.name,
-            expireAt: this.expireAt,
-        };
-    };
-    return PKBuilder;
-}(AbstractBuilder));
-exports.PKBuilder = PKBuilder;
-var StormBuilder = /** @class */ (function () {
-    function StormBuilder() {
-        this._id = '0';
-        this._roomid = 0;
-        this._type = '';
-        this._name = '';
-        this._expireAt = 0;
-        this._category = 'storm';
+    return PK;
+}(Raffle));
+exports.PK = PK;
+var Storm = /** @class */ (function (_super) {
+    __extends(Storm, _super);
+    function Storm() {
+        var _this = _super.call(this) || this;
+        _this._category = 'storm';
+        return _this;
     }
-    StormBuilder.start = function () {
-        return new StormBuilder();
-    };
-    StormBuilder.prototype.build = function () {
-        return {
-            id: this.id,
-            roomid: this.roomid,
-            category: this.category,
-            type: this.type,
-            name: this.name,
-            expireAt: this.expireAt,
-        };
-    };
-    Object.defineProperty(StormBuilder.prototype, "id", {
-        get: function () {
-            return this._id;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(StormBuilder.prototype, "roomid", {
-        get: function () {
-            return this._roomid;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(StormBuilder.prototype, "category", {
-        get: function () {
-            return this._category;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(StormBuilder.prototype, "type", {
-        get: function () {
-            return this._type;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(StormBuilder.prototype, "name", {
-        get: function () {
-            return this._name;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(StormBuilder.prototype, "expireAt", {
-        get: function () {
-            return this._expireAt;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    StormBuilder.prototype.withId = function (id) {
-        this._id = "" + id;
-        return this;
-    };
-    StormBuilder.prototype.withRoomid = function (roomid) {
-        this._roomid = roomid;
-        return this;
-    };
-    StormBuilder.prototype.withType = function (t) {
-        this._type = t;
-        return this;
-    };
-    StormBuilder.prototype.withName = function (n) {
-        this._name = n;
-        return this;
-    };
-    StormBuilder.prototype.withExpireAt = function (e) {
-        this._expireAt = e;
-        return this;
-    };
-    return StormBuilder;
-}());
-exports.StormBuilder = StormBuilder;
-var AnchorBuilder = /** @class */ (function (_super) {
-    __extends(AnchorBuilder, _super);
-    function AnchorBuilder() {
+    return Storm;
+}(Raffle));
+exports.Storm = Storm;
+var Anchor = /** @class */ (function (_super) {
+    __extends(Anchor, _super);
+    function Anchor() {
         var _this = _super.call(this) || this;
         _this._category = 'anchor';
         _this._gift_name = '';
@@ -276,10 +198,8 @@ var AnchorBuilder = /** @class */ (function (_super) {
         _this._require_text = '';
         return _this;
     }
-    AnchorBuilder.start = function () {
-        return new AnchorBuilder();
-    };
-    AnchorBuilder.prototype.build = function () {
+    Anchor.prototype.convert = function () {
+        // Convert to an object that is backward compatible with old HTTP handler
         return {
             id: this.id,
             roomid: this.roomid,
@@ -295,83 +215,103 @@ var AnchorBuilder = /** @class */ (function (_super) {
             danmu: this.danmu,
         };
     };
-    Object.defineProperty(AnchorBuilder.prototype, "name", {
+    Object.defineProperty(Anchor.prototype, "name", {
         get: function () {
             return this._award_name;
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(AnchorBuilder.prototype, "award_num", {
+    Object.defineProperty(Anchor.prototype, "award_num", {
         get: function () {
             return this._award_num;
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(AnchorBuilder.prototype, "gift_name", {
+    Object.defineProperty(Anchor.prototype, "gift_name", {
         get: function () {
             return this._gift_name;
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(AnchorBuilder.prototype, "gift_price", {
+    Object.defineProperty(Anchor.prototype, "gift_price", {
         get: function () {
             return this._gift_price;
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(AnchorBuilder.prototype, "gift_num", {
+    Object.defineProperty(Anchor.prototype, "gift_num", {
         get: function () {
             return this._gift_num;
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(AnchorBuilder.prototype, "danmu", {
+    Object.defineProperty(Anchor.prototype, "danmu", {
         get: function () {
             return this._danmu;
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(AnchorBuilder.prototype, "requirement", {
+    Object.defineProperty(Anchor.prototype, "requirement", {
         get: function () {
             return this._require_text;
         },
         enumerable: true,
         configurable: true
     });
-    AnchorBuilder.prototype.withName = function (award_name) {
+    Anchor.prototype.withName = function (award_name) {
         this._award_name = award_name;
         return this;
     };
-    AnchorBuilder.prototype.withAwardNum = function (award_num) {
+    Anchor.prototype.withAwardNum = function (award_num) {
         this._award_num = award_num;
         return this;
     };
-    AnchorBuilder.prototype.withGiftName = function (gift_name) {
+    Anchor.prototype.withGiftName = function (gift_name) {
         this._gift_name = gift_name;
         return this;
     };
-    AnchorBuilder.prototype.withGiftNum = function (gift_num) {
+    Anchor.prototype.withGiftNum = function (gift_num) {
         this._gift_num = gift_num;
         return this;
     };
-    AnchorBuilder.prototype.withGiftPrice = function (price) {
+    Anchor.prototype.withGiftPrice = function (price) {
         this._gift_price = price;
         return this;
     };
-    AnchorBuilder.prototype.withDanmu = function (danmu) {
+    Anchor.prototype.withDanmu = function (danmu) {
         this._danmu = danmu;
         return this;
     };
-    AnchorBuilder.prototype.withRequirement = function (requirement) {
+    Anchor.prototype.withRequirement = function (requirement) {
         this._require_text = requirement;
         return this;
     };
-    return AnchorBuilder;
-}(AbstractBuilder));
-exports.AnchorBuilder = AnchorBuilder;
+    Anchor.prototype.toJson = function () {
+        // Currently Anchor is not being sent out
+        return '';
+        /*
+                return JSON.stringify({
+                    id:             this.id,
+                    roomid:         this.roomid,
+                    type:           this.type,
+                    category:       this.category,
+                    expireAt:       this.expireAt,
+                    name:           this.name,
+                    award_num:      this.award_num,
+                    gift_name:      this.gift_name,
+                    gift_num:       this.gift_num,
+                    gift_price:     this.gift_price,
+                    requirement:    this.requirement,
+                    danmu:          this.danmu,
+                });
+        */
+    };
+    return Anchor;
+}(Raffle));
+exports.Anchor = Anchor;

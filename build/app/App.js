@@ -109,47 +109,28 @@ var App = /** @class */ (function () {
             this._raffleController,
         ];
         controllers.forEach(function (controller) {
-            (controller
-                .on('guard', handler('guard'))
-                .on('gift', handler('gift'))
-                .on('pk', handler('pk'))
-                .on('storm', handler('storm'))
-                .on('anchor', handler('anchor'))
+            controller
                 .on('add_to_db', function (roomid) { _this._db.add(roomid); })
-                .on('to_fixed', function (roomid) { _this._fixedController.add(roomid); }));
+                .on('to_fixed', function (roomid) { _this._fixedController.add(roomid); });
+            for (var _i = 0, RaffleCategories_2 = index_6.RaffleCategories; _i < RaffleCategories_2.length; _i++) {
+                var category = RaffleCategories_2[_i];
+                controller.on(category, handler(category));
+            }
         });
-        (this._emitter
-            .on('guard', function (g) {
-            _this.printGift(g);
-            _this._wsServer.broadcast(_this._wsServer.parseMessage(g));
-            _this._biliveServer.broadcast(_this._biliveServer.parseMessage(g));
-        })
-            .on('gift', function (g) {
-            _this.printGift(g);
-            var gift = Object.assign(new Object(), g);
-            delete gift['wait'];
-            _this._wsServer.broadcast(_this._wsServer.parseMessage(gift));
-            _this._biliveServer.broadcast(_this._biliveServer.parseMessage(gift));
-        })
-            .on('pk', function (g) {
-            _this.printGift(g);
-            _this._wsServer.broadcast(_this._wsServer.parseMessage(g));
-            _this._biliveServer.broadcast(_this._biliveServer.parseMessage(g));
-        })
-            .on('storm', function (g) {
-            _this.printGift(g);
-            _this._wsServer.broadcast(_this._wsServer.parseMessage(g));
-            _this._biliveServer.broadcast(_this._biliveServer.parseMessage(g));
-        })
-            .on('anchor', function (g) {
-            _this.printGift(g);
-            // this._wsServer.broadcast(this._wsServer.parseMessage(g));
-        }));
+        for (var _i = 0, RaffleCategories_1 = index_6.RaffleCategories; _i < RaffleCategories_1.length; _i++) {
+            var category = RaffleCategories_1[_i];
+            this._emitter.on(category, function (g) {
+                _this.printGift(g);
+                _this._wsServer.broadcast(g);
+                _this._biliveServer.broadcast(g);
+            });
+        }
     };
     App.prototype.setupServer = function () {
-        this._httpServer.mountGetter('gift', this._history.retrieveGetter('gift'));
-        this._httpServer.mountGetter('guard', this._history.retrieveGetter('guard'));
-        this._httpServer.mountGetter('anchor', this._history.retrieveGetter('anchor'));
+        for (var _i = 0, RaffleCategories_3 = index_6.RaffleCategories; _i < RaffleCategories_3.length; _i++) {
+            var category = RaffleCategories_3[_i];
+            this._httpServer.mountGetter(category, this._history.retrieveGetter(category));
+        }
     };
     App.prototype.start = function () {
         var _this = this;

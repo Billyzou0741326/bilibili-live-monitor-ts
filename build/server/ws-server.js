@@ -144,20 +144,18 @@ var WsServer = /** @class */ (function (_super) {
     function WsServer(addr) {
         return _super.call(this, addr) || this;
     }
-    WsServer.prototype.broadcast = function (payload) {
-        this._clients.forEach(function (clientStatus) {
-            var client = clientStatus.client;
-            if (client.readyState === WebSocket.OPEN) {
-                client.send(payload, {
-                    'binary': true,
-                });
-            }
-        });
-    };
-    WsServer.prototype.parseMessage = function (message) {
-        var str = JSON.stringify(message);
-        var data = Buffer.from(str);
-        return data;
+    WsServer.prototype.broadcast = function (data) {
+        var json = data.toJson();
+        if (json.length > 0) {
+            this._clients.forEach(function (clientStatus) {
+                var client = clientStatus.client;
+                if (client.readyState === WebSocket.OPEN) {
+                    client.send(json, {
+                        'binary': true,
+                    });
+                }
+            });
+        }
     };
     return WsServer;
 }(AbstractWsServer));
@@ -167,7 +165,8 @@ var WsServerBilive = /** @class */ (function (_super) {
     function WsServerBilive(addr) {
         return _super.call(this, addr) || this;
     }
-    WsServerBilive.prototype.broadcast = function (payload) {
+    WsServerBilive.prototype.broadcast = function (data) {
+        var payload = this.parseMessage(data);
         this._clients.forEach(function (clientStatus) {
             var client = clientStatus.client;
             if (client.readyState === WebSocket.OPEN) {

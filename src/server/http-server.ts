@@ -2,10 +2,7 @@ import * as http from 'http';
 import * as express from 'express';
 import * as chalk from 'chalk';
 import { cprint } from '../fmt/index';
-import {
-    Gift,
-    Guard,
-    Anchor, } from '../danmu/index';
+import { Raffle } from '../danmu/index';
 
 
 interface HttpAddress {
@@ -14,58 +11,31 @@ interface HttpAddress {
 }
 
 
-interface PathHandler {
-    [key: string]:  () => any;
-}
-
 class Router {
 
     protected _router:      express.Router;
-    private _pathHandler:   PathHandler;
 
-    constructor() {
+    protected constructor() {
         this.bind();
-        this._pathHandler = {
-            gift:   () => [],
-            guard:  () => [],
-            anchor: () => [],
-        };
         this._router = express.Router({ 'mergeParams': true });
         this._router.use('/', this.setCors);
-        this._router.use('/gift', (request: express.Request, response: express.Response): void => {
-            response.jsonp(this._pathHandler.gift());
-        });
-        this._router.use('/guard', (request: express.Request, response: express.Response): void => {
-            response.jsonp(this._pathHandler.guard());
-        });
-        this._router.use('/anchor', (request: express.Request, response: express.Response): void => {
-            response.jsonp(this._pathHandler.anchor());
-        });
     }
 
-    bind(): void {
+    protected bind(): void {
         this.setCors = this.setCors.bind(this);
     }
 
-    setCors(request: express.Request, response: express.Response, next: express.NextFunction): void {
+    private setCors(request: express.Request, response: express.Response, next: express.NextFunction): void {
         response.append('Access-Control-Allow-Origin', ['*']);
         response.append('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
         response.append('Access-Control-Allow-Headers', 'Content-Type');
         next();
     }
 
-    mountGetter(path: string, getter: (() => Gift[]) | (() => Guard[]) | (() => Anchor[])): Router {
-        switch (path) {
-            case 'gift':
-                this._pathHandler.gift = getter;
-                break;
-            case 'guard':
-                this._pathHandler.guard = getter;
-                break;
-            case 'anchor':
-                this._pathHandler.anchor = getter;
-                break;
-        }
+    public mountGetter(path: string, getter: (() => Raffle[])): Router {
+        this._router.use(`/${path}`, (request: express.Request, response: express.Response): void => {
+            response.jsonp(getter().map(g => g.convert()));
+        });
         return this;
     }
 }
@@ -77,7 +47,7 @@ export class HttpServer extends Router implements HttpAddress {
     private _host:      string;
     private _port:      number;
 
-    constructor(addr: HttpAddress) {
+    public constructor(addr: HttpAddress) {
         super();
         this._app = express();
         this._app.set('json spaces', 4);
@@ -88,24 +58,24 @@ export class HttpServer extends Router implements HttpAddress {
         this._port = addr.port;
     }
 
-    get host(): string {
+    public get host(): string {
         return this._host;
     }
 
-    get port(): number {
+    public get port(): number {
         return this._port;
     }
 
-    get app(): express.Application {
+    private get app(): express.Application {
         return this._app;
     }
 
-    bind(): void {
+    protected bind(): void {
         super.bind();
         this.pageNotFound = this.pageNotFound.bind(this);
     }
 
-    pageNotFound(error: any, request: express.Request, response: express.Response, next: express.NextFunction): void {
+    private pageNotFound(error: any, request: express.Request, response: express.Response, next: express.NextFunction): void {
         if (error) {
             response.status(400).send('<h1> Errored </h1>');
             return;
@@ -113,12 +83,12 @@ export class HttpServer extends Router implements HttpAddress {
         response.status(404).send('<h1> Page Not Found </h1>');
     }
 
-    createServer(): http.Server {
+    private createServer(): http.Server {
         const server = http.createServer(this.app);
         return server;
     }
 
-    start(): void {
+    public start(): void {
         if (this._server === null) {
             this._server = this.createServer();
             this._server.on('error', (error: any): void => {
@@ -137,7 +107,7 @@ export class HttpServer extends Router implements HttpAddress {
         }
     }
 
-    stop(): void {
+    public stop(): void {
         if (this._server !== null) {
             this._server.close();
             this._server = null;

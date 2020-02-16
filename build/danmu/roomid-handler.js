@@ -24,10 +24,9 @@ var RoomidHandler = /** @class */ (function (_super) {
     function RoomidHandler() {
         var _this = _super.call(this) || this;
         _this._roomids = new Set();
-        _this._task = new index_3.DelayedTask();
-        _this._task.withTime(5 * 1000).withCallback(function () {
-            _this.query();
-        });
+        _this._task = new index_3.DelayedTask()
+            .withTime(5 * 1000)
+            .withCallback(function () { _this.query(); });
         _this._task.start();
         return _this;
     }
@@ -71,13 +70,12 @@ var RoomidHandler = /** @class */ (function (_super) {
             var guard_level = g['privilege_type'];
             var guard_name = nameOfType[guard_level];
             var expireAt = g['time'] + Math.floor(0.001 * new Date().valueOf());
-            return (index_4.GuardBuilder.start()
+            return new index_4.Guard()
                 .withId(id)
                 .withRoomid(roomid)
                 .withType(t)
                 .withName(guard_name)
-                .withExpireAt(expireAt)
-                .build());
+                .withExpireAt(expireAt);
         });
         gifts = gifts.map(function (g) {
             var id = g['raffleId'];
@@ -85,34 +83,33 @@ var RoomidHandler = /** @class */ (function (_super) {
             var name = g['title'] || '未知';
             var wait = g['time_wait'] > 0 ? g['time_wait'] : 0;
             var expireAt = g['time'] + Math.floor(0.001 * new Date().valueOf());
-            return (index_4.GiftBuilder.start()
+            return new index_4.Gift()
                 .withId(id)
                 .withRoomid(roomid)
                 .withType(t)
                 .withName(name)
                 .withWait(wait)
-                .withExpireAt(expireAt)
-                .build());
+                .withExpireAt(expireAt);
         });
         pks = pks.map(function (g) {
             var id = g['id'];
             var t = 'pk';
             var name = '大乱斗';
             var expireAt = g['time'] + Math.floor(0.001 * new Date().valueOf());
-            return (index_4.PKBuilder.start()
+            return new index_4.PK()
                 .withId(id)
                 .withRoomid(roomid)
                 .withType(t)
                 .withName(name)
-                .withExpireAt(expireAt)
-                .build());
+                .withExpireAt(expireAt);
         });
         guards.forEach(function (g) { _this.emit('guard', g); });
         pks.forEach(function (g) { _this.emit('pk', g); });
         gifts.forEach(function (g) {
-            var t = new index_3.DelayedTask();
-            t.withTime(g.wait * 1000).withCallback(function () { _this.emit('gift', g); });
-            t.start();
+            new index_3.DelayedTask()
+                .withTime(g.wait * 1000)
+                .withCallback(function () { _this.emit('gift', g); })
+                .start();
         });
     };
     return RoomidHandler;

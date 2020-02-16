@@ -3,7 +3,7 @@ import * as chalk from 'chalk';
 import * as http from 'http';
 import { DelayedTask } from '../task/index';
 import { cprint } from '../fmt/index';
-
+import { Raffle } from '../danmu/index';
 
 
 interface WsAddress {
@@ -27,7 +27,7 @@ abstract class AbstractWsServer {
     private _healthTask:    DelayedTask;
     protected _clients:     ClientStatus[];
 
-    constructor(addr: WsAddress) {
+    protected constructor(addr: WsAddress) {
         this._host = addr.host || '127.0.0.1';
         this._port = addr.port;
         this._ws = null;
@@ -60,15 +60,15 @@ abstract class AbstractWsServer {
     }
 
 
-    get host(): string {
+    public get host(): string {
         return this._host;
     }
 
-    get port(): number {
+    public get port(): number {
         return this._port;
     }
 
-    reset(): void {
+    private reset(): void {
         this._ws = null;
         this._errored = false;
         this._healthTask.stop();
@@ -79,11 +79,11 @@ abstract class AbstractWsServer {
         this._clients = [];
     }
 
-    stop(): void {
+    public stop(): void {
         this.reset();
     }
 
-    start(): void {
+    public start(): void {
         try {
             if (this._ws === null) {
                 this.listen(this.createServer());
@@ -94,7 +94,7 @@ abstract class AbstractWsServer {
         }
     }
 
-    createServer(): WebSocket.Server {
+    private createServer(): WebSocket.Server {
         const ws = new WebSocket.Server({
             'host': this.host,
             'port': this.port,
@@ -105,7 +105,7 @@ abstract class AbstractWsServer {
         return ws;
     }
 
-    listen(ws: WebSocket.Server): void {
+    private listen(ws: WebSocket.Server): void {
         this._ws = ws;
 
         ws.on('connection', (socket: WebSocket, req: http.IncomingMessage): void => {
@@ -156,44 +156,40 @@ abstract class AbstractWsServer {
         ws.on('close', (): void => {});
     }
 
-    abstract broadcast(msg: any): any;
-
-    abstract parseMessage(data: any): any;
+    public abstract broadcast(data: Raffle): void;
 
 }
 
 export class WsServer extends AbstractWsServer {
 
-    constructor(addr: WsAddress) {
+    public constructor(addr: WsAddress) {
         super(addr);
     }
 
-    broadcast(payload: Buffer): void {
-        this._clients.forEach((clientStatus: ClientStatus): void => {
-            const client = clientStatus.client;
-            if (client.readyState === WebSocket.OPEN) {
-                client.send(payload, {
-                    'binary': true,
-                });
-            }
-        });
-    }
-
-    parseMessage(message: any): Buffer {
-        const str = JSON.stringify(message);
-        const data = Buffer.from(str);
-        return data;
+    public broadcast(data: Raffle): void {
+        const json = data.toJson();
+        if (json.length > 0) {
+            this._clients.forEach((clientStatus: ClientStatus): void => {
+                const client = clientStatus.client;
+                if (client.readyState === WebSocket.OPEN) {
+                    client.send(json, {
+                        'binary': true,
+                    });
+                }
+            });
+        }
     }
 
 }
 
 export class WsServerBilive extends AbstractWsServer {
 
-    constructor(addr: WsAddress) {
+    public constructor(addr: WsAddress) {
         super(addr);
     }
 
-    broadcast(payload: string): void {
+    public broadcast(data: Raffle): void {
+        const payload: string = this.parseMessage(data);
         this._clients.forEach((clientStatus: any): void => {
             const client: any = clientStatus.client;
             if (client.readyState === WebSocket.OPEN) {
@@ -202,7 +198,7 @@ export class WsServerBilive extends AbstractWsServer {
         });
     }
 
-    parseMessage(data: any): string {
+    private parseMessage(data: any): string {
         const toKey: any = {
             'id':       'id',
             'roomid':   'roomID',

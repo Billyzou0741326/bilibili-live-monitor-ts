@@ -1,62 +1,12 @@
-export interface Gift {
-    readonly id:        number;
-    readonly roomid:    number;
-    readonly category:  string;
-    readonly type:      string;
-    readonly name:      string;
-    readonly wait:      number;
-    readonly expireAt:  number;
-}
+export const RaffleCategories = [
+    'gift',
+    'guard',
+    'pk',
+    'storm',
+    'anchor',
+];
 
-export interface Guard {
-    readonly id:        number;
-    readonly roomid:    number;
-    readonly category:  string;
-    readonly type:      string;
-    readonly name:      string;
-    readonly expireAt:  number;
-}
-
-export interface PK {
-    readonly id:        number;
-    readonly roomid:    number;
-    readonly category:  string;
-    readonly type:      string;
-    readonly name:      string;
-    readonly expireAt:  number;
-}
-
-export interface Storm {
-    readonly id:        string;
-    readonly roomid:    number;
-    readonly category:  string;
-    readonly type:      string;
-    readonly name:      string;
-    readonly expireAt:  number;
-}
-
-export interface Anchor {
-    readonly id:            number;
-    readonly roomid:        number;
-    readonly category:      string;
-    readonly type:          string;
-    readonly name:          string;
-    readonly award_num:     number;
-    readonly danmu:         string;
-    readonly gift_price:    number;
-    readonly gift_name:     string;
-    readonly gift_num:      number;
-    readonly requirement:   string;
-    readonly expireAt:      number;
-}
-
-
-export interface Builder {
-    build(): Gift | Guard | PK | Storm | Anchor;
-}
-
-
-class AbstractBuilder {
+export abstract class Raffle {
 
     protected _id:          number;
     protected _roomid:      number;
@@ -66,7 +16,7 @@ class AbstractBuilder {
     protected _expireAt:    number;
     protected _category:    string;
 
-    constructor() {
+    protected constructor() {
         this._id = 0;
         this._roomid = 0;
         this._type = '';
@@ -76,86 +26,104 @@ class AbstractBuilder {
         this._category = '';
     }
 
-    get id(): number {
+    public get id(): number {
         return this._id;
     }
 
-    get category(): string {
+    public get category(): string {
         return this._category;
     }
 
-    get roomid(): number {
+    public get roomid(): number {
         return this._roomid;
     }
 
-    get type(): string {
+    public get type(): string {
         return this._type;
     }
 
-    get name(): string {
+    public get name(): string {
         return this._name;
     }
 
-    get wait(): number {
+    public get wait(): number {
         return this._wait;
     }
 
-    get expireAt(): number {
+    public get expireAt(): number {
         return this._expireAt;
     }
 
-    withId(id: number): AbstractBuilder | any {
+    public withId(id: number): this {
         this._id = id;
         return this;
     }
 
-    withRoomid(roomid: number): AbstractBuilder | any {
+    public withRoomid(roomid: number): this {
         this._roomid = roomid;
         return this;
     }
 
-    withCategory(c: string): AbstractBuilder | any {
+    public withCategory(c: string): this {
         this._category = c;
         return this;
     }
 
-    withType(t: string): AbstractBuilder | any{
+    public withType(t: string): this {
         this._type = t;
         return this;
     }
 
-    withName(n: string): AbstractBuilder | any {
+    public withName(n: string): this {
         this._name = n;
         return this;
     }
 
-    withWait(w: number): AbstractBuilder | any {
+    public withWait(w: number): this {
         this._wait = w;
         return this;
     }
 
-    withExpireAt(e: number): AbstractBuilder | any {
+    public withExpireAt(e: number): this {
         this._expireAt = e;
         return this;
     }
 
-    build(): any {
-        return null;
+    public convert(): any {
+        // Convert to an object that is backward compatible with old HTTP handler
+        return {
+            id:         this.id,
+            roomid:     this.roomid,
+            category:   this.category,
+            type:       this.type,
+            name:       this.name,
+            expireAt:   this.expireAt,
+        };
     }
+
+    public toJson(): string {
+        // For now, exclude wait in the serialized JSON
+        return JSON.stringify({
+            id:         this.id,
+            roomid:     this.roomid,
+            category:   this.category,
+            type:       this.type,
+            name:       this.name,
+            expireAt:   this.expireAt,
+        });
+    }
+
 }
 
-export class GiftBuilder extends AbstractBuilder implements Gift, Builder {
+export class Gift extends Raffle {
 
-    static start(): GiftBuilder {
-        return new GiftBuilder();
-    }
-
-    constructor() {
+    public constructor() {
         super();
         this._category = 'gift';
     }
 
-    build(): Gift {
+    public convert(): any {
+        // Convert to an object that is backward compatible with old HTTP handler
         return {
             id:         this.id,
             roomid:     this.roomid,
@@ -164,144 +132,39 @@ export class GiftBuilder extends AbstractBuilder implements Gift, Builder {
             name:       this.name,
             wait:       this.wait,
             expireAt:   this.expireAt,
-        } as Gift;
+        };
     }
 
 }
 
-export class GuardBuilder extends AbstractBuilder implements Guard, Builder {
+export class Guard extends Raffle {
 
-    static start(): GuardBuilder {
-        return new GuardBuilder();
-    }
-
-    constructor() {
+    public constructor() {
         super();
         this._category = 'guard';
     }
 
-    build(): Guard {
-        return {
-            id:         this.id,
-            roomid:     this.roomid,
-            category:   this.category,
-            type:       this.type,
-            name:       this.name,
-            expireAt:   this.expireAt,
-        } as Guard;
-    }
-
 }
 
-export class PKBuilder extends AbstractBuilder implements PK, Builder {
+export class PK extends Raffle {
 
-    static start(): PKBuilder {
-        return new PKBuilder();
-    }
-
-    constructor() {
+    public constructor() {
         super();
         this._category = 'pk';
     }
 
-    build(): PK {
-        return {
-            id:         this.id,
-            roomid:     this.roomid,
-            category:   this.category,
-            type:       this.type,
-            name:       this.name,
-            expireAt:   this.expireAt,
-        } as PK;
-    }
-
 }
 
-export class StormBuilder implements Storm, Builder {
+export class Storm extends Raffle {
 
-    private _id:            string;
-    private _roomid:        number;
-    private _category:      string;
-    private _type:          string;
-    private _name:          string;
-    private _expireAt:      number;
-
-    static start(): StormBuilder {
-        return new StormBuilder();
-    }
-
-    constructor() {
-        this._id = '0';
-        this._roomid = 0;
-        this._type = '';
-        this._name = '';
-        this._expireAt = 0;
+    public constructor() {
+        super();
         this._category = 'storm';
     }
 
-    build(): Storm {
-        return {
-            id:         this.id,
-            roomid:     this.roomid,
-            category:   this.category,
-            type:       this.type,
-            name:       this.name,
-            expireAt:   this.expireAt,
-        } as Storm;
-    }
-
-    get id(): string {
-        return this._id;
-    }
-
-    get roomid(): number {
-        return this._roomid;
-    }
-
-    get category(): string {
-        return this._category;
-    }
-
-    get type(): string {
-        return this._type;
-    }
-
-    get name(): string {
-        return this._name;
-    }
-
-    get expireAt(): number {
-        return this._expireAt;
-    }
-
-    withId(id: string | number): StormBuilder {
-        this._id = `${id}`;
-        return this;
-    }
-
-    withRoomid(roomid: number): StormBuilder {
-        this._roomid = roomid;
-        return this;
-    }
-
-    withType(t: string): StormBuilder {
-        this._type = t;
-        return this;
-    }
-
-    withName(n: string): StormBuilder {
-        this._name = n;
-        return this;
-    }
-
-    withExpireAt(e: number): StormBuilder {
-        this._expireAt = e;
-        return this;
-    }
-
 }
 
-export class AnchorBuilder extends AbstractBuilder {
+export class Anchor extends Raffle {
 
     private _gift_name:     string;
     private _gift_price:    number;
@@ -311,11 +174,7 @@ export class AnchorBuilder extends AbstractBuilder {
     private _award_num:     number;
     private _require_text:  string;
 
-    static start(): AnchorBuilder {
-        return new AnchorBuilder();
-    }
-
-    constructor() {
+    public constructor() {
         super();
         this._category = 'anchor';
         this._gift_name = '';
@@ -327,7 +186,8 @@ export class AnchorBuilder extends AbstractBuilder {
         this._require_text = '';
     }
 
-    build(): Anchor {
+    public convert(): any {
+        // Convert to an object that is backward compatible with old HTTP handler
         return {
             id:             this.id,
             roomid:         this.roomid,
@@ -341,70 +201,91 @@ export class AnchorBuilder extends AbstractBuilder {
             gift_price:     this.gift_price,
             requirement:    this.requirement,
             danmu:          this.danmu,
-        } as Anchor;
+        };
     }
 
-    get name(): string {
+    public get name(): string {
         return this._award_name;
     }
 
-    get award_num(): number {
+    public get award_num(): number {
         return this._award_num;
     }
 
-    get gift_name(): string {
+    public get gift_name(): string {
         return this._gift_name;
     }
 
-    get gift_price(): number {
+    public get gift_price(): number {
         return this._gift_price;
     }
 
-    get gift_num(): number {
+    public get gift_num(): number {
         return this._gift_num;
     }
 
-    get danmu(): string {
+    public get danmu(): string {
         return this._danmu;
     }
 
-    get requirement(): string {
+    public get requirement(): string {
         return this._require_text;
     }
 
-    withName(award_name: string): AnchorBuilder {
+    public withName(award_name: string): this {
         this._award_name = award_name;
         return this;
     }
 
-    withAwardNum(award_num: number): AnchorBuilder {
+    public withAwardNum(award_num: number): this {
         this._award_num = award_num;
         return this;
     }
 
-    withGiftName(gift_name: string): AnchorBuilder {
+    public withGiftName(gift_name: string): this {
         this._gift_name = gift_name;
         return this;
     }
 
-    withGiftNum(gift_num: number): AnchorBuilder {
+    public withGiftNum(gift_num: number): this {
         this._gift_num = gift_num;
         return this;
     }
 
-    withGiftPrice(price: number): AnchorBuilder {
+    public withGiftPrice(price: number): this {
         this._gift_price = price;
         return this;
     }
 
-    withDanmu(danmu: string): AnchorBuilder {
+    public withDanmu(danmu: string): this {
         this._danmu = danmu;
         return this;
     }
 
-    withRequirement(requirement: string): AnchorBuilder {
+    public withRequirement(requirement: string): this {
         this._require_text = requirement;
         return this;
     }
-}
 
+    public toJson(): string {
+        // Currently Anchor is not being sent out
+        return '';
+/*
+        return JSON.stringify({
+            id:             this.id,
+            roomid:         this.roomid,
+            type:           this.type,
+            category:       this.category,
+            expireAt:       this.expireAt,
+            name:           this.name,
+            award_num:      this.award_num,
+            gift_name:      this.gift_name,
+            gift_num:       this.gift_num,
+            gift_price:     this.gift_price,
+            requirement:    this.requirement,
+            danmu:          this.danmu,
+        });
+*/
+    }
+
+}

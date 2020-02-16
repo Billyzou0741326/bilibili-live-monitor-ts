@@ -93,8 +93,6 @@ var AbstractRoomController = /** @class */ (function (_super) {
     AbstractRoomController.prototype.stop = function () {
         this._connections.forEach(function (listener) { return listener.destroy(); });
     };
-    AbstractRoomController.prototype.setupRoom = function (roomid, areaid) {
-    };
     AbstractRoomController.prototype.clearClosed = function () {
         var len = this._recentlyClosed.length;
         if (len > 50) {
@@ -107,29 +105,20 @@ exports.AbstractRoomController = AbstractRoomController;
 var GuardController = /** @class */ (function (_super) {
     __extends(GuardController, _super);
     function GuardController() {
-        var _this = _super.call(this) || this;
-        _this._cls = index_5.FixedGuardMonitor;
-        return _this;
+        return _super.call(this) || this;
     }
     GuardController.prototype.setupRoom = function (roomid, areaid) {
         var _this = this;
-        if (this._cls === index_5.DynamicGuardMonitor) {
-            if (this._recentlyClosed.includes(roomid) || this.connected.includes(roomid)) {
-                return;
-            }
-        }
-        else if (this._cls === FixedGuardController) {
-            if (this.connected.includes(roomid)) {
-                return;
-            }
+        if (this.roomExists(roomid)) {
+            return;
         }
         var roomInfo = {
             roomid: roomid,
         };
-        var listener = new this._cls(tcpaddr, roomInfo);
+        var listener = this.createListener(tcpaddr, roomInfo);
         this._connections.set(roomid, listener);
         this._taskQueue.add(function () { listener.start(); });
-        (listener
+        listener
             .on('close', function () {
             _this._connections.delete(roomid);
             _this._recentlyClosed.push(roomid);
@@ -138,33 +127,42 @@ var GuardController = /** @class */ (function (_super) {
                 _this.emit('to_fixed', roomid);
             }
         })
-            .on('add_to_db', function () { _this.emit('add_to_db', roomid); })
-            .on('pk', function (g) { _this.emit('pk', g); })
-            .on('gift', function (g) { _this.emit('gift', g); })
-            .on('guard', function (g) { _this.emit('guard', g); })
-            .on('storm', function (g) { _this.emit('storm', g); })
-            .on('anchor', function (g) { _this.emit('anchor', g); }));
-        _super.prototype.setupRoom.call(this, roomid);
+            .on('add_to_db', function () { _this.emit('add_to_db', roomid); });
+        var _loop_1 = function (category) {
+            listener.on(category, function (g) { _this.emit(category, g); });
+        };
+        for (var _i = 0, RaffleCategories_1 = index_5.RaffleCategories; _i < RaffleCategories_1.length; _i++) {
+            var category = RaffleCategories_1[_i];
+            _loop_1(category);
+        }
     };
     return GuardController;
 }(AbstractRoomController));
 var FixedGuardController = /** @class */ (function (_super) {
     __extends(FixedGuardController, _super);
     function FixedGuardController() {
-        var _this = _super.call(this) || this;
-        _this._cls = index_5.FixedGuardMonitor;
-        return _this;
+        return _super.call(this) || this;
     }
+    FixedGuardController.prototype.createListener = function (addr, info) {
+        return new index_5.FixedGuardMonitor(addr, info);
+    };
+    FixedGuardController.prototype.roomExists = function (roomid) {
+        return this.connected.includes(roomid);
+    };
     return FixedGuardController;
 }(GuardController));
 exports.FixedGuardController = FixedGuardController;
 var DynamicGuardController = /** @class */ (function (_super) {
     __extends(DynamicGuardController, _super);
     function DynamicGuardController() {
-        var _this = _super.call(this) || this;
-        _this._cls = index_5.DynamicGuardMonitor;
-        return _this;
+        return _super.call(this) || this;
     }
+    DynamicGuardController.prototype.createListener = function (addr, info) {
+        return new index_5.DynamicGuardMonitor(addr, info);
+    };
+    DynamicGuardController.prototype.roomExists = function (roomid) {
+        return this._recentlyClosed.includes(roomid) || this.connected.includes(roomid);
+    };
     return DynamicGuardController;
 }(GuardController));
 exports.DynamicGuardController = DynamicGuardController;
@@ -182,11 +180,14 @@ var RaffleController = /** @class */ (function (_super) {
             5: '电台',
             6: '单机',
         };
-        (_this._roomidHandler
-            .on('guard', function (g) { _this.emit('guard', g); })
-            .on('gift', function (g) { _this.emit('gift', g); })
-            .on('pk', function (g) { _this.emit('pk', g); })
-            .on('storm', function (g) { _this.emit('storm', g); }));
+        var _loop_2 = function (category) {
+            this_1._roomidHandler.on(category, function (g) { _this.emit(category, g); });
+        };
+        var this_1 = this;
+        for (var _i = 0, RaffleCategories_2 = index_5.RaffleCategories; _i < RaffleCategories_2.length; _i++) {
+            var category = RaffleCategories_2[_i];
+            _loop_2(category);
+        }
         return _this;
     }
     RaffleController.prototype.start = function () {
@@ -264,7 +265,7 @@ var RaffleController = /** @class */ (function (_super) {
         index_1.cprint(msg, chalk.green);
         this._taskQueue.add(function () { listener.start(); });
         this._connections.set(areaid, listener);
-        (listener
+        listener
             .on('close', function () {
             var reason = "@room " + roomid + " in " + _this._nameOfArea[areaid] + "\u533A is closed.";
             index_1.cprint(reason, chalk.yellowBright);
@@ -272,12 +273,14 @@ var RaffleController = /** @class */ (function (_super) {
             _this.getRoomsInArea(areaid).then(function (rooms) { return _this.setupMonitorInArea(areaid, rooms); });
         })
             .on('add_to_db', function () { _this.emit('add_to_db', roomid); })
-            .on('pk', function (g) { _this.emit('pk', g); })
-            .on('gift', function (g) { _this.emit('gift', g); })
-            .on('guard', function (g) { _this.emit('guard', g); })
-            .on('storm', function (g) { _this.emit('storm', g); })
-            .on('roomid', function (roomid) { _this._roomidHandler.add(roomid); }));
-        _super.prototype.setupRoom.call(this, roomid);
+            .on('roomid', function (roomid) { _this._roomidHandler.add(roomid); });
+        var _loop_3 = function (category) {
+            listener.on(category, function (g) { _this.emit(category, g); });
+        };
+        for (var _i = 0, RaffleCategories_3 = index_5.RaffleCategories; _i < RaffleCategories_3.length; _i++) {
+            var category = RaffleCategories_3[_i];
+            _loop_3(category);
+        }
     };
     return RaffleController;
 }(AbstractRoomController));

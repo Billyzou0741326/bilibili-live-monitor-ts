@@ -25,17 +25,6 @@ var AbstractTask = /** @class */ (function () {
         this._time = 0;
         this._callback = function () { };
     }
-    AbstractTask.prototype.start = function () {
-    };
-    AbstractTask.prototype.stop = function () {
-    };
-    Object.defineProperty(AbstractTask.prototype, "running", {
-        get: function () {
-            return false;
-        },
-        enumerable: true,
-        configurable: true
-    });
     Object.defineProperty(AbstractTask.prototype, "time", {
         get: function () {
             return this._time;

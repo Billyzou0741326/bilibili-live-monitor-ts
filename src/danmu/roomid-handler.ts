@@ -6,37 +6,32 @@ import { DelayedTask } from '../task/index';
 import {
     Gift,
     Guard,
-    PK,
-    GiftBuilder,
-    GuardBuilder,
-    PKBuilder, } from '../danmu/index';
+    PK, } from '../danmu/index';
 
 export class RoomidHandler extends EventEmitter {
 
     private _roomids:       Set<number>;
     private _task:          DelayedTask;
 
-    constructor() {
+    public constructor() {
         super();
         this._roomids = new Set();
-        this._task = new DelayedTask();
-
-        this._task.withTime(5 * 1000).withCallback((): void => {
-            this.query();
-        });
+        this._task = new DelayedTask()
+            .withTime(5 * 1000)
+            .withCallback((): void => { this.query() });
         this._task.start();
     }
 
-    stop(): void {
+    public stop(): void {
         this._task.stop();
     }
 
-    add(roomid: number): void {
+    public add(roomid: number): void {
         this._roomids.add(roomid);
         this._task.start();
     }
 
-    query(): void {
+    private query(): void {
         const roomids: number[] = Array.from(this._roomids);
         this._roomids = new Set();
 
@@ -54,7 +49,7 @@ export class RoomidHandler extends EventEmitter {
         });
     }
 
-    handleResult(roomid: number, msg: any): void {
+    private handleResult(roomid: number, msg: any): void {
 
         let guards: any = msg['data']['guard'];
         let gifts: any = msg['data']['gift_list'];
@@ -72,14 +67,12 @@ export class RoomidHandler extends EventEmitter {
             const guard_level: number = g['privilege_type'];
             const guard_name: string = nameOfType[guard_level];
             const expireAt: number = g['time'] + Math.floor(0.001 * new Date().valueOf());
-            return (GuardBuilder.start()
+            return new Guard()
                 .withId(id)
                 .withRoomid(roomid)
                 .withType(t)
                 .withName(guard_name)
-                .withExpireAt(expireAt)
-                .build()
-            );
+                .withExpireAt(expireAt);
         });
         gifts = gifts.map((g: any): Gift => {
             const id: number = g['raffleId'];
@@ -87,37 +80,34 @@ export class RoomidHandler extends EventEmitter {
             const name: string = g['title'] || '未知';
             const wait: number = g['time_wait'] > 0 ? g['time_wait'] : 0;
             const expireAt: number = g['time'] + Math.floor(0.001 * new Date().valueOf());
-            return (GiftBuilder.start()
+            return new Gift()
                 .withId(id)
                 .withRoomid(roomid)
                 .withType(t)
                 .withName(name)
                 .withWait(wait)
-                .withExpireAt(expireAt)
-                .build()
-            );
+                .withExpireAt(expireAt);
         });
         pks = pks.map((g: any): PK => {
             const id: number = g['id'];
             const t: string = 'pk';
             const name: string = '大乱斗';
             const expireAt: number = g['time'] + Math.floor(0.001 * new Date().valueOf());
-            return (PKBuilder.start()
+            return new PK()
                 .withId(id)
                 .withRoomid(roomid)
                 .withType(t)
                 .withName(name)
-                .withExpireAt(expireAt)
-                .build()
-            );
+                .withExpireAt(expireAt);
         });
 
         guards.forEach((g: Guard): void => { this.emit('guard', g) });
         pks.forEach((g: PK): void => { this.emit('pk', g) });
         gifts.forEach((g: Gift): void => {
-            const t = new DelayedTask();
-            t.withTime(g.wait * 1000).withCallback((): void => { this.emit('gift', g) });
-            t.start();
+            new DelayedTask()
+                .withTime(g.wait * 1000)
+                .withCallback((): void => { this.emit('gift', g) })
+                .start();
         });
 
     }
