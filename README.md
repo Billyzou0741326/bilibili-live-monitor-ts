@@ -11,7 +11,7 @@
 ## Features
  - 推送监听到的舰长、达到可抽奖时间段的高能信息 (默认WS接口8999)
  - 以http返回json视图的**未过期**舰长/提督/总督/高能/天选 (默认http接口9001)
- - http路径`/guard`, `/gift`, `/anchor`
+ - http路径`/guard`, `/gift`, `/pk`, `/storm`, `/anchor`
  - `/build/db/record.json`为静态房间列表(永久监听)；初次运行时自动建立，运行过程中自动存入记录；此后每次运行自动读取静态房间记录
 
 ## Limitations
@@ -100,7 +100,7 @@ docker run --publish 8999:8999 --publish 9001:9001 <image-name>
 
  - 以category区分类别 可能是`gift`, `guard`, `storm`, `pk`, `anchor`
 
-### /storm (风暴) --http/WS--
+### /storm (风暴) --http/ws--
 ```javascript
 {
     "id": "1909565617562",
