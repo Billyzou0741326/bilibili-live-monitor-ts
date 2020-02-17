@@ -11,11 +11,9 @@ import {
     WsServerBilive,
     HttpServer, } from '../server/index';
 import {
-    PK,
-    Gift,
-    Guard,
-    Storm,
+    Raffle,
     Anchor,
+    RaffleCategory,
     History,
     RoomCollector,
     AbstractRoomController,
@@ -39,7 +37,7 @@ export class App {
     private _dynamicRefreshTask:    DelayedTask;
     private _running:               boolean;
 
-    constructor() {
+    public constructor() {
         this._appConfig = new AppConfig();
         this._appConfig.init();
         this._db = new Database();
@@ -75,11 +73,11 @@ export class App {
         });
     }
 
-    setupListeners(): void {
+    private setupListeners(): void {
         if (!this._running) return;
 
         const handler = (t: string): any => {
-            return (g: Gift | Guard | Storm | PK | Anchor): void => {
+            return (g: Raffle): void => {
                 if (this._history.has(g) === false) {
                     this._emitter.emit(t, g);
                     this._history.add(g);
@@ -92,51 +90,29 @@ export class App {
             this._raffleController,
         ];
         controllers.forEach((controller: AbstractRoomController): void => {
-            (controller
-                .on('guard', handler('guard'))
-                .on('gift', handler('gift'))
-                .on('pk', handler('pk'))
-                .on('storm', handler('storm'))
-                .on('anchor', handler('anchor'))
+            controller
                 .on('add_to_db', (roomid: number): void => { this._db.add(roomid) })
-                .on('to_fixed', (roomid: number): void => { this._fixedController.add(roomid) }));
+                .on('to_fixed', (roomid: number): void => { this._fixedController.add(roomid) });
+            for (const category in RaffleCategory) {
+                controller.on(category, handler(category));
+            }
         });
-        (this._emitter
-            .on('guard', (g: Guard): void => {
+        for (const category in RaffleCategory) {
+            this._emitter.on(category, (g: Raffle): void => {
                 this.printGift(g);
-                this._wsServer.broadcast(this._wsServer.parseMessage(g));
-                this._biliveServer.broadcast(this._biliveServer.parseMessage(g));
-            })
-            .on('gift', (g: Gift): void => {
-                this.printGift(g);
-                const gift: any = Object.assign(new Object(), g);
-                delete gift['wait'];
-                this._wsServer.broadcast(this._wsServer.parseMessage(gift));
-                this._biliveServer.broadcast(this._biliveServer.parseMessage(gift));
-            })
-            .on('pk', (g: PK): void => {
-                this.printGift(g);
-                this._wsServer.broadcast(this._wsServer.parseMessage(g));
-                this._biliveServer.broadcast(this._biliveServer.parseMessage(g));
-            })
-            .on('storm', (g: Storm): void => {
-                this.printGift(g);
-                this._wsServer.broadcast(this._wsServer.parseMessage(g));
-                this._biliveServer.broadcast(this._biliveServer.parseMessage(g));
-            })
-            .on('anchor', (g: Anchor): void => {
-                this.printGift(g);
-                // this._wsServer.broadcast(this._wsServer.parseMessage(g));
-            }));
+                this._wsServer.broadcast(g);
+                this._biliveServer.broadcast(g);
+            });
+        }
     }
 
-    setupServer(): void {
-        this._httpServer.mountGetter('gift', this._history.retrieveGetter('gift') as () => Gift[]);
-        this._httpServer.mountGetter('guard', this._history.retrieveGetter('guard') as () => Guard[]);
-        this._httpServer.mountGetter('anchor', this._history.retrieveGetter('anchor') as () => Anchor[]);
+    private setupServer(): void {
+        for (const category in RaffleCategory) {
+            this._httpServer.mountGetter(category, this._history.retrieveGetter(category));
+        }
     }
 
-    start(): void {
+    public start(): void {
         if (this._running === false) {
             this._running = true;
             this.setupListeners();
@@ -158,7 +134,7 @@ export class App {
         }
     }
 
-    stop(): void {
+    public stop(): void {
         if (this._running === true) {
             this._wsServer.stop();
             this._httpServer.stop();
@@ -178,7 +154,7 @@ export class App {
         }
     }
 
-    printGift(g: Gift | Guard | Storm | PK): void {
+    private printGift(g: Raffle): void {
         let msg = '';
         const id = `${g.id}`;
         const roomid = `${g.roomid}`;

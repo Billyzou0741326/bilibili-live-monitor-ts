@@ -3,15 +3,15 @@ import { EventEmitter } from 'events';
 import { Queue } from '../container/index';
 import { cprint } from '../fmt/index';
 import { Bilibili } from '../bilibili/index';
-import { AppConfig } from '../global/index';
+import {
+    AppConfig,
+    TCPAddress, } from '../global/index';
 import { RateLimiter } from '../task/index';
 import {
-    PK,
-    Gift,
-    Guard,
-    Storm,
-    Anchor,
+    RaffleCategory,
+    Raffle,
     RoomidHandler,
+    RoomInfo,
     DanmuTCP,
     RaffleMonitor,
     FixedGuardMonitor,
@@ -22,24 +22,24 @@ class DownRate {}
 
 const tcpaddr: any = new AppConfig().danmuAddr;
 
-export class AbstractRoomController extends EventEmitter {
+export abstract class AbstractRoomController extends EventEmitter {
 
     protected _connections:     Map<number, DanmuTCP>;
     protected _recentlyClosed:  number[];
     protected _taskQueue:       RateLimiter;
 
-    constructor() {
+    protected constructor() {
         super();
         this._connections = new Map();
         this._recentlyClosed = [] as number[];
         this._taskQueue = new RateLimiter(50, 1000);
     }
 
-    get connected(): number[] {
+    public get connected(): number[] {
         return Array.from(this._connections.keys());
     }
 
-    add(rooms: number | number[]): void {
+    public add(rooms: number | number[]): void {
         const roomids: number[] = ([] as number[]).concat(rooms);
         const established: number[] = this.connected;
         const closed: number[] = this._recentlyClosed;
@@ -55,14 +55,13 @@ export class AbstractRoomController extends EventEmitter {
         this.clearClosed();
     }
 
-    stop(): void {
+    public stop(): void {
         this._connections.forEach((listener: DanmuTCP): void => listener.destroy());
     }
 
-    setupRoom(roomid: number, areaid?: number): void {
-    }
+    protected abstract setupRoom(roomid: number, areaid?: number): void;
 
-    clearClosed(): void {
+    private clearClosed(): void {
         const len = this._recentlyClosed.length;
         if (len > 50) {
             this._recentlyClosed.splice(0, len - 25);
@@ -71,34 +70,28 @@ export class AbstractRoomController extends EventEmitter {
 
 }
 
-class GuardController extends AbstractRoomController {
+abstract class GuardController extends AbstractRoomController {
 
-    protected _cls:     any;
-
-    constructor() {
+    protected constructor() {
         super();
-        this._cls = FixedGuardMonitor;
     }
 
-    setupRoom(roomid: number, areaid?: number): void {
-        if (this._cls === DynamicGuardMonitor) {
-            if (this._recentlyClosed.includes(roomid) || this.connected.includes(roomid)) {
-                return;
-            }
-        }
-        else if (this._cls === FixedGuardController) {
-            if (this.connected.includes(roomid)) {
-                return;
-            }
+    protected abstract createListener(addr: TCPAddress, info: RoomInfo): DanmuTCP;
+
+    protected abstract roomExists(roomid: number): boolean;
+
+    protected setupRoom(roomid: number, areaid?: number): void {
+        if (this.roomExists(roomid)) {
+            return;
         }
 
         const roomInfo: any = {
             roomid: roomid,
         };
-        const listener = new this._cls(tcpaddr, roomInfo);
+        const listener = this.createListener(tcpaddr, roomInfo);
         this._connections.set(roomid, listener);
         this._taskQueue.add((): void => { listener.start() });
-        (listener
+        listener
             .on('close', (): void => {
                 this._connections.delete(roomid);
                 this._recentlyClosed.push(roomid);
@@ -107,32 +100,41 @@ class GuardController extends AbstractRoomController {
                     this.emit('to_fixed', roomid);
                 }
             })
-            .on('add_to_db', (): void => { this.emit('add_to_db', roomid) })
-            .on('pk', (g: PK): void => { this.emit('pk', g) })
-            .on('gift', (g: Gift): void => { this.emit('gift', g) })
-            .on('guard', (g: Guard): void => { this.emit('guard', g) })
-            .on('storm', (g: Storm): void => { this.emit('storm', g) })
-            .on('anchor', (g: Anchor): void => { this.emit('anchor', g) }));
-        super.setupRoom(roomid);
+            .on('add_to_db', (): void => { this.emit('add_to_db', roomid) });
+        for (const category in RaffleCategory) {
+            listener.on(category, (g: Raffle): void => { this.emit(category, g) });
+        }
     }
 }
 
 export class FixedGuardController extends GuardController {
 
-    constructor() {
+    public constructor() {
         super();
-        this._cls = FixedGuardMonitor;
     }
 
+    protected createListener(addr: TCPAddress, info: RoomInfo): DanmuTCP {
+        return new FixedGuardMonitor(addr, info);
+    }
+
+    protected roomExists(roomid: number): boolean {
+        return this.connected.includes(roomid);
+    }
 }
 
 export class DynamicGuardController extends GuardController {
 
-    constructor() {
+    public constructor() {
         super();
-        this._cls = DynamicGuardMonitor;
     }
 
+    protected createListener(addr: TCPAddress, info: RoomInfo): DanmuTCP {
+        return new DynamicGuardMonitor(addr, info);
+    }
+
+    protected roomExists(roomid: number): boolean {
+        return this._recentlyClosed.includes(roomid) || this.connected.includes(roomid);
+    }
 }
 
 export class RaffleController extends AbstractRoomController {
@@ -141,7 +143,7 @@ export class RaffleController extends AbstractRoomController {
     private _areas:         number[];
     private _roomidHandler: RoomidHandler;
 
-    constructor() {
+    public constructor() {
         super();
         this._roomidHandler = new RoomidHandler();
         this._areas = [ 1, 2, 3, 4, 5, 6 ];
@@ -153,26 +155,24 @@ export class RaffleController extends AbstractRoomController {
             5: '电台',
             6: '单机',
         };
-        (this._roomidHandler
-            .on('guard', (g: Guard): void => { this.emit('guard', g) })
-            .on('gift',  (g: Gift):  void => { this.emit('gift', g) })
-            .on('pk',    (g: PK):    void => { this.emit('pk', g) })
-            .on('storm', (g: Storm): void => { this.emit('storm', g) }));
+        for (const category in RaffleCategory) {
+            this._roomidHandler.on(category, (g: Raffle): void => { this.emit(category, g) });
+        }
     }
 
-    start(): void {
+    public start(): void {
         this._areas.forEach((areaid: number) => {
             this.getRoomsInArea(areaid).then(
                 (rooms: number[]): void => this.setupMonitorInArea(areaid, rooms));
         });
     }
 
-    stop(): void {
+    public stop(): void {
         super.stop();
         this._roomidHandler.stop();
     }
 
-    getRoomsInArea(areaid: number): Promise<number[]> {
+    private getRoomsInArea(areaid: number): Promise<number[]> {
         return (Bilibili.getRoomsInArea(areaid, 10, 10)
             .then((roomInfoList: any[]): number[] => {
                 return roomInfoList.map((roomInfo: any): number => roomInfo['roomid']);
@@ -184,7 +184,7 @@ export class RaffleController extends AbstractRoomController {
         );
     }
 
-    setupMonitorInArea(areaid: number, rooms: number[]): void {
+    private setupMonitorInArea(areaid: number, rooms: number[]): void {
 
         const task = async () => {
 
@@ -210,7 +210,7 @@ export class RaffleController extends AbstractRoomController {
         task();
     }
 
-    setupRoom(roomid: number, areaid?: number): void {
+    protected setupRoom(roomid: number, areaid?: number): void {
         if (this._recentlyClosed.includes(roomid)
             || typeof areaid === 'undefined') {
             return;
@@ -229,7 +229,7 @@ export class RaffleController extends AbstractRoomController {
 
         this._taskQueue.add((): void => { listener.start() });
         this._connections.set(areaid, listener);
-        (listener
+        listener
             .on('close', (): void => {
                 const reason = `@room ${roomid} in ${this._nameOfArea[areaid]}区 is closed.`;
                 cprint(reason, chalk.yellowBright);
@@ -238,12 +238,10 @@ export class RaffleController extends AbstractRoomController {
                     (rooms: number[]): void => this.setupMonitorInArea(areaid, rooms));
             })
             .on('add_to_db', (): void => { this.emit('add_to_db', roomid) })
-            .on('pk', (g: PK): void => { this.emit('pk', g) })
-            .on('gift', (g: Gift): void => { this.emit('gift', g) })
-            .on('guard', (g: Guard): void => { this.emit('guard', g) })
-            .on('storm', (g: Storm): void => { this.emit('storm', g) })
-            .on('roomid', (roomid: number): void => { this._roomidHandler.add(roomid) }));
-        super.setupRoom(roomid);
+            .on('roomid', (roomid: number): void => { this._roomidHandler.add(roomid) });
+        for (const category in RaffleCategory) {
+            listener.on(category, (g: Raffle): void => { this.emit(category, g) });
+        }
     }
 }
 

@@ -4,7 +4,8 @@
         "alwaysStrict": true,
         "strict": true,
         "outDir": "build",
-        "resolveJsonModule": true
+        "resolveJsonModule": true,
+        "newLine": "lf"
     },
     "include": [
         "src/**/*"

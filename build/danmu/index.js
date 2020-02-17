@@ -8,4 +8,4 @@ __export(require("./tcp-controller"));
 __export(require("./roomid-handler"));
 __export(require("./room-collector"));
 __export(require("./gift-history"));
-__export(require("./builder"));
+__export(require("./raffle"));

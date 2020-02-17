@@ -6,38 +6,34 @@ interface Stoppable {
     stop(): void;
 }
 
-class AbstractTask implements Startable, Stoppable {
+abstract class AbstractTask implements Startable, Stoppable {
 
     private _time:          number;
     protected _args:        any;
     protected _callback:    (...args: any) => any;
 
-    constructor() {
+    protected constructor() {
         this._time = 0;
         this._callback = () => {};
     }
 
-    start(): void {
-    }
+    public abstract start(): void;
 
-    stop(): void {
-    }
+    public abstract stop(): void;
 
-    get running(): boolean {
-        return false;
-    }
+    public abstract get running(): boolean;
 
-    get time(): number {
+    public get time(): number {
         return this._time;
     }
 
-    withCallback(callback: (...args: any) => any, ...args: any): AbstractTask {
+    public withCallback(callback: (...args: any) => any, ...args: any): this {
         this._callback = callback;
         this._args = args;
         return this;
     }
 
-    withTime(ms: number): AbstractTask {
+    public withTime(ms: number): this {
         ms = ms > 0 ? ms : 0;
         this._time = ms;
         return this;
@@ -48,22 +44,22 @@ export class RecurrentTask extends AbstractTask {
 
     private _stopper:   any;
 
-    constructor() {
+    public constructor() {
         super();
         this._stopper = null;
     }
 
-    get running(): boolean {
+    public get running(): boolean {
         return this._stopper !== null;
     }
 
-    start(): void {
+    public start(): void {
         if (this._stopper === null) {
             this._stopper = setInterval(this._callback, this.time, ...this._args);
         }
     }
 
-    stop(): void {
+    public stop(): void {
         if (this._stopper !== null) {
             clearInterval(this._stopper);
             this._stopper = null;
@@ -75,16 +71,16 @@ export class DelayedTask extends AbstractTask {
 
     private _stopper:   any;
 
-    constructor() {
+    public constructor() {
         super();
         this._stopper = null;
     }
 
-    get running(): boolean {
+    public get running(): boolean {
         return this._stopper !== null;
     }
 
-    start(): void {
+    public start(): void {
         if (this._stopper === null) {
             this._stopper = setTimeout((): void => {
                 this._stopper = null;
@@ -93,7 +89,7 @@ export class DelayedTask extends AbstractTask {
         }
     }
 
-    stop(): void {
+    public stop(): void {
         if (this._stopper !== null) {
             clearTimeout(this._stopper);
             this._stopper = null;

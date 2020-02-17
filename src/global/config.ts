@@ -14,7 +14,7 @@ export interface AppSettings {
 
 }
 
-interface TCPAddress {
+export interface TCPAddress {
     readonly host?:         string;
     readonly port:          number;
 }

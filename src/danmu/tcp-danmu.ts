@@ -3,31 +3,23 @@ import * as chalk from 'chalk';
 import { EventEmitter } from 'events';
 import { cprint } from '../fmt/index';
 import { Bilibili } from '../bilibili/index';
-import { AppConfig } from '../global/index';
+import {
+    AppConfig,
+    TCPAddress, } from '../global/index';
 import {
     RecurrentTask,
     DelayedTask, } from '../task/index';
 import {
+    Raffle,
     PK,
     Gift,
     Guard,
     Storm,
-    Danmu,
     Anchor,
-    PKBuilder,
-    GiftBuilder,
-    GuardBuilder,
-    StormBuilder,
-    AnchorBuilder, } from './index';
+    Danmu, } from './index';
 
 
-
-interface TCPAddress {
-    readonly host?:     string;
-    readonly port:      number;
-}
-
-interface RoomInfo {
+export interface RoomInfo {
     readonly roomid:    number;
     readonly areaid?:   number;
 }
@@ -40,7 +32,7 @@ interface Stoppable {
     stop(): void;
 }
 
-export class AbstractDanmuTCP extends EventEmitter implements Startable, Stoppable {
+export abstract class AbstractDanmuTCP extends EventEmitter implements Startable, Stoppable {
 
     private _host:          string;
     private _port:          number;
@@ -57,7 +49,7 @@ export class AbstractDanmuTCP extends EventEmitter implements Startable, Stoppab
     private _heartbeat:     Buffer;
     private _handshake:     Buffer;
 
-    constructor(addr: TCPAddress, info: RoomInfo) {
+    protected constructor(addr: TCPAddress, info: RoomInfo) {
         super();
         this.bind();
         this._host = addr.host || 'localhost';
@@ -94,7 +86,7 @@ export class AbstractDanmuTCP extends EventEmitter implements Startable, Stoppab
         this._healthTask.withTime(10 * 1000).withCallback(closeAfterInactivity);
     }
 
-    bind(): void {
+    private bind(): void {
         this.onConnect = this.onConnect.bind(this);
         this.onData = this.onData.bind(this);
         this.onEnd = this.onEnd.bind(this);
@@ -102,19 +94,19 @@ export class AbstractDanmuTCP extends EventEmitter implements Startable, Stoppab
         this.onClose = this.onClose.bind(this);
     }
 
-    get running(): boolean {
+    public get running(): boolean {
         return this._running;
     }
 
-    get roomid(): number {
+    public get roomid(): number {
         return this._roomid;
     }
 
-    get areaid(): number {
+    public get areaid(): number {
         return this._areaid;
     }
 
-    start(): void {
+    public start(): void {
         if (this._running === false) {
             this._running = true;
             this._closedByUs = false;
@@ -122,19 +114,19 @@ export class AbstractDanmuTCP extends EventEmitter implements Startable, Stoppab
         }
     }
 
-    stop(): void {
+    public stop(): void {
         if (this._running === true) {
             this.close();
             this._running = false;
         }
     }
 
-    destroy(): void {
+    public destroy(): void {
         this.removeAllListeners();
         this.stop();
     }
 
-    connect(): void {
+    private connect(): void {
         const options: any = {
             port: this._port,
             host: this._host,
@@ -152,7 +144,7 @@ export class AbstractDanmuTCP extends EventEmitter implements Startable, Stoppab
         }
     }
 
-    reset(): void {
+    private reset(): void {
         this._heartbeatTask.stop();
         this._healthTask.stop();
         if (this._socket !== null) {
@@ -163,13 +155,13 @@ export class AbstractDanmuTCP extends EventEmitter implements Startable, Stoppab
         this._running = false;
     }
 
-    onConnect(): void {
+    private onConnect(): void {
         this._healthTask.start();
         this._remoteAddr = (this._socket && this._socket.remoteAddress) || '';
         this._socket && this._socket.write(this._handshake);
     }
 
-    close(closedByUs: boolean = true): void {
+    protected close(closedByUs: boolean = true): void {
         this._closedByUs = closedByUs;
         if (this._socket !== null) {
             this._socket.unref().destroy();
@@ -177,7 +169,7 @@ export class AbstractDanmuTCP extends EventEmitter implements Startable, Stoppab
         }
     }
 
-    onClose(hadError: boolean): void {
+    private onClose(hadError: boolean): void {
         this.reset();
         if (this._closedByUs === false) {
             this.start();
@@ -187,7 +179,7 @@ export class AbstractDanmuTCP extends EventEmitter implements Startable, Stoppab
         }
     }
 
-    onData(data: Buffer | string): void {
+    private onData(data: Buffer | string): void {
         this._lastRead = new Date();
         this._reader.onData(data);
 
@@ -204,7 +196,7 @@ export class AbstractDanmuTCP extends EventEmitter implements Startable, Stoppab
         }
     }
 
-    onMessage(data: Buffer): void {
+    private onMessage(data: Buffer): void {
         const totalLen: number = data.readUInt32BE(0);
         const headerLen: number = data.readUInt16BE(4);
         const cmd: number = data.readUInt32BE(8);
@@ -230,13 +222,12 @@ export class AbstractDanmuTCP extends EventEmitter implements Startable, Stoppab
         }
     }
 
-    processMsg(msg: any): void {
+    protected abstract processMsg(msg: any): void;
+
+    private onEnd(): void {
     }
 
-    onEnd(): void {
-    }
-
-    onError(error: Error): void {
+    private onError(error: Error): void {
         if (config.tcp_error) {
             const roomid = `${this.roomid}`;
             cprint(`(TCP) @${roomid.padEnd(13)} ${this._remoteAddr} - ${error.message}`, chalk.red);
@@ -246,11 +237,11 @@ export class AbstractDanmuTCP extends EventEmitter implements Startable, Stoppab
     /**
      * @param   {Integer}   popularity  - # watching stream
      */
-    onPopularity(popularity: number): number {
+    protected onPopularity(popularity: number): number {
         return popularity;
     }
 
-    prepareData(cmd: number, msg: string = ''): Buffer {
+    private prepareData(cmd: number, msg: string = ''): Buffer {
         const body: Buffer = Buffer.from(msg, 'utf8');
         const headerLen: number = 16;
         const totalLen: number = headerLen + body.length;
@@ -279,18 +270,18 @@ enum DanmuTarget {
     DANMU =     0b00100000,
 }
 
-export class DanmuTCP extends AbstractDanmuTCP {
+export abstract class DanmuTCP extends AbstractDanmuTCP {
 
     private targets:            number;
     protected _peak_popularity: number;
 
-    constructor(addr: TCPAddress, info: RoomInfo, targets: number = 0b11111111) {
+    protected constructor(addr: TCPAddress, info: RoomInfo, targets: number = 0b11111111) {
         super(addr, info);
         this.targets = targets;
         this._peak_popularity = 0;
     }
 
-    processMsg(msg: any): void {
+    protected processMsg(msg: any): void {
         if (msg['scene_key']) {
             msg = msg['msg'];
         }
@@ -346,7 +337,7 @@ export class DanmuTCP extends AbstractDanmuTCP {
         }
     }
 
-    onDanmu(msg: any): Danmu | null {
+    protected onDanmu(msg: any): Danmu | null {
         const data: any[] = msg['info'];
         const dataOk: boolean = typeof data !== 'undefined';
 
@@ -377,27 +368,26 @@ export class DanmuTCP extends AbstractDanmuTCP {
      * @param   {Integer}   msg.data.time_wait
      * @param   {String}    msg.data.type
      * @param   {String}    msg.data.title
-     * @returns {Gift}      gift info
+     * @returns {Raffle|null} gift info
      */
-    onRaffle(msg: any): Gift | null {
+    protected onRaffle(msg: any): Raffle | null {
         const data: any = msg['data'];
         const dataOk: boolean = typeof data !== 'undefined';
 
-        let gift: Gift | null = null;
+        let gift: Raffle | null = null;
         if (dataOk) {
             const t: string = data['type'];
             const id: number = data['raffleId'];
             const name: string = data['title'] || '未知';
             const wait: number = data['time_wait'] > 0 ? data['time_wait'] : 0;
             const expireAt: number = data['time'] + Math.floor(0.001 * new Date().valueOf());
-            gift = (GiftBuilder.start()
+            gift = new Gift()
                 .withId(id)
                 .withRoomid(this.roomid)
                 .withType(t)
                 .withName(name)
                 .withWait(wait)
-                .withExpireAt(expireAt)
-                .build());
+                .withExpireAt(expireAt);
         }
 
         return gift;
@@ -412,27 +402,26 @@ export class DanmuTCP extends AbstractDanmuTCP {
      * @param   {Integer}   msg.data.time_wait
      * @param   {String}    msg.data.type
      * @param   {String}    msg.data.title
-     * @returns {Gift|null}
+     * @returns {Raffle|null}
      */
-    onTV(msg: any): Gift | null {
+    protected onTV(msg: any): Raffle | null {
         const data: any = msg['data'];
         const dataOk: boolean = typeof data !== 'undefined';
 
-        let gift: Gift | null = null;
+        let gift: Raffle | null = null;
         if (dataOk) {
             const t: string = data['type'];
             const id: number = data['raffleId'];
             const name: string = data['title'] || '未知';
             const wait: number = data['time_wait'] > 0 ? data['time_wait'] : 0;
             const expireAt: number = data['time'] + Math.floor(0.001 * new Date().valueOf());
-            gift = (GiftBuilder.start()
+            gift = new Gift()
                 .withId(id)
                 .withRoomid(this.roomid)
                 .withType(t)
                 .withName(name)
                 .withWait(wait)
-                .withExpireAt(expireAt)
-                .build());
+                .withExpireAt(expireAt);
         }
 
         return gift;
@@ -449,7 +438,7 @@ export class DanmuTCP extends AbstractDanmuTCP {
      * @param   {Integer}   msg.data.lottery.time
      * @returns {Guard|null}
      */
-    onGuard(msg: any): Guard | null {
+    protected onGuard(msg: any): Raffle | null {
         const data: any = msg['data'];
         const dataOk: boolean = typeof data !== 'undefined';
 
@@ -459,7 +448,7 @@ export class DanmuTCP extends AbstractDanmuTCP {
             3: '舰长',
         };
 
-        let guard: Guard | null = null;
+        let guard: Raffle | null = null;
         if (dataOk) {
             const lottery: any = data['lottery'] || {};
             const lotteryOk: boolean = typeof lottery !== 'undefined';
@@ -468,22 +457,21 @@ export class DanmuTCP extends AbstractDanmuTCP {
             const id: number = data['id'];
             const name: string = nameOfType[data['privilege_type']];
             const expireAt: number = (lottery['time'] || 0) + Math.floor(0.001 * new Date().valueOf());
-            guard = (GuardBuilder.start()
+            guard = new Guard()
                 .withId(id)
                 .withRoomid(this.roomid)
                 .withType(t)
                 .withName(name)
-                .withExpireAt(expireAt)
-                .build());
+                .withExpireAt(expireAt);
         }
 
         return guard;
     }
 
     /**
-     * @returns     {Storm|null}
+     * @returns     {Raffle|null}
      */
-    onSpecialGift(msg: any): Storm | null {
+    protected onSpecialGift(msg: any): Raffle | null {
         const data: any = msg['data'];
         const dataOk: boolean = typeof data !== 'undefined';
 
@@ -493,68 +481,64 @@ export class DanmuTCP extends AbstractDanmuTCP {
         const infoOk: boolean = typeof info !== 'undefined';
         if (!infoOk) return null;
 
-        let details: Storm | null = null;
+        let details: Raffle | null = null;
         if (info['action'] === 'start') {
-            const id: string = info['id'];
+            const id: number = info['id'];
             const expireAt: number = info['time'] + Math.floor(0.001 * new Date().valueOf());
-            details = (StormBuilder.start()
+            details = new Storm()
                 .withId(id)
                 .withRoomid(this.roomid)
                 .withType('storm')
                 .withName('节奏风暴')
-                .withExpireAt(expireAt)
-                .build()
-            );
+                .withExpireAt(expireAt);
         }
 
         return details;
     }
 
     /**
-     * @returns     {PK|null}
+     * @returns     {Raffle|null}
      */
-    onPkLottery(msg: any): PK | null {
+    protected onPkLottery(msg: any): Raffle | null {
         const data: any = msg['data'];
         const dataOk: boolean = typeof data !== 'undefined';
 
-        let pk: PK | null = null;
+        let pk: Raffle | null = null;
         if (dataOk) {
             const id: number = data['id'];
             const roomid: number = data['room_id'];
             const expireAt: number = data['time'] + Math.floor(0.001 * new Date().valueOf());
-            pk = (PKBuilder.start()
+            pk = new PK()
                 .withId(id)
                 .withRoomid(roomid)
                 .withType('pk')
                 .withName('大乱斗')
-                .withExpireAt(expireAt)
-                .build()
-            );
+                .withExpireAt(expireAt);
         }
 
         return pk;
     }
 
     /**
-     * @returns     {Anchor|null}
+     * @returns     {Raffle|null}
      */
-    onAnchorLottery(msg: any): Anchor | null {
+    protected onAnchorLottery(msg: any): Raffle | null {
         const data: any = msg['data'];
         const dataOk: boolean = typeof data !== 'undefined';
 
-        let details: Anchor | null = null;
+        let details: Raffle | null = null;
         if (dataOk) {
             const id: number = data['id'];
             const roomid: number = data['room_id'];
             const name: string = data['award_name'];
             const award_num: number = data['award_num'];
             const gift_name: string = data['gift_name'];
-            const gift_num: string = data['gift_num'];
-            const gift_price: string = data['gift_price'];
+            const gift_num: number = data['gift_num'];
+            const gift_price: number = data['gift_price'];
             const require_text: string = data['require_text'];
             const danmu: string = data['danmu'];
             const expireAt: number = data['time'] + Math.floor(0.001 * new Date().valueOf());
-            details = (AnchorBuilder.start()
+            details = new Anchor()
                 .withId(id)
                 .withRoomid(roomid)
                 .withGiftPrice(gift_price)
@@ -565,26 +549,25 @@ export class DanmuTCP extends AbstractDanmuTCP {
                 .withName(name)
                 .withAwardNum(award_num)
                 .withType('anchor')
-                .withExpireAt(expireAt)
-                .build());
+                .withExpireAt(expireAt);
         }
 
         return details;
     }
 
-    onNoticeMsg(msg: any) {
+    protected onNoticeMsg(msg: any) {
     }
 
-    onPreparing(msg: any) {
+    protected onPreparing(msg: any) {
     }
 
-    onLive(msg: any) {
+    protected onLive(msg: any) {
     }
 
-    onRoomChange(msg: any) {
+    protected onRoomChange(msg: any) {
     }
 
-    onPopularity(popularity: number): number {
+    protected onPopularity(popularity: number): number {
         let result: number = super.onPopularity(popularity);
         this._peak_popularity = Math.max(this._peak_popularity, popularity);
         this._peak_popularity = this._peak_popularity || 0;
@@ -594,11 +577,11 @@ export class DanmuTCP extends AbstractDanmuTCP {
 
 export class DanmuMonitor extends DanmuTCP {
 
-    constructor(addr: TCPAddress, info: RoomInfo) {
+    public constructor(addr: TCPAddress, info: RoomInfo) {
         super(addr, info, DanmuTarget.DANMU);
     }
 
-    onDanmu(msg: any): Danmu | null {
+    protected onDanmu(msg: any): Danmu | null {
         const data: Danmu | null = super.onDanmu(msg);
 
         if (data !== null) {
@@ -613,7 +596,7 @@ export class FixedGuardMonitor extends DanmuTCP {
 
     private _delayedTasks:  DelayedTask[];
 
-    constructor(addr: TCPAddress, info: RoomInfo) {
+    public constructor(addr: TCPAddress, info: RoomInfo) {
         const targets: number = (
             DanmuTarget.GIFT
             | DanmuTarget.GUARD
@@ -624,22 +607,22 @@ export class FixedGuardMonitor extends DanmuTCP {
         this._delayedTasks = ([] as DelayedTask[]);
     }
 
-    destroy(): void {
+    public destroy(): void {
         super.destroy();
         this._delayedTasks.forEach((task: DelayedTask): void => task.stop());
         this._delayedTasks = ([] as DelayedTask[]);
     }
 
-    onAnchorLottery(msg: any): Anchor | null {
-        const data: Anchor | null = super.onAnchorLottery(msg);
+    protected onAnchorLottery(msg: any): Raffle | null {
+        const data: Raffle | null = super.onAnchorLottery(msg);
         if (data !== null) {
             this.emit('anchor', data);
         }
         return data;
     }
 
-    onTV(msg: any): Gift | null {
-        const data: Gift | null = super.onTV(msg);
+    protected onTV(msg: any): Raffle | null {
+        const data: Raffle | null = super.onTV(msg);
         if (data !== null) {
             this.emit('add_to_db', this.roomid);
             const t = new DelayedTask();
@@ -649,8 +632,8 @@ export class FixedGuardMonitor extends DanmuTCP {
         return data;
     }
 
-    onRaffle(msg: any): Gift | null {
-        const data: Gift | null = super.onRaffle(msg);
+    protected onRaffle(msg: any): Raffle | null {
+        const data: Raffle | null = super.onRaffle(msg);
         if (data !== null) {
             this.emit('add_to_db', this.roomid);
             const t = new DelayedTask();
@@ -660,8 +643,8 @@ export class FixedGuardMonitor extends DanmuTCP {
         return data;
     }
 
-    onPkLottery(msg: any): PK | null {
-        const data: PK | null = super.onPkLottery(msg);
+    protected onPkLottery(msg: any): Raffle | null {
+        const data: Raffle | null = super.onPkLottery(msg);
         if (data !== null) {
             this.emit('add_to_db', this.roomid);
             this.emit('pk', data);
@@ -669,8 +652,8 @@ export class FixedGuardMonitor extends DanmuTCP {
         return data;
     }
 
-    onGuard(msg: any): Guard | null {
-        const data: Guard | null = super.onGuard(msg);
+    protected onGuard(msg: any): Raffle | null {
+        const data: Raffle | null = super.onGuard(msg);
         if (data !== null) {
             this.emit('add_to_db', this.roomid);
             this.emit('guard', data);
@@ -678,8 +661,8 @@ export class FixedGuardMonitor extends DanmuTCP {
         return data;
     }
 
-    onSpecialGift(msg: any): Storm | null {
-        const data: Storm | null = super.onSpecialGift(msg);
+    protected onSpecialGift(msg: any): Raffle | null {
+        const data: Raffle | null = super.onSpecialGift(msg);
         if (data !== null) {
             this.emit('add_to_db', this.roomid);
             this.emit('storm', data);
@@ -698,7 +681,7 @@ export class DynamicGuardMonitor extends FixedGuardMonitor {
     private _toFixed:           boolean;
     private _canClose:          boolean;
 
-    constructor(addr: TCPAddress, info: RoomInfo) {
+    public constructor(addr: TCPAddress, info: RoomInfo) {
         super(addr, info);
         this._offTimes = 0;
         this._newAnchorCount = 0;
@@ -709,7 +692,7 @@ export class DynamicGuardMonitor extends FixedGuardMonitor {
         this._canClose = false;
     }
 
-    get toFixed(): boolean {
+    public  get toFixed(): boolean {
         return (
             this._toFixed
             || this._newAnchorCount > 0
@@ -719,63 +702,63 @@ export class DynamicGuardMonitor extends FixedGuardMonitor {
         );
     }
 
-    onAnchorLottery(msg: any): Anchor | null {
-        const data: Anchor | null = super.onAnchorLottery(msg);
+    protected onAnchorLottery(msg: any): Raffle | null {
+        const data: Raffle | null = super.onAnchorLottery(msg);
         if (data !== null) {
             ++this._newAnchorCount;
         }
         return data;
     }
 
-    onRaffle(msg: any): any {
-        const data: Gift | null = super.onRaffle(msg);
+    protected onRaffle(msg: any): Raffle | null {
+        const data: Raffle | null = super.onRaffle(msg);
         if (data !== null) {
             ++this._newGiftCount;
         }
         return data;
     }
 
-    onTV(msg: any): any {
-        const data: Gift | null = super.onTV(msg);
+    protected onTV(msg: any): Raffle | null {
+        const data: Raffle | null = super.onTV(msg);
         if (data !== null) {
             ++this._newGiftCount;
         }
         return data;
     }
 
-    onGuard(msg: any): any {
-        const data: Guard | any = super.onGuard(msg);
+    protected onGuard(msg: any): Raffle | null {
+        const data: Raffle | any = super.onGuard(msg);
         if (data !== null) {
             ++this._newGuardCount;
         }
         return data;
     }
 
-    onPkLottery(msg: any): any {
-        const data: PK | any = super.onPkLottery(msg);
+    protected onPkLottery(msg: any): Raffle | null {
+        const data: Raffle | any = super.onPkLottery(msg);
         if (data !== null) {
             ++this._newGiftCount;
         }
         return data;
     }
 
-    onSpecialGift(msg: any): any {
-        const data: Storm | any = super.onSpecialGift(msg);
+    protected onSpecialGift(msg: any): Raffle | null {
+        const data: Raffle | any = super.onSpecialGift(msg);
         if (data !== null) {
             ++this._newStormCount;
         }
         return data;
     }
 
-    onPreparing(msg: any): void {
+    protected onPreparing(msg: any): void {
         this._canClose = true;
     }
 
-    onLive(msg: any): void {
+    protected onLive(msg: any): void {
         this._canClose = false;
     }
 
-    onPopularity(popularity: number): number {
+    protected onPopularity(popularity: number): number {
         let result: number = super.onPopularity(popularity);
 
         if (popularity <= 1) {
@@ -806,12 +789,12 @@ export class DynamicGuardMonitor extends FixedGuardMonitor {
 
 export class RaffleMonitor extends DanmuTCP {
 
-    constructor(addr: TCPAddress, info: RoomInfo) {
+    public constructor(addr: TCPAddress, info: RoomInfo) {
         const targets: number = DanmuTarget.NOTICE
         super(addr, info, targets);
     }
 
-    onNoticeMsg(msg: any): void {
+    protected onNoticeMsg(msg: any): void {
         const msg_type: number = msg['msg_type'];
         const roomid: number = msg['real_roomid'];
 
@@ -826,13 +809,13 @@ export class RaffleMonitor extends DanmuTCP {
         }
     }
 
-    onPreparing(msg: any): void {
+    protected onPreparing(msg: any): void {
         if (this.areaid !== 0) {
             this.close(true);
         }
     }
 
-    onRoomChange(msg: any): void {
+    protected onRoomChange(msg: any): void {
         const changedInfo: any = msg['data'];
         const newAreaid: number = (changedInfo && changedInfo['parent_area_id']) || 0;
         if (this.areaid !== 0 && newAreaid !== this.areaid) {
@@ -840,7 +823,7 @@ export class RaffleMonitor extends DanmuTCP {
         }
     }
 
-    onPopularity(popularity: number): number {
+    protected onPopularity(popularity: number): number {
         let result: number = super.onPopularity(popularity);
         if (popularity <= 1) {
             Bilibili.isLive(this.roomid).then((streaming: boolean): void => {
@@ -848,7 +831,7 @@ export class RaffleMonitor extends DanmuTCP {
                     this.close(true);
                 }
             }).catch((error: Error) => {
-                cprint(`${Bilibili.isLive.name} - ${error.message}`, chalk.red);
+                cprint(`Bilibili.isLive - ${error.message}`, chalk.red);
             });
         }
         return result;
@@ -861,19 +844,19 @@ class DanmuTCPReader {
     private _data:          Buffer;
     private _totalLen:      number;
 
-    constructor() {
+    public constructor() {
         this._data = Buffer.alloc(0);
         this._totalLen = 0;
     }
 
-    onData(data: Buffer | string): void {
+    public onData(data: Buffer | string): void {
         if (typeof data === 'string') {
             data = Buffer.from(data, 'utf8');
         }
         this._data = Buffer.concat([ this._data, data ]);
     }
 
-    getMessage(): Buffer | null {
+    public getMessage(): Buffer | null {
         let result: Buffer | null = null;
         if (this._totalLen <= 0 && this._data.length > 4) {
             this._totalLen = this._data.readUInt32BE(0);
@@ -900,4 +883,3 @@ class DanmuTCPReader {
 
 const config = new AppConfig();
 config.readArgs();
-

@@ -11,7 +11,7 @@
 ## Features
  - 推送监听到的舰长、达到可抽奖时间段的高能信息 (默认WS接口8999)
  - 以http返回json视图的**未过期**舰长/提督/总督/高能/天选 (默认http接口9001)
- - http路径`/guard`, `/gift`, `/anchor`
+ - http路径`/guard`, `/gift`, `/pk`, `/storm`, `/anchor`
  - `/build/db/record.json`为静态房间列表(永久监听)；初次运行时自动建立，运行过程中自动存入记录；此后每次运行自动读取静态房间记录
 
 ## Limitations
@@ -44,7 +44,7 @@
  1. 命令行切换到package.json所在的目录
  2. `npm install`                       (执行一次就好)
  3. `node ./build/main.js`              (正常运行)
- 4. 运行后可以进浏览器<http://{ip}:9001/guard>查看可领取范围内的舰长, <http://{ip}:9001/gift>查看可领取范围内的抽奖 (可能要等会), <http://{ip}:9001/anchor>查看进行中的天选抽奖
+ 4. 运行后可以进浏览器<http://{ip}:9001/guard>查看可领取范围内的大航海奖励, <http://{ip}:9001/gift>查看可领取范围内的抽奖 (可能要等会), <http://{ip}:9001/pk>查看可领取范围内的大乱斗奖励, <http://{ip}:9001/storm>查看进行中的节奏风暴, <http://{ip}:9001/anchor>查看进行中的天选抽奖
  5. Client端用WS连接8999端口接收推送
 
 ### pm2运行
@@ -100,7 +100,7 @@ docker run --publish 8999:8999 --publish 9001:9001 <image-name>
 
  - 以category区分类别 可能是`gift`, `guard`, `storm`, `pk`, `anchor`
 
-### /storm (风暴) --仅WS--
+### /storm (风暴) --http/ws--
 ```javascript
 {
     "id": "1909565617562",
@@ -112,7 +112,7 @@ docker run --publish 8999:8999 --publish 9001:9001 <image-name>
 }
 ```
 
-### /guard (船员) --http/ws--
+### /guard (大航海) --http/ws--
 ```javascript
 {
     "id": 1909418,
@@ -134,6 +134,18 @@ docker run --publish 8999:8999 --publish 9001:9001 <image-name>
     "name": "33地图抽奖抽奖",
     "wait": 120,                // 无视该变量 仅内用 所有推送的高能都是抽奖时间段内的
     "expireAt": 1579828602
+}
+```
+
+### /pk (大乱斗) --http/ws--
+```javascript
+{
+    "id": 739365,
+    "roomid": 21742849,
+    "category": "pk",
+    "type": "pk",
+    "name": "大乱斗",
+    "expireAt": 1581869287
 }
 ```
 

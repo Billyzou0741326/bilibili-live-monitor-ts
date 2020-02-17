@@ -19,24 +19,9 @@ var chalk = require("chalk");
 var index_1 = require("../fmt/index");
 var Router = /** @class */ (function () {
     function Router() {
-        var _this = this;
         this.bind();
-        this._pathHandler = {
-            gift: function () { return []; },
-            guard: function () { return []; },
-            anchor: function () { return []; },
-        };
         this._router = express.Router({ 'mergeParams': true });
         this._router.use('/', this.setCors);
-        this._router.use('/gift', function (request, response) {
-            response.jsonp(_this._pathHandler.gift());
-        });
-        this._router.use('/guard', function (request, response) {
-            response.jsonp(_this._pathHandler.guard());
-        });
-        this._router.use('/anchor', function (request, response) {
-            response.jsonp(_this._pathHandler.anchor());
-        });
     }
     Router.prototype.bind = function () {
         this.setCors = this.setCors.bind(this);
@@ -48,17 +33,9 @@ var Router = /** @class */ (function () {
         next();
     };
     Router.prototype.mountGetter = function (path, getter) {
-        switch (path) {
-            case 'gift':
-                this._pathHandler.gift = getter;
-                break;
-            case 'guard':
-                this._pathHandler.guard = getter;
-                break;
-            case 'anchor':
-                this._pathHandler.anchor = getter;
-                break;
-        }
+        this._router.use("/" + path, function (request, response) {
+            response.jsonp(getter().map(function (g) { return g.convert(); }));
+        });
         return this;
     };
     return Router;
