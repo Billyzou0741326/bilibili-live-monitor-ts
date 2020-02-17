@@ -15,7 +15,8 @@ import {
     Gift,
     Guard,
     Storm,
-    Anchor, } from './index';
+    Anchor,
+    Danmu, } from './index';
 
 
 export interface RoomInfo {
@@ -266,6 +267,7 @@ enum DanmuTarget {
     STORM =     0b00000100,
     ANCHOR =    0b00001000,
     NOTICE =    0b00010000,
+    DANMU =     0b00100000,
 }
 
 export abstract class DanmuTCP extends AbstractDanmuTCP {
@@ -286,6 +288,10 @@ export abstract class DanmuTCP extends AbstractDanmuTCP {
 
         const cmd: string = msg['cmd'];
         switch (cmd) {
+            case 'DANMU_MSG':
+                if ((this.targets & DanmuTarget.DANMU) === DanmuTarget.DANMU)
+                    this.onDanmu(msg);
+                break;
             case 'GUARD_LOTTERY_START':
                 if ((this.targets & DanmuTarget.GUARD) === DanmuTarget.GUARD)
                     this.onGuard(msg);
@@ -329,6 +335,28 @@ export abstract class DanmuTCP extends AbstractDanmuTCP {
             default:
                 break;
         }
+    }
+
+    protected onDanmu(msg: any): Danmu | null {
+        const data: any[] = msg['info'];
+        const dataOk: boolean = typeof data !== 'undefined';
+
+        let result: Danmu | null = null;
+        if (dataOk) {
+            const msg: string = data[1];
+            const uid: number = data[2][0];
+            const sender: string = data[2][1];
+            const time: number = data[9]['ts'];
+
+            result = {
+                uid:    uid,
+                msg:    msg,
+                sender: sender,
+                time:   time,
+            } as Danmu;
+        }
+
+        return result;
     }
 
     /**
@@ -544,6 +572,23 @@ export abstract class DanmuTCP extends AbstractDanmuTCP {
         this._peak_popularity = Math.max(this._peak_popularity, popularity);
         this._peak_popularity = this._peak_popularity || 0;
         return result;
+    }
+}
+
+export class DanmuMonitor extends DanmuTCP {
+
+    public constructor(addr: TCPAddress, info: RoomInfo) {
+        super(addr, info, DanmuTarget.DANMU);
+    }
+
+    protected onDanmu(msg: any): Danmu | null {
+        const data: Danmu | null = super.onDanmu(msg);
+
+        if (data !== null) {
+            this.emit('danmu', data);
+        }
+
+        return data;
     }
 }
 
@@ -838,4 +883,3 @@ class DanmuTCPReader {
 
 const config = new AppConfig();
 config.readArgs();
-

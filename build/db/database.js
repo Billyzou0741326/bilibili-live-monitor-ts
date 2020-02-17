@@ -45,7 +45,7 @@ var Database = /** @class */ (function () {
             .then(function (roomData) { return _this.save(); }));
     };
     Database.prototype.save = function () {
-        var data = JSON.stringify(this._roomData, null, 4);
+        var data = JSON.stringify(this.filter(this._roomData), null, 4);
         fs.writeFile(this._filename, data, function (error) {
             if (error) {
                 index_2.cprint("(Database) - " + error.message, chalk.red);
@@ -86,10 +86,10 @@ var Database = /** @class */ (function () {
         });
     };
     Database.prototype.filter = function (data) {
-        var thirtyDays = 1000 * 60 * 60 * 24 * 30;
+        var threshold = new Date().valueOf() - 1000 * 60 * 60 * 24 * 30;
         var result = Object.assign(new Object(), data);
         Object.entries(result).forEach(function (entry) {
-            if (new Date().valueOf() - entry[1].updated_at > thirtyDays) {
+            if (entry[1].updated_at < threshold) {
                 delete result[entry[0]];
             }
         });

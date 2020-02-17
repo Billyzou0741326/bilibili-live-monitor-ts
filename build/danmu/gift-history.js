@@ -5,8 +5,7 @@ var index_2 = require("./index");
 var History = /** @class */ (function () {
     function History() {
         this._active = new Map();
-        for (var _i = 0, RaffleCategories_1 = index_2.RaffleCategories; _i < RaffleCategories_1.length; _i++) {
-            var category = RaffleCategories_1[_i];
+        for (var category in index_2.RaffleCategory) {
             this._active.set(category, new Map());
         }
         this._tasks = [];

@@ -8,7 +8,7 @@ import {
     TCPAddress, } from '../global/index';
 import { RateLimiter } from '../task/index';
 import {
-    RaffleCategories,
+    RaffleCategory,
     Raffle,
     RoomidHandler,
     RoomInfo,
@@ -101,7 +101,7 @@ abstract class GuardController extends AbstractRoomController {
                 }
             })
             .on('add_to_db', (): void => { this.emit('add_to_db', roomid) });
-        for (const category of RaffleCategories) {
+        for (const category in RaffleCategory) {
             listener.on(category, (g: Raffle): void => { this.emit(category, g) });
         }
     }
@@ -155,7 +155,7 @@ export class RaffleController extends AbstractRoomController {
             5: '电台',
             6: '单机',
         };
-        for (const category of RaffleCategories) {
+        for (const category in RaffleCategory) {
             this._roomidHandler.on(category, (g: Raffle): void => { this.emit(category, g) });
         }
     }
@@ -239,7 +239,7 @@ export class RaffleController extends AbstractRoomController {
             })
             .on('add_to_db', (): void => { this.emit('add_to_db', roomid) })
             .on('roomid', (roomid: number): void => { this._roomidHandler.add(roomid) });
-        for (const category of RaffleCategories) {
+        for (const category in RaffleCategory) {
             listener.on(category, (g: Raffle): void => { this.emit(category, g) });
         }
     }

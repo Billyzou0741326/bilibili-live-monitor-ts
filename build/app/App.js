@@ -112,13 +112,11 @@ var App = /** @class */ (function () {
             controller
                 .on('add_to_db', function (roomid) { _this._db.add(roomid); })
                 .on('to_fixed', function (roomid) { _this._fixedController.add(roomid); });
-            for (var _i = 0, RaffleCategories_2 = index_6.RaffleCategories; _i < RaffleCategories_2.length; _i++) {
-                var category = RaffleCategories_2[_i];
+            for (var category in index_6.RaffleCategory) {
                 controller.on(category, handler(category));
             }
         });
-        for (var _i = 0, RaffleCategories_1 = index_6.RaffleCategories; _i < RaffleCategories_1.length; _i++) {
-            var category = RaffleCategories_1[_i];
+        for (var category in index_6.RaffleCategory) {
             this._emitter.on(category, function (g) {
                 _this.printGift(g);
                 _this._wsServer.broadcast(g);
@@ -127,8 +125,7 @@ var App = /** @class */ (function () {
         }
     };
     App.prototype.setupServer = function () {
-        for (var _i = 0, RaffleCategories_3 = index_6.RaffleCategories; _i < RaffleCategories_3.length; _i++) {
-            var category = RaffleCategories_3[_i];
+        for (var category in index_6.RaffleCategory) {
             this._httpServer.mountGetter(category, this._history.retrieveGetter(category));
         }
     };

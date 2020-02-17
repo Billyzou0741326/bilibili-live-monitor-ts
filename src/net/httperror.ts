@@ -1,12 +1,17 @@
-export class HttpError extends Error {
+export class HttpError implements Error {
 
-    private _code: string;
-    private _status: number;
+    private _name:      string;
+    private _message:   string;
+    private _code:      string;
+    private _status:    number;
+    public stack:       any;
 
-    constructor(...args: any) {
-        super(...args);
+    constructor(msg: string) {
+        this._name = 'HttpError';
+        this._message = msg;
         this._code = 'ERR_HTTP_CONN';
         this._status = 0;
+        this.stack = (new Error()).stack;
     }
 
     withStatus(status: number): HttpError {
@@ -20,6 +25,14 @@ export class HttpError extends Error {
 
     get status(): number {
         return this._status;
+    }
+
+    get name(): string {
+        return this._name;
+    }
+
+    get message(): string {
+        return this._message;
     }
 
 }

@@ -1,7 +1,7 @@
 import { DelayedTask } from '../task/index';
 import {
     Raffle,
-    RaffleCategories } from './index';
+    RaffleCategory } from './index';
 
 export class History {
 
@@ -11,7 +11,7 @@ export class History {
 
     public constructor() {
         this._active = new Map<string, Map<number, Raffle>>();
-        for (const category of RaffleCategories) {
+        for (const category in RaffleCategory) {
             this._active.set(category, new Map<number, Raffle>());
         }
         this._tasks = [];

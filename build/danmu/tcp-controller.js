@@ -131,8 +131,7 @@ var GuardController = /** @class */ (function (_super) {
         var _loop_1 = function (category) {
             listener.on(category, function (g) { _this.emit(category, g); });
         };
-        for (var _i = 0, RaffleCategories_1 = index_5.RaffleCategories; _i < RaffleCategories_1.length; _i++) {
-            var category = RaffleCategories_1[_i];
+        for (var category in index_5.RaffleCategory) {
             _loop_1(category);
         }
     };
@@ -184,8 +183,7 @@ var RaffleController = /** @class */ (function (_super) {
             this_1._roomidHandler.on(category, function (g) { _this.emit(category, g); });
         };
         var this_1 = this;
-        for (var _i = 0, RaffleCategories_2 = index_5.RaffleCategories; _i < RaffleCategories_2.length; _i++) {
-            var category = RaffleCategories_2[_i];
+        for (var category in index_5.RaffleCategory) {
             _loop_2(category);
         }
         return _this;
@@ -277,8 +275,7 @@ var RaffleController = /** @class */ (function (_super) {
         var _loop_3 = function (category) {
             listener.on(category, function (g) { _this.emit(category, g); });
         };
-        for (var _i = 0, RaffleCategories_3 = index_5.RaffleCategories; _i < RaffleCategories_3.length; _i++) {
-            var category = RaffleCategories_3[_i];
+        for (var category in index_5.RaffleCategory) {
             _loop_3(category);
         }
     };

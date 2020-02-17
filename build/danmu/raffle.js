@@ -13,13 +13,14 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RaffleCategories = [
-    'gift',
-    'guard',
-    'pk',
-    'storm',
-    'anchor',
-];
+var RaffleCategory;
+(function (RaffleCategory) {
+    RaffleCategory["gift"] = "gift";
+    RaffleCategory["guard"] = "guard";
+    RaffleCategory["pk"] = "pk";
+    RaffleCategory["storm"] = "storm";
+    RaffleCategory["anchor"] = "anchor";
+})(RaffleCategory = exports.RaffleCategory || (exports.RaffleCategory = {}));
 var Raffle = /** @class */ (function () {
     function Raffle() {
         this._id = 0;

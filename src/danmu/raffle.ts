@@ -1,10 +1,17 @@
-export const RaffleCategories = [
-    'gift',
-    'guard',
-    'pk',
-    'storm',
-    'anchor',
-];
+export interface Danmu {
+    readonly uid:       number;
+    readonly msg:       string;
+    readonly sender:    string;
+    readonly time:      number;
+}
+
+export enum RaffleCategory {
+    gift = 'gift',
+    guard = 'guard',
+    pk = 'pk',
+    storm = 'storm',
+    anchor = 'anchor',
+}
 
 export abstract class Raffle {
 

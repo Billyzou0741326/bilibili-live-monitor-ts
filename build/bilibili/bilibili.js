@@ -359,6 +359,147 @@ var Bilibili = /** @class */ (function (_super) {
         });
         return promises; // a list of promises, each element is list of rooms in an area
     };
+    Bilibili.sendDanmu = function (webSession, danmu) {
+        var data = {
+            'color': 0xFFFFFF,
+            'fontsize': 25,
+            'mode': 1,
+            'msg': danmu.msg,
+            'rnd': Math.floor(0.001 * new Date().valueOf()),
+            'roomid': danmu.roomid,
+            'bubble': 0,
+            'csrf': webSession.bili_jct,
+            'csrf_token': webSession.bili_jct,
+        };
+        var payload = index_2.Params.stringify(data);
+        var request = (index_1.RequestBuilder.start()
+            .withHost('api.live.bilibili.com')
+            .withPath('/msg/send')
+            .withMethod(index_1.RequestMethods.POST)
+            .withContentType('application/x-www-form-urlencoded')
+            .withHeaders(config.webHeaders)
+            .withCookies(webSession)
+            .withData(payload)
+            .build());
+        return Bilibili.request(request);
+    };
+    Bilibili.sessionInfo = function (appSession) {
+        var params = Object.assign(new Object(), config.appCommon);
+        params['access_token'] = appSession.access_token;
+        var paramstr = Bilibili.parseAppParams(sort(params));
+        var request = (index_1.RequestBuilder.start()
+            .withHost('passport.bilibili.com')
+            .withPath('/api/v3/oauth2/info')
+            .withMethod(index_1.RequestMethods.GET)
+            .withHeaders(config.appHeaders)
+            .withParams(paramstr)
+            .build());
+        return Bilibili.request(request);
+    };
+    Bilibili.isLoggedIn = function (webSession) {
+        var request = (index_1.RequestBuilder.start()
+            .withHost('account.bilibili.com')
+            .withPath('/home/userInfo')
+            .withMethod(index_1.RequestMethods.GET)
+            .withHeaders(config.webHeaders)
+            .withCookies(webSession)
+            .build());
+        return Bilibili.request(request);
+    };
+    Bilibili.startLive = function (webSession, info) {
+        var data = {};
+        data['room_id'] = info.roomid;
+        data['area_v2'] = info.areaid;
+        data['platform'] = 'pc';
+        data['csrf'] = webSession.bili_jct;
+        data['csrf_token'] = webSession.bili_jct;
+        var payload = index_2.Params.stringify(data);
+        console.log(payload);
+        var request = (index_1.RequestBuilder.start()
+            .withHost('api.live.bilibili.com')
+            .withPath('/room/v1/Room/startLive')
+            .withMethod(index_1.RequestMethods.POST)
+            .withHeaders(config.webHeaders)
+            .withCookies(webSession)
+            .withData(payload)
+            .build());
+        return Bilibili.request(request);
+    };
+    /**
+     *
+     * @returns     {Promise<any>}      { "code": 0, "message": "0", "data": { aid: 0, cid: 0, title: "", pubdate: 0, ... } }
+     * */
+    Bilibili.videoInfo = function (aid) {
+        var data = {};
+        data['aid'] = aid;
+        var request = (index_1.RequestBuilder.start()
+            .withHost('api.bilibili.com')
+            .withPath('/x/web-interface/view')
+            .withMethod(index_1.RequestMethods.GET)
+            .withHeaders(config.webHeaders)
+            .withParams(data)
+            .build());
+        return Bilibili.request(request);
+    };
+    /**
+     *
+     * @returns     {Promise<any>}      { "code": 0, "message": "0", "ttl": 1 }
+     * */
+    Bilibili.clickVideo = function (info) {
+        var aid = info.aid, cid = info.cid;
+        var data = {};
+        data['cid'] = cid;
+        data['aid'] = aid;
+        data['mid'] = '';
+        data['part'] = 1;
+        data['lv'] = 0;
+        data['stime'] = Math.floor(0.001 * new Date().valueOf());
+        data['ftime'] = Math.floor(data['stime'] - 3);
+        data['jsonp'] = 'jsonp';
+        data['type'] = 3;
+        data['sub_type'] = 0;
+        var payload = index_2.Params.stringify(data);
+        var request = (index_1.RequestBuilder.start()
+            .withHost('api.bilibili.com')
+            .withPath('/x/click-interface/click/web/h5')
+            .withMethod(index_1.RequestMethods.POST)
+            .withHeaders(config.webHeaders)
+            .withContentType('application/x-www-form-urlencoded')
+            .withData(payload)
+            .build());
+        return Bilibili.request(request);
+    };
+    /**
+     *
+     * @returns     {Promise<any>}      { "code": 0, "message": "0", "ttl": 1 }
+     * */
+    Bilibili.watchVideo = function (webSession, info, time) {
+        if (time === void 0) { time = 0; }
+        var aid = info.aid, cid = info.cid;
+        var data = {};
+        data['cid'] = cid;
+        data['aid'] = aid;
+        data['mid'] = (webSession && webSession.DedeUserID) || '';
+        data['played_time'] = time;
+        data['real_time'] = time;
+        data['type'] = 3;
+        data['dt'] = 2;
+        data['play_type'] = 0;
+        data['start_ts'] = Math.floor(0.001 * new Date().valueOf()) - data['played_time'];
+        var payload = index_2.Params.stringify(data);
+        var preRequest = (index_1.RequestBuilder.start()
+            .withHost('api.bilibili.com')
+            .withPath('/x/report/web/heartbeat')
+            .withMethod(index_1.RequestMethods.POST)
+            .withHeaders(config.webHeaders)
+            .withContentType('application/x-www-form-urlencoded')
+            .withData(payload));
+        if (webSession) {
+            preRequest = preRequest.withCookies(webSession);
+        }
+        var request = preRequest.build();
+        return Bilibili.request(request);
+    };
     Bilibili.appSign = function (str) {
         return crypto.createHash('md5').update(str + config.appSecret).digest('hex');
     };

@@ -13,7 +13,7 @@ import {
 import {
     Raffle,
     Anchor,
-    RaffleCategories,
+    RaffleCategory,
     History,
     RoomCollector,
     AbstractRoomController,
@@ -93,11 +93,11 @@ export class App {
             controller
                 .on('add_to_db', (roomid: number): void => { this._db.add(roomid) })
                 .on('to_fixed', (roomid: number): void => { this._fixedController.add(roomid) });
-            for (const category of RaffleCategories) {
+            for (const category in RaffleCategory) {
                 controller.on(category, handler(category));
             }
         });
-        for (const category of RaffleCategories) {
+        for (const category in RaffleCategory) {
             this._emitter.on(category, (g: Raffle): void => {
                 this.printGift(g);
                 this._wsServer.broadcast(g);
@@ -107,7 +107,7 @@ export class App {
     }
 
     private setupServer(): void {
-        for (const category of RaffleCategories) {
+        for (const category in RaffleCategory) {
             this._httpServer.mountGetter(category, this._history.retrieveGetter(category));
         }
     }
