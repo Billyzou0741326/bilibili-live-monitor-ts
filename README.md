@@ -74,7 +74,9 @@ docker run --publish 8999:8999 --publish 9001:9001 <image-name>
     "default-http-server": {
         "host": "0.0.0.0",
         "port": 9001
-    }
+    },
+    "users": [
+    ]
 }
 ```
 
@@ -92,9 +94,50 @@ docker run --publish 8999:8999 --publish 9001:9001 <image-name>
     "default-http-server": {
         "host": "127.0.0.1",
         "port": 9001
-    }
+    },
+    "users": [
+    ]
 }
 ```
+
+### 用户设置
+默认设置允许任意用户连接ws服务器。如果需要用户登录，可在users数组里添加用户，密码以明文写入plainTextPassword设置里：
+```javascript
+    "users": [
+        {
+            "id": "user1",
+            "plainTextPassword": "secret1"
+        }，
+        {
+            "id": "user2",
+            "plainTextPassword": "secret2"
+        }
+    ]
+```
+程序运行后会自动将生成的加密的密码写入配置文件中，并且删除明文密码，以防泄露:
+```javascript
+    "users": [
+        {
+            "id": "user1",
+            "password": "HD6Xh+Y6oIZnXv4XqbKxrb6t3RkoPYv+NkqOBE8MwkssuATRE2aFBp8Nm9kp/Xn5a4l2Ki8QkX5qIUlbXQgO4Q=="
+        },
+        {
+            "id": "user2",
+            "password": "cckjYsokygyEIiAV5Y/sIStXfM1W7qwGTo3K9VxmT4xXfeRFWekmMbr2wKZy2T1HSNXW6vjNyRxajG46oEBrAw=="
+        }
+    ]
+```
+如需更改密码请将password设置删除，并重新添加plainTextPassword设置。
+
+在客户端设置服务器地址时请使用标准URI写法，例如：
+```javascript
+    "wsServer": [
+        {
+            "host": "user1:secret1@127.0.0.1",
+            "port": 8999
+        }
+```
+
 
 ## Broadcast Format (http, ws)
 

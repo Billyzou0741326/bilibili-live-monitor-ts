@@ -1,8 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var settings = require("../settings.json");
+var path = require("path");
+var fs = require("fs");
+var crypto = require("crypto");
+var chalk = require("chalk");
+var index_1 = require("../fmt/index");
 var AppConfig = /** @class */ (function () {
     function AppConfig() {
+        this._settingsPath = path.resolve(__dirname, '../settings.json');
         this._debug = false;
         this._verbose = false;
         this._tcp_error = false;
@@ -16,10 +22,12 @@ var AppConfig = /** @class */ (function () {
         this._wsAddr = settings['default-ws-server'];
         this._httpAddr = settings['default-http-server'];
         this._biliveAddr = settings['bilive-ws-server'];
+        this._users = [];
     }
     AppConfig.prototype.init = function () {
         if (this._initialized === false) {
-            this.readArgs();
+            this.readArgs()
+                .parseUsers();
             this._initialized = true;
         }
     };
@@ -119,6 +127,52 @@ var AppConfig = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(AppConfig.prototype, "users", {
+        get: function () {
+            return this._users;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    AppConfig.prototype.parseUsers = function () {
+        if (settings.hasOwnProperty('users')) {
+            var settingsUpdated = false;
+            for (var _i = 0, _a = settings.users; _i < _a.length; _i++) {
+                var u = _a[_i];
+                var user = u;
+                if (user.hasOwnProperty('id')) {
+                    if (!user.hasOwnProperty('password') && user.hasOwnProperty('plainTextPassword')) {
+                        user.password = crypto.createHash('sha512').update(user.plainTextPassword).digest('base64');
+                        delete user['plainTextPassword'];
+                        settingsUpdated = true;
+                    }
+                    if (user.hasOwnProperty('password')) {
+                        this._users.push(user);
+                    }
+                }
+            }
+            if (settingsUpdated) {
+                this.saveToFile().catch(function (error) {
+                    index_1.cprint("saveToFile - " + error.message, chalk.red);
+                });
+            }
+        }
+        return this;
+    };
+    AppConfig.prototype.saveToFile = function () {
+        var _this = this;
+        var data = JSON.stringify(settings, null, 4);
+        return new Promise(function (resolve, reject) {
+            fs.writeFile(_this._settingsPath, data, function (error) {
+                if (error) {
+                    reject(error);
+                }
+                else {
+                    resolve(true);
+                }
+            });
+        });
+    };
     return AppConfig;
 }());
 exports.AppConfig = AppConfig;
