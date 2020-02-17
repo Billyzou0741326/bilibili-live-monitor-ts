@@ -136,6 +136,7 @@ docker run --publish 8999:8999 --publish 9001:9001 <image-name>
             "host": "user1:secret1@127.0.0.1",
             "port": 8999
         }
+    ],
 ```
 
 
