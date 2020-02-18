@@ -15,13 +15,17 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var WebSocket = require("ws");
 var chalk = require("chalk");
+var http = require("http");
+var crypto = require("crypto");
 var index_1 = require("../task/index");
 var index_2 = require("../fmt/index");
+var index_3 = require("../global/index");
 var AbstractWsServer = /** @class */ (function () {
     function AbstractWsServer(addr) {
         var _this = this;
         this._host = addr.host || '127.0.0.1';
         this._port = addr.port;
+        this._server = null;
         this._ws = null;
         this._errored = false;
         this._clients = [];
@@ -49,6 +53,8 @@ var AbstractWsServer = /** @class */ (function () {
                 _this._healthTask.stop();
             }
         });
+        this._appConfig = new index_3.AppConfig();
+        this._appConfig.init();
     }
     Object.defineProperty(AbstractWsServer.prototype, "host", {
         get: function () {
@@ -80,7 +86,8 @@ var AbstractWsServer = /** @class */ (function () {
     AbstractWsServer.prototype.start = function () {
         try {
             if (this._ws === null) {
-                this.listen(this.createServer());
+                this.createServer();
+                this.listen();
             }
         }
         catch (error) {
@@ -88,19 +95,51 @@ var AbstractWsServer = /** @class */ (function () {
         }
     };
     AbstractWsServer.prototype.createServer = function () {
-        var ws = new WebSocket.Server({
-            'host': this.host,
-            'port': this.port,
-            'perMessageDeflate': false,
-            'maxPayload': 4 * 1024,
+        var _this = this;
+        this._ws = new WebSocket.Server({
+            noServer: true,
+            perMessageDeflate: false,
+            maxPayload: 4 * 1024
+        });
+        this._server = http.createServer()
+            .listen(this.port, this.host)
+            .on('upgrade', function (request, socket, head) {
+            // If no users are defined, allow any connection
+            var authenticated = _this._appConfig.users.length === 0;
+            if (!authenticated) {
+                try {
+                    if (request.headers.hasOwnProperty('authorization')) {
+                        var authorization = Buffer.from(request.headers.authorization.split(/\s+/).pop(), 'base64').toString().split(':');
+                        var username_1 = authorization[0];
+                        var password_1 = crypto.createHash('sha512').update(authorization[1]).digest('base64');
+                        authenticated = _this._appConfig.users.find(function (user) { return user.id === username_1 && user.password === password_1; }) !== undefined;
+                    }
+                }
+                catch (error) {
+                    index_2.cprint("Client " + socket.remoteAddress + ":" + socket.remotePort + " authentication failure - " + error.message, chalk.red);
+                    return;
+                }
+            }
+            if (authenticated) {
+                _this._ws.handleUpgrade(request, socket, head, function (ws) {
+                    _this._ws.emit('connection', ws, request);
+                });
+            }
+            else {
+                index_2.cprint("Client " + socket.remoteAddress + ":" + socket.remotePort + " authentication rejected", chalk.yellow);
+                socket.write('HTTP/1.1 401 Unauthorized\r\n' +
+                    'Date: ' + new Date().toUTCString() + '\r\n' +
+                    'WWW-Authenticate: Basic\r\n' +
+                    '\r\n');
+                socket.destroy();
+            }
         });
         index_2.cprint("WS server listening on " + this.host + ":" + this.port, chalk.green);
-        return ws;
     };
-    AbstractWsServer.prototype.listen = function (ws) {
+    AbstractWsServer.prototype.listen = function () {
         var _this = this;
-        this._ws = ws;
-        ws.on('connection', function (socket, req) {
+        this._ws
+            .on('connection', function (socket, req) {
             var remoteAddr = (req.socket.remoteAddress + ":" + req.socket.remotePort);
             var clientStatus = {
                 client: socket,
@@ -122,9 +161,9 @@ var AbstractWsServer = /** @class */ (function () {
                 clientStatus.isAlive = false;
             }));
             _this._healthTask.start();
-        });
-        ws.on('error', function (error) {
-            ws.close(function () {
+        })
+            .on('error', function (error) {
+            _this._ws.close(function () {
                 if (error.code === 'EADDRINUSE') {
                     index_2.cprint("\u672A\u80FD\u5EFA\u7ACBws\u670D\u52A1 - \u7AEF\u53E3" + _this.port + "\u5DF2\u88AB\u5360\u7528", chalk.red);
                     index_2.cprint('建议修改``settings.json``中的port值', chalk.red);
@@ -134,8 +173,8 @@ var AbstractWsServer = /** @class */ (function () {
                     index_2.cprint("(WS) - " + error.message, chalk.red);
                 }
             });
-        });
-        ws.on('close', function () { });
+        })
+            .on('close', function () { });
     };
     return AbstractWsServer;
 }());

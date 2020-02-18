@@ -1,4 +1,9 @@
 import * as settings from '../settings.json';
+import * as path from 'path';
+import * as fs from 'fs';
+import * as crypto from 'crypto';
+import * as chalk from 'chalk';
+import { cprint } from '../fmt/index';
 
 export interface AppSettings {
 
@@ -19,8 +24,14 @@ export interface TCPAddress {
     readonly port:          number;
 }
 
+export interface User {
+    readonly id:            string;
+    readonly password:      string;
+}
+
 export class AppConfig implements AppSettings {
 
+    private _settingsPath:  string;
     private _debug:         boolean;
     private _verbose:       boolean;
     private _tcp_error:     boolean;
@@ -34,8 +45,10 @@ export class AppConfig implements AppSettings {
     private _wsAddr:        TCPAddress;
     private _biliveAddr:    TCPAddress;
     private _httpAddr:      TCPAddress;
+    private _users:         User[];
 
-    constructor() {
+    public constructor() {
+        this._settingsPath = path.resolve(__dirname, '../settings.json');
         this._debug = false;
         this._verbose = false;
         this._tcp_error = false;
@@ -49,16 +62,18 @@ export class AppConfig implements AppSettings {
         this._wsAddr = settings['default-ws-server'] as TCPAddress;
         this._httpAddr = settings['default-http-server'] as TCPAddress;
         this._biliveAddr = settings['bilive-ws-server'] as TCPAddress;
+        this._users = [];
     }
 
-    init() {
+    public init() {
         if (this._initialized === false) {
-            this.readArgs();
+            this.readArgs()
+                .parseUsers();
             this._initialized = true;
         }
     }
 
-    readArgs(): AppConfig {
+    public readArgs(): this {
         if (process.argv.includes('-v')) {
             this._verbose = true;
         }
@@ -71,53 +86,98 @@ export class AppConfig implements AppSettings {
         return this;
     }
 
-    get danmuAddr(): TCPAddress {
+    public get danmuAddr(): TCPAddress {
         return this._danmuAddr;
     }
 
-    get wsAddr(): TCPAddress {
+    public get wsAddr(): TCPAddress {
         return this._wsAddr;
     }
 
-    get httpAddr(): TCPAddress {
+    public get httpAddr(): TCPAddress {
         return this._httpAddr;
     }
 
-    get biliveAddr(): TCPAddress {
+    public get biliveAddr(): TCPAddress {
         return this._biliveAddr;
     }
 
-    get debug(): boolean {
+    public get debug(): boolean {
         return this._debug;
     }
 
-    get verbose(): boolean {
+    public get verbose(): boolean {
         return this._verbose;
     }
 
-    get tcp_error(): boolean {
+    public get tcp_error(): boolean {
         return this._tcp_error;
     }
 
-    get appkey(): string {
+    public get appkey(): string {
         return this._appkey;
     }
 
-    get appSecret(): string {
+    public get appSecret(): string {
         return this._appSecret;
     }
 
-    get appCommon(): {[key:string]:string} {
+    public get appCommon(): {[key:string]:string} {
         return this._appCommon;
     }
 
-    get appHeaders(): {[key:string]:string} {
+    public get appHeaders(): {[key:string]:string} {
         return this._appHeaders;
     }
 
-    get webHeaders(): {[key:string]:string} {
+    public get webHeaders(): {[key:string]:string} {
         return this._webHeaders;
     }
+
+    public get users(): User[] {
+        return this._users;
+    }
+
+    private parseUsers(): this {
+        if (settings.hasOwnProperty('users')) {
+            let settingsUpdated: boolean = false;
+            for (const u of settings.users) {
+                const user = u as any;
+                if (user.hasOwnProperty('id')) {
+                    if (!user.hasOwnProperty('password') && user.hasOwnProperty('plainTextPassword')) {
+                        user.password = crypto.createHash('sha512').update(user.plainTextPassword).digest('base64');
+                        delete user['plainTextPassword'];
+                        settingsUpdated = true;
+                    }
+
+                    if (user.hasOwnProperty('password')) {
+                        this._users.push(user as User);
+                    }
+                }
+            }
+
+            if (settingsUpdated) {
+                this.saveToFile().catch((error: any) => {
+                    cprint(`saveToFile - ${error.message}`, chalk.red);
+                });
+            }
+        }
+        return this;
+    }
+
+    private saveToFile(): Promise<boolean> {
+        const data: string = JSON.stringify(settings, null, 4);
+        return new Promise<boolean>((resolve, reject) => {
+            fs.writeFile(this._settingsPath, data, (error) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(true);
+                }
+            })
+        });
+    }
+
 }
 
 const statistics: {[key:string]:string|number} = {
