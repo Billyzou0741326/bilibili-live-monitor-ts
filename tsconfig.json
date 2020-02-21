@@ -5,6 +5,7 @@
         "strict": true,
         "outDir": "build",
         "resolveJsonModule": true,
+        "allowSyntheticDefaultImports": true,
         "newLine": "lf"
     },
     "include": [
