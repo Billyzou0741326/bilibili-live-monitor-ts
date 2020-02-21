@@ -50,8 +50,8 @@
 ## Linux
 > 用root权限打开`/etc/security/limits.conf`加上这两行 (这个是放宽连接数限制的)
 ```
-* hard nofile 60000
-* soft nofile 60000
+* hard nofile 65536
+* soft nofile 65536
 ```
 
 ## Windows
@@ -78,4 +78,4 @@
 > windows默认仅使用49152向上的端口建立连接 因此实际可用的只有16000个左右 [详情](https://docs.microsoft.com/en-us/windows/client-management/troubleshoot-tcpip-port-exhaust)
 1. 以管理员权限运行*powershell*或者*cmd*
 2. `netsh int ipv4 show dynamicport tcp` 查看可用起始端口及实际可用数量
-3. `netsh int ipv4 set dynamicport tcp start=10000 num=55535` 设置起始10000，由此向上55535
+3. `netsh int ipv4 set dynamicport tcp start=1025 num=64511` 设置起始1025，由此向上64511

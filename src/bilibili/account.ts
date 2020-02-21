@@ -199,3 +199,12 @@ export class Account {
     }
 
 }
+
+
+export class User extends Account {
+
+    constructor(info?: LoginInfo) {
+        super(info);
+    }
+
+}
