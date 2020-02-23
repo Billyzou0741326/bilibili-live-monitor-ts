@@ -35,19 +35,18 @@ export abstract class AbstractRoomController extends EventEmitter {
         this._taskQueue = new RateLimiter(50, 1000);
     }
 
-    public get connected(): number[] {
-        return Array.from(this._connections.keys());
+    public get connections(): Map<number, DanmuTCP> {
+        return this._connections;
     }
 
     public add(rooms: number | number[]): void {
         const roomids: number[] = ([] as number[]).concat(rooms);
-        const established: number[] = this.connected;
-        const closed: number[] = this._recentlyClosed;
+        const closed: Set<number> = new Set<number>(this._recentlyClosed);
 
         const filtered: number[] = roomids.filter((roomid: number): boolean => {
             return (
-                !established.includes(roomid)
-                && !closed.includes(roomid)
+                !this._connections.has(roomid)
+                && !closed.has(roomid)
             );
         });
 
@@ -118,7 +117,7 @@ export class FixedGuardController extends GuardController {
     }
 
     protected roomExists(roomid: number): boolean {
-        return this.connected.includes(roomid);
+        return this._connections.has(roomid);
     }
 }
 
@@ -133,7 +132,7 @@ export class DynamicGuardController extends GuardController {
     }
 
     protected roomExists(roomid: number): boolean {
-        return this._recentlyClosed.includes(roomid) || this.connected.includes(roomid);
+        return this._recentlyClosed.includes(roomid) || this._connections.has(roomid);
     }
 }
 

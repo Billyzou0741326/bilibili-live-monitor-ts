@@ -71,9 +71,9 @@ var AbstractRoomController = /** @class */ (function (_super) {
         _this._taskQueue = new index_4.RateLimiter(50, 1000);
         return _this;
     }
-    Object.defineProperty(AbstractRoomController.prototype, "connected", {
+    Object.defineProperty(AbstractRoomController.prototype, "connections", {
         get: function () {
-            return Array.from(this._connections.keys());
+            return this._connections;
         },
         enumerable: true,
         configurable: true
@@ -81,11 +81,10 @@ var AbstractRoomController = /** @class */ (function (_super) {
     AbstractRoomController.prototype.add = function (rooms) {
         var _this = this;
         var roomids = [].concat(rooms);
-        var established = this.connected;
-        var closed = this._recentlyClosed;
+        var closed = new Set(this._recentlyClosed);
         var filtered = roomids.filter(function (roomid) {
-            return (!established.includes(roomid)
-                && !closed.includes(roomid));
+            return (!_this._connections.has(roomid)
+                && !closed.has(roomid));
         });
         new Set(filtered).forEach(function (roomid) { _this.setupRoom(roomid); });
         this.clearClosed();
@@ -146,7 +145,7 @@ var FixedGuardController = /** @class */ (function (_super) {
         return new index_5.FixedGuardMonitor(addr, info);
     };
     FixedGuardController.prototype.roomExists = function (roomid) {
-        return this.connected.includes(roomid);
+        return this._connections.has(roomid);
     };
     return FixedGuardController;
 }(GuardController));
@@ -160,7 +159,7 @@ var DynamicGuardController = /** @class */ (function (_super) {
         return new index_5.DynamicGuardMonitor(addr, info);
     };
     DynamicGuardController.prototype.roomExists = function (roomid) {
-        return this._recentlyClosed.includes(roomid) || this.connected.includes(roomid);
+        return this._recentlyClosed.includes(roomid) || this._connections.has(roomid);
     };
     return DynamicGuardController;
 }(GuardController));

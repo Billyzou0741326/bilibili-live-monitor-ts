@@ -23,7 +23,7 @@ var RoomCollector = /** @class */ (function () {
         var tasks = [dbTask, sailsTask, genkiTask];
         return Promise.all(tasks).then(function (results) {
             var _a;
-            return Array.from(new Set((_a = []).concat.apply(_a, results)));
+            return new Set((_a = []).concat.apply(_a, results));
         });
     };
     RoomCollector.prototype.getDynamicRooms = function () {

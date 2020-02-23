@@ -5,13 +5,13 @@ import { cprint } from '../fmt/index';
 
 export class RoomCollector {
 
-    private _db:    Database;
+    private _db:             Database;
 
     constructor() {
         this._db = new Database();
     }
 
-    getFixedRooms(): Promise<number[]> {
+    getFixedRooms(): Promise<Set<number>> {
         const dbTask = this._db.getRooms();
         const sailsTask = (Bilibili.getAllSailboatRooms()
             .catch((error: Error): Promise<number[]> => {
@@ -26,8 +26,8 @@ export class RoomCollector {
             })
         );
         const tasks = [ dbTask, sailsTask, genkiTask ];
-        return Promise.all(tasks).then((results: Array<number[]>): number[] => {
-            return Array.from(new Set(([] as number[]).concat(...results)));
+        return Promise.all(tasks).then((results: Array<number[]>): Set<number> => {
+            return new Set(([] as number[]).concat(...results));
         });
     }
 

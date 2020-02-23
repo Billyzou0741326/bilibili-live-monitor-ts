@@ -690,13 +690,7 @@ var Bilibili = /** @class */ (function (_super) {
     Bilibili.getRoomsInArea = function (areaid, size, count) {
         if (size === void 0) { size = 99; }
         if (count === void 0) { count = Infinity; }
-        var page_size = size;
-        var params = {
-            'parent_area_id': areaid,
-            'page': 0,
-            'page_size': size > 99 || size < 0 ? 99 : size,
-            'sort_type': 'live_time',
-        };
+        var page_size = size > 99 || size < 0 ? 99 : size;
         var promises = [];
         var promise = Bilibili.getLiveCount().catch(function (error) {
             index_3.cprint("Bilibili.getLiveCount - " + error.message, chalk.red);
@@ -705,13 +699,17 @@ var Bilibili = /** @class */ (function (_super) {
             room_count = Math.min(count, room_count);
             var PAGES = Math.round(room_count / page_size) + 2;
             for (var i = 1; i < PAGES; ++i) {
-                var p = Object.assign(new Object(), params);
-                p.page = i;
+                var params = {
+                    'parent_area_id': areaid,
+                    'page': i,
+                    'page_size': page_size,
+                    'sort_type': 'live_time',
+                };
                 var request = (index_2.RequestBuilder.start()
                     .withHost('api.live.bilibili.com')
                     .withPath('/room/v3/area/getRoomList')
                     .withMethod(index_2.RequestMethods.GET)
-                    .withParams(p)
+                    .withParams(params)
                     .withHeaders(config.webHeaders)
                     .build());
                 var task = (Bilibili.request(request)
