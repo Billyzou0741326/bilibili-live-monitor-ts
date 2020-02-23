@@ -42,6 +42,16 @@
 }
 ```
 
+### 负载均衡
+如果需要使用多个服务器来均衡负载，可以修改load-balancing设置。totalServers是服务器总数，serverIndex是本服务器序号，在0与totalServers减1之间。每个服务器需使用不同序号。
+需要说明的是，负载并不是完全均衡。实现方式是取房间号对于服务器总数的余数，所以每个服务器监听的房间数目会有一定出入，但相差不会很多。客户端需要同时添加所有服务器。
+```javascript
+    "load-balancing": {
+        "totalServers": 2,
+        "serverIndex": 0
+    }
+```
+
 ## 自行编译 (Optional) (Windows/Linux)
 1. 执行`npm install -g typescript`
 2. 命令行切换到package.json所在的目录

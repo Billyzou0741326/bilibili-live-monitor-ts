@@ -14,5 +14,9 @@
     "bilive-ws-server": {
         "host": "0.0.0.0",
         "port": 8998
-    }
+    },
+    "load-balancing": {
+        "totalServers": 1,
+        "serverIndex": 0
+    },
 }

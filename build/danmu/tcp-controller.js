@@ -169,6 +169,7 @@ var RaffleController = /** @class */ (function (_super) {
     function RaffleController() {
         var _this = _super.call(this) || this;
         _this._roomidHandler = new index_5.RoomidHandler();
+        _this._loadBalancing = new index_3.AppConfig().loadBalancing;
         _this._areas = [1, 2, 3, 4, 5, 6];
         _this._nameOfArea = {
             1: '娱乐',
@@ -197,23 +198,33 @@ var RaffleController = /** @class */ (function (_super) {
         _super.prototype.stop.call(this);
         this._roomidHandler.stop();
     };
-    RaffleController.prototype.getRoomsInArea = function (areaid) {
-        return (index_2.Bilibili.getRoomsInArea(areaid, 10, 10)
+    RaffleController.prototype.getRoomsInArea = function (areaid, numRooms) {
+        var _this = this;
+        if (numRooms === void 0) { numRooms = 10; }
+        var pageSize = numRooms > 50 ? 50 : numRooms;
+        return (index_2.Bilibili.getRoomsInArea(areaid, pageSize, numRooms)
             .then(function (roomInfoList) {
-            return roomInfoList.map(function (roomInfo) { return roomInfo['roomid']; });
+            var roomIDs = roomInfoList.map(function (roomInfo) { return roomInfo.roomid; });
+            if (_this._loadBalancing.totalServers > 1) {
+                roomIDs = roomIDs.filter(function (roomid) { return roomid % _this._loadBalancing.totalServers === _this._loadBalancing.serverIndex; });
+            }
+            return roomIDs;
         })
             .catch(function (error) {
             index_1.cprint("Bilibili.getRoomsInArea - " + error.message, chalk.red);
             return Promise.resolve([]);
         }));
     };
-    RaffleController.prototype.setupMonitorInArea = function (areaid, rooms) {
+    RaffleController.prototype.setupMonitorInArea = function (areaid, rooms, numRoomsQueried) {
         var _this = this;
+        if (numRoomsQueried === void 0) { numRoomsQueried = 10; }
         var task = function () { return __awaiter(_this, void 0, void 0, function () {
-            var done, max, i, roomid, streaming, error_1;
+            var done, max, i, roomid, error_1;
+            var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        if (!!this._connections.has(areaid)) return [3 /*break*/, 7];
                         done = false;
                         max = rooms.length;
                         i = 0;
@@ -226,8 +237,7 @@ var RaffleController = /** @class */ (function (_super) {
                         roomid = rooms[i];
                         return [4 /*yield*/, index_2.Bilibili.isLive(roomid)];
                     case 3:
-                        streaming = _a.sent();
-                        if (streaming && !this._connections.has(areaid)) {
+                        if (_a.sent()) {
                             done = true;
                             this.setupRoom(roomid, areaid);
                         }
@@ -239,7 +249,17 @@ var RaffleController = /** @class */ (function (_super) {
                     case 5:
                         ++i;
                         return [3 /*break*/, 1];
-                    case 6: return [2 /*return*/];
+                    case 6:
+                        if (!done) {
+                            if (numRoomsQueried < 1000) {
+                                this.getRoomsInArea(areaid, numRoomsQueried + 10).then(function (rooms) { return _this.setupMonitorInArea(areaid, rooms, numRoomsQueried + 10); });
+                            }
+                            else {
+                                index_1.cprint("RaffleController - Can't find a room to set up monitor in " + this._nameOfArea[areaid] + "\u533A", chalk.red);
+                            }
+                        }
+                        _a.label = 7;
+                    case 7: return [2 /*return*/];
                 }
             });
         }); };
