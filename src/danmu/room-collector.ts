@@ -67,7 +67,7 @@ export class RoomCollector {
 export class SimpleLoadBalancingRoomDistributor extends RoomCollector {
     private _loadBalancing:  LoadBalancing;
 
-    constructor(loadBalancing: LoadBalancing) {
+    public constructor(loadBalancing: LoadBalancing) {
         super();
         this._loadBalancing = loadBalancing;
     }
