@@ -173,9 +173,9 @@ export class RaffleController extends AbstractRoomController {
         this._roomidHandler.stop();
     }
 
-    private setupArea(areaid: number, numRooms: number = 10): void {
-        this._roomCollector.getRaffleRoomsInArea(areaid, numRooms).then(
-            (rooms: number[]): void => this.setupMonitorInArea(areaid, rooms, numRooms));
+    private setupArea(areaid: number, numRoomsQueried: number = 10): void {
+        this._roomCollector.getRaffleRoomsInArea(areaid, numRoomsQueried).then(
+            (rooms: number[]): void => this.setupMonitorInArea(areaid, rooms, numRoomsQueried));
     }
 
     private setupMonitorInArea(areaid: number, rooms: number[], numRoomsQueried: number = 10): void {

@@ -198,10 +198,10 @@ var RaffleController = /** @class */ (function (_super) {
         _super.prototype.stop.call(this);
         this._roomidHandler.stop();
     };
-    RaffleController.prototype.setupArea = function (areaid, numRooms) {
+    RaffleController.prototype.setupArea = function (areaid, numRoomsQueried) {
         var _this = this;
-        if (numRooms === void 0) { numRooms = 10; }
-        this._roomCollector.getRaffleRoomsInArea(areaid, numRooms).then(function (rooms) { return _this.setupMonitorInArea(areaid, rooms, numRooms); });
+        if (numRoomsQueried === void 0) { numRoomsQueried = 10; }
+        this._roomCollector.getRaffleRoomsInArea(areaid, numRoomsQueried).then(function (rooms) { return _this.setupMonitorInArea(areaid, rooms, numRoomsQueried); });
     };
     RaffleController.prototype.setupMonitorInArea = function (areaid, rooms, numRoomsQueried) {
         var _this = this;

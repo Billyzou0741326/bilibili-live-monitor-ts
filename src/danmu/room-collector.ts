@@ -6,7 +6,7 @@ import { LoadBalancing } from '../global/index';
 
 export class RoomCollector {
 
-    private _db:             Database;
+    private _db:    Database;
 
     public constructor() {
         this._db = new Database();
