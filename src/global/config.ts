@@ -26,20 +26,21 @@ export interface LoadBalancing {
 
 export class AppConfig implements AppSettings {
 
-    private _debug:         boolean;
-    private _verbose:       boolean;
-    private _tcp_error:     boolean;
-    private _appkey:        string;
-    private _appSecret:     string;
-    private _appCommon:     {[key: string]: any};
-    private _appHeaders:    {[key: string]: string};
-    private _webHeaders:    {[key: string]: string};
-    private _initialized:   boolean;
-    private _danmuAddr:     TCPAddress;
-    private _wsAddr:        TCPAddress;
-    private _biliveAddr:    TCPAddress;
-    private _httpAddr:      TCPAddress;
-    private _loadBalancing: LoadBalancing;
+    private _debug:             boolean;
+    private _verbose:           boolean;
+    private _tcp_error:         boolean;
+    private _appkey:            string;
+    private _appSecret:         string;
+    private _appCommon:         {[key: string]: any};
+    private _appHeaders:        {[key: string]: string};
+    private _webHeaders:        {[key: string]: string};
+    private _initialized:       boolean;
+    private _danmuAddr:         TCPAddress;
+    private _wsAddr:            TCPAddress;
+    private _biliveAddr:        TCPAddress;
+    private _bilihelperAddr:    TCPAddress;
+    private _httpAddr:          TCPAddress;
+    private _loadBalancing:     LoadBalancing;
 
     constructor() {
         this._debug = false;
@@ -55,6 +56,7 @@ export class AppConfig implements AppSettings {
         this._wsAddr = settings['default-ws-server'] as TCPAddress;
         this._httpAddr = settings['default-http-server'] as TCPAddress;
         this._biliveAddr = settings['bilive-ws-server'] as TCPAddress;
+        this._bilihelperAddr = settings['bilihelper-tcp-server'] as TCPAddress;
         this._loadBalancing = settings['load-balancing'] as LoadBalancing;
     }
 
@@ -92,6 +94,10 @@ export class AppConfig implements AppSettings {
 
     get biliveAddr(): TCPAddress {
         return this._biliveAddr;
+    }
+
+    get bilihelperAddr(): TCPAddress {
+        return this._bilihelperAddr;
     }
 
     get loadBalancing(): LoadBalancing {

@@ -6,9 +6,9 @@ export interface Danmu {
 }
 
 export enum RaffleCategory {
+    pk = 'pk',
     gift = 'gift',
     guard = 'guard',
-    pk = 'pk',
     storm = 'storm',
     anchor = 'anchor',
 }

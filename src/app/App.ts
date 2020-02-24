@@ -9,6 +9,7 @@ import { DelayedTask } from '../task/index';
 import {
     WsServer,
     WsServerBilive,
+    TCPServerBiliHelper,
     HttpServer, } from '../server/index';
 import {
     Raffle,
@@ -34,6 +35,7 @@ export class App {
     private _emitter:               EventEmitter;
     private _wsServer:              WsServer;
     private _biliveServer:          WsServerBilive;
+    private _bilihelperServer:      TCPServerBiliHelper;
     private _httpServer:            HttpServer;
     private _appConfig:             AppConfig;
     private _dynamicRefreshTask:    DelayedTask;
@@ -47,6 +49,7 @@ export class App {
         this._emitter = new EventEmitter();
         this._wsServer = new WsServer(this._appConfig.wsAddr);
         this._biliveServer = new WsServerBilive(this._appConfig.biliveAddr);
+        this._bilihelperServer = new TCPServerBiliHelper(this._appConfig.bilihelperAddr);
         this._httpServer = new HttpServer(this._appConfig.httpAddr);
         this._roomCollector = this._appConfig.loadBalancing.totalServers > 1
             ? new SimpleLoadBalancingRoomDistributor(this._appConfig.loadBalancing)
@@ -111,6 +114,7 @@ export class App {
                 this.printGift(g);
                 this._wsServer.broadcast(g);
                 this._biliveServer.broadcast(g);
+                this._bilihelperServer.broadcast(g);
             });
         }
     }
@@ -128,6 +132,7 @@ export class App {
             this.setupServer();
             this._wsServer.start();
             this._biliveServer.start();
+            this._bilihelperServer.start();
             this._httpServer.start();
             this._raffleController.start();
             const fixedTask = this._roomCollector.getFixedRooms();
@@ -148,6 +153,7 @@ export class App {
             this._wsServer.stop();
             this._httpServer.stop();
             this._biliveServer.stop();
+            this._bilihelperServer.stop();
             this._db.stop();
             this._history.stop();
             this._fixedController.removeAllListeners();

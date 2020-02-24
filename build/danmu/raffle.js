@@ -15,9 +15,9 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var RaffleCategory;
 (function (RaffleCategory) {
+    RaffleCategory["pk"] = "pk";
     RaffleCategory["gift"] = "gift";
     RaffleCategory["guard"] = "guard";
-    RaffleCategory["pk"] = "pk";
     RaffleCategory["storm"] = "storm";
     RaffleCategory["anchor"] = "anchor";
 })(RaffleCategory = exports.RaffleCategory || (exports.RaffleCategory = {}));

@@ -16,6 +16,7 @@ var AppConfig = /** @class */ (function () {
         this._wsAddr = settings['default-ws-server'];
         this._httpAddr = settings['default-http-server'];
         this._biliveAddr = settings['bilive-ws-server'];
+        this._bilihelperAddr = settings['bilihelper-tcp-server'];
         this._loadBalancing = settings['load-balancing'];
     }
     AppConfig.prototype.init = function () {
@@ -60,6 +61,13 @@ var AppConfig = /** @class */ (function () {
     Object.defineProperty(AppConfig.prototype, "biliveAddr", {
         get: function () {
             return this._biliveAddr;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(AppConfig.prototype, "bilihelperAddr", {
+        get: function () {
+            return this._bilihelperAddr;
         },
         enumerable: true,
         configurable: true

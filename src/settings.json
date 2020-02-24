@@ -15,8 +15,12 @@
         "host": "0.0.0.0",
         "port": 8998
     },
+    "bilihelper-tcp-server": {
+        "host": "0.0.0.0",
+        "port": 8997
+    },
     "load-balancing": {
         "totalServers": 1,
         "serverIndex": 0
-    },
+    }
 }
