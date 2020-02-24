@@ -56,16 +56,18 @@ var App = /** @class */ (function () {
         this._wsServer = new index_5.WsServer(this._appConfig.wsAddr);
         this._biliveServer = new index_5.WsServerBilive(this._appConfig.biliveAddr);
         this._httpServer = new index_5.HttpServer(this._appConfig.httpAddr);
-        this._roomCollector = new index_6.RoomCollector();
+        this._roomCollector = this._appConfig.loadBalancing.totalServers > 1
+            ? new index_6.SimpleLoadBalancingRoomDistributor(this._appConfig.loadBalancing)
+            : new index_6.RoomCollector();
         this._fixedController = new index_6.FixedGuardController();
-        this._raffleController = new index_6.RaffleController();
+        this._raffleController = new index_6.RaffleController(this._roomCollector);
         this._dynamicController = new index_6.DynamicGuardController();
         this._dynamicRefreshTask = new index_4.DelayedTask();
         this._running = false;
         this._dynamicRefreshTask.withTime(120 * 1000).withCallback(function () {
             var dynamicTask = _this._roomCollector.getDynamicRooms();
             (function () { return __awaiter(_this, void 0, void 0, function () {
-                var roomids, establishedFix_1, establishedDyn, newIds, error_1;
+                var roomids, establishedFix_1, establishedDyn_1, newIds, error_1;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
@@ -73,10 +75,13 @@ var App = /** @class */ (function () {
                             return [4 /*yield*/, dynamicTask];
                         case 1:
                             roomids = _a.sent();
-                            establishedFix_1 = this._fixedController.connected;
-                            establishedDyn = this._dynamicController.connected;
-                            newIds = roomids.filter(function (roomid) { return establishedFix_1.includes(roomid) === false; });
-                            index_1.cprint("Monitoring (\u9759\u6001) " + establishedFix_1.length + " + (\u52A8\u6001) " + establishedDyn.length, chalk.green);
+                            establishedFix_1 = this._fixedController.connections;
+                            establishedDyn_1 = this._dynamicController.connections;
+                            newIds = roomids.filter(function (roomid) {
+                                return (!establishedFix_1.has(roomid)
+                                    && !establishedDyn_1.has(roomid));
+                            });
+                            index_1.cprint("Monitoring (\u9759\u6001) " + establishedFix_1.size + " + (\u52A8\u6001) " + establishedDyn_1.size, chalk.green);
                             this._dynamicController.add(newIds);
                             this._dynamicRefreshTask.start();
                             return [3 /*break*/, 3];
@@ -148,11 +153,11 @@ var App = /** @class */ (function () {
                         case 0: return [4 /*yield*/, fixedTask_1];
                         case 1:
                             fixedRooms = _a.sent();
+                            this._fixedController.add(Array.from(fixedRooms));
                             return [4 /*yield*/, dynamicTask_1];
                         case 2:
                             dynamicRooms = _a.sent();
-                            filtered = dynamicRooms.filter(function (roomid) { return fixedRooms.includes(roomid) === false; });
-                            this._fixedController.add(fixedRooms);
+                            filtered = dynamicRooms.filter(function (roomid) { return !fixedRooms.has(roomid); });
                             this._dynamicController.add(filtered);
                             this._dynamicRefreshTask.start();
                             return [2 /*return*/];

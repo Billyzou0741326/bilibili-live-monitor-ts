@@ -817,13 +817,7 @@ export class Bilibili extends BilibiliBase {
      * @returns {Promise}   resolve([ { 'roomid': roomid, 'online': online }, ... ])
      */
     static getRoomsInArea(areaid: number, size: number=99, count: number=Infinity): Promise<any> {
-        const page_size = size;
-        const params: any = {
-            'parent_area_id': areaid, 
-            'page': 0, 
-            'page_size': size > 99 || size < 0 ? 99 : size, 
-            'sort_type': 'live_time',
-        };
+        const page_size = size > 99 || size < 0 ? 99 : size;
 
         let promises: Promise<any>[] = [];
 
@@ -838,14 +832,18 @@ export class Bilibili extends BilibiliBase {
             const PAGES: number = Math.round(room_count / page_size) + 2;
 
             for (let i = 1; i < PAGES; ++i) {
-                const p: any = Object.assign(new Object(), params);
-                p.page = i;
+                const params: any = {
+                    'parent_area_id': areaid, 
+                    'page': i, 
+                    'page_size': page_size, 
+                    'sort_type': 'live_time',
+                };
 
                 const request: Request = (RequestBuilder.start()
                     .withHost('api.live.bilibili.com')
                     .withPath('/room/v3/area/getRoomList')
                     .withMethod(RequestMethods.GET)
-                    .withParams(p)
+                    .withParams(params)
                     .withHeaders(config.webHeaders)
                     .build()
                 );

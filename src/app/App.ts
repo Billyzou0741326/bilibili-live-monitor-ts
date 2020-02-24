@@ -15,7 +15,9 @@ import {
     Anchor,
     RaffleCategory,
     History,
+    DanmuTCP,
     RoomCollector,
+    SimpleLoadBalancingRoomDistributor,
     AbstractRoomController,
     DynamicGuardController,
     FixedGuardController,
@@ -46,9 +48,11 @@ export class App {
         this._wsServer = new WsServer(this._appConfig.wsAddr);
         this._biliveServer = new WsServerBilive(this._appConfig.biliveAddr);
         this._httpServer = new HttpServer(this._appConfig.httpAddr);
-        this._roomCollector = new RoomCollector();
+        this._roomCollector = this._appConfig.loadBalancing.totalServers > 1
+            ? new SimpleLoadBalancingRoomDistributor(this._appConfig.loadBalancing)
+            : new RoomCollector();
         this._fixedController = new FixedGuardController();
-        this._raffleController = new RaffleController();
+        this._raffleController = new RaffleController(this._roomCollector);
         this._dynamicController = new DynamicGuardController();
         this._dynamicRefreshTask = new DelayedTask();
         this._running = false;
@@ -58,10 +62,15 @@ export class App {
             (async () => {
                 try {
                     const roomids: number[] = await dynamicTask;
-                    const establishedFix: number[] = this._fixedController.connected;
-                    const establishedDyn: number[] = this._dynamicController.connected;
-                    const newIds: number[] = roomids.filter((roomid: number): boolean => establishedFix.includes(roomid) === false);
-                    cprint(`Monitoring (静态) ${establishedFix.length} + (动态) ${establishedDyn.length}`, chalk.green);
+                    const establishedFix: Map<number, DanmuTCP> = this._fixedController.connections;
+                    const establishedDyn: Map<number, DanmuTCP> = this._dynamicController.connections;
+                    const newIds: number[] = roomids.filter((roomid: number): boolean => {
+                        return (
+                            !establishedFix.has(roomid)
+                            && !establishedDyn.has(roomid)
+                        );
+                    });
+                    cprint(`Monitoring (静态) ${establishedFix.size} + (动态) ${establishedDyn.size}`, chalk.green);
                     this._dynamicController.add(newIds);
                     this._dynamicRefreshTask.start();
                 }
@@ -124,10 +133,10 @@ export class App {
             const fixedTask = this._roomCollector.getFixedRooms();
             const dynamicTask = this._roomCollector.getDynamicRooms();
             (async () => {
-                const fixedRooms: number[] = await fixedTask;
+                const fixedRooms: Set<number> = await fixedTask;
+                this._fixedController.add(Array.from(fixedRooms));
                 const dynamicRooms: number[] = await dynamicTask;
-                const filtered = dynamicRooms.filter((roomid: number): boolean => fixedRooms.includes(roomid) === false);
-                this._fixedController.add(fixedRooms);
+                const filtered = dynamicRooms.filter((roomid: number): boolean => !fixedRooms.has(roomid));
                 this._dynamicController.add(filtered);
                 this._dynamicRefreshTask.start();
             })();

@@ -10,6 +10,7 @@ import { RateLimiter } from '../task/index';
 import {
     RaffleCategory,
     Raffle,
+    RoomCollector,
     RoomidHandler,
     RoomInfo,
     DanmuTCP,
@@ -35,19 +36,18 @@ export abstract class AbstractRoomController extends EventEmitter {
         this._taskQueue = new RateLimiter(50, 1000);
     }
 
-    public get connected(): number[] {
-        return Array.from(this._connections.keys());
+    public get connections(): Map<number, DanmuTCP> {
+        return this._connections;
     }
 
     public add(rooms: number | number[]): void {
         const roomids: number[] = ([] as number[]).concat(rooms);
-        const established: number[] = this.connected;
-        const closed: number[] = this._recentlyClosed;
+        const closed: Set<number> = new Set<number>(this._recentlyClosed);
 
         const filtered: number[] = roomids.filter((roomid: number): boolean => {
             return (
-                !established.includes(roomid)
-                && !closed.includes(roomid)
+                !this._connections.has(roomid)
+                && !closed.has(roomid)
             );
         });
 
@@ -118,7 +118,7 @@ export class FixedGuardController extends GuardController {
     }
 
     protected roomExists(roomid: number): boolean {
-        return this.connected.includes(roomid);
+        return this._connections.has(roomid);
     }
 }
 
@@ -133,7 +133,7 @@ export class DynamicGuardController extends GuardController {
     }
 
     protected roomExists(roomid: number): boolean {
-        return this._recentlyClosed.includes(roomid) || this.connected.includes(roomid);
+        return this._recentlyClosed.includes(roomid) || this._connections.has(roomid);
     }
 }
 
@@ -142,10 +142,12 @@ export class RaffleController extends AbstractRoomController {
     private _nameOfArea:    {[key: number]: string};
     private _areas:         number[];
     private _roomidHandler: RoomidHandler;
+    private _roomCollector: RoomCollector;
 
-    public constructor() {
+    public constructor(roomCollector: RoomCollector) {
         super();
         this._roomidHandler = new RoomidHandler();
+        this._roomCollector = roomCollector;
         this._areas = [ 1, 2, 3, 4, 5, 6 ];
         this._nameOfArea = {
             1: '娱乐',
@@ -162,8 +164,7 @@ export class RaffleController extends AbstractRoomController {
 
     public start(): void {
         this._areas.forEach((areaid: number) => {
-            this.getRoomsInArea(areaid).then(
-                (rooms: number[]): void => this.setupMonitorInArea(areaid, rooms));
+            this.setupArea(areaid);
         });
     }
 
@@ -172,37 +173,39 @@ export class RaffleController extends AbstractRoomController {
         this._roomidHandler.stop();
     }
 
-    private getRoomsInArea(areaid: number): Promise<number[]> {
-        return (Bilibili.getRoomsInArea(areaid, 10, 10)
-            .then((roomInfoList: any[]): number[] => {
-                return roomInfoList.map((roomInfo: any): number => roomInfo['roomid']);
-            })
-            .catch((error: Error) => {
-                cprint(`Bilibili.getRoomsInArea - ${error.message}`, chalk.red);
-                return Promise.resolve([] as number[]);
-            })
-        );
+    private setupArea(areaid: number, numRoomsQueried: number = 10): void {
+        this._roomCollector.getRaffleRoomsInArea(areaid, numRoomsQueried).then(
+            (rooms: number[]): void => this.setupMonitorInArea(areaid, rooms, numRoomsQueried));
     }
 
-    private setupMonitorInArea(areaid: number, rooms: number[]): void {
+    private setupMonitorInArea(areaid: number, rooms: number[], numRoomsQueried: number = 10): void {
 
         const task = async () => {
 
-            let done = false;
-            const max = rooms.length;
+            if (!this._connections.has(areaid)) {
+                let done = false;
+                const max = rooms.length;
 
-            for (let i = 0; !done && i < max; ++i) {
-                try {
-                    const roomid = rooms[i];
-                    const streaming: boolean = await Bilibili.isLive(roomid);
-                    if (streaming && !this._connections.has(areaid)) {
+                for (let i = 0; !done && i < max; ++i) {
+                    try {
+                        const roomid = rooms[i];
+                        if (await Bilibili.isLive(roomid)) {
 
-                        done = true;
-                        this.setupRoom(roomid, areaid);
+                            done = true;
+                            this.setupRoom(roomid, areaid);
+                        }
+                    }
+                    catch (error) {
+                        cprint(`Bilibili.isLive - ${error.message}`, chalk.red);
                     }
                 }
-                catch (error) {
-                    cprint(`Bilibili.isLive - ${error.message}`, chalk.red);
+
+                if (!done) {
+                    if (numRoomsQueried < 1000) {
+                        this.setupArea(areaid, numRoomsQueried + 10);
+                    } else {
+                        cprint(`RaffleController - Can't find a room to set up monitor in ${this._nameOfArea[areaid]}区`, chalk.red);
+                    }
                 }
             }
         };
@@ -234,8 +237,7 @@ export class RaffleController extends AbstractRoomController {
                 const reason = `@room ${roomid} in ${this._nameOfArea[areaid]}区 is closed.`;
                 cprint(reason, chalk.yellowBright);
                 this._connections.delete(areaid);
-                this.getRoomsInArea(areaid).then(
-                    (rooms: number[]): void => this.setupMonitorInArea(areaid, rooms));
+                this.setupArea(areaid);
             })
             .on('add_to_db', (): void => { this.emit('add_to_db', roomid) })
             .on('roomid', (roomid: number): void => { this._roomidHandler.add(roomid) });

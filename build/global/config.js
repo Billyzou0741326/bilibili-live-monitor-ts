@@ -16,6 +16,7 @@ var AppConfig = /** @class */ (function () {
         this._wsAddr = settings['default-ws-server'];
         this._httpAddr = settings['default-http-server'];
         this._biliveAddr = settings['bilive-ws-server'];
+        this._loadBalancing = settings['load-balancing'];
     }
     AppConfig.prototype.init = function () {
         if (this._initialized === false) {
@@ -59,6 +60,13 @@ var AppConfig = /** @class */ (function () {
     Object.defineProperty(AppConfig.prototype, "biliveAddr", {
         get: function () {
             return this._biliveAddr;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(AppConfig.prototype, "loadBalancing", {
+        get: function () {
+            return this._loadBalancing;
         },
         enumerable: true,
         configurable: true

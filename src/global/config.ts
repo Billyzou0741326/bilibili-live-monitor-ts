@@ -19,6 +19,11 @@ export interface TCPAddress {
     readonly port:          number;
 }
 
+export interface LoadBalancing {
+    readonly totalServers:  number;
+    readonly serverIndex:   number;
+}
+
 export class AppConfig implements AppSettings {
 
     private _debug:         boolean;
@@ -34,6 +39,7 @@ export class AppConfig implements AppSettings {
     private _wsAddr:        TCPAddress;
     private _biliveAddr:    TCPAddress;
     private _httpAddr:      TCPAddress;
+    private _loadBalancing: LoadBalancing;
 
     constructor() {
         this._debug = false;
@@ -49,6 +55,7 @@ export class AppConfig implements AppSettings {
         this._wsAddr = settings['default-ws-server'] as TCPAddress;
         this._httpAddr = settings['default-http-server'] as TCPAddress;
         this._biliveAddr = settings['bilive-ws-server'] as TCPAddress;
+        this._loadBalancing = settings['load-balancing'] as LoadBalancing;
     }
 
     init() {
@@ -85,6 +92,10 @@ export class AppConfig implements AppSettings {
 
     get biliveAddr(): TCPAddress {
         return this._biliveAddr;
+    }
+
+    get loadBalancing(): LoadBalancing {
+        return this._loadBalancing;
     }
 
     get debug(): boolean {

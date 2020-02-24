@@ -71,9 +71,9 @@ var AbstractRoomController = /** @class */ (function (_super) {
         _this._taskQueue = new index_4.RateLimiter(50, 1000);
         return _this;
     }
-    Object.defineProperty(AbstractRoomController.prototype, "connected", {
+    Object.defineProperty(AbstractRoomController.prototype, "connections", {
         get: function () {
-            return Array.from(this._connections.keys());
+            return this._connections;
         },
         enumerable: true,
         configurable: true
@@ -81,11 +81,10 @@ var AbstractRoomController = /** @class */ (function (_super) {
     AbstractRoomController.prototype.add = function (rooms) {
         var _this = this;
         var roomids = [].concat(rooms);
-        var established = this.connected;
-        var closed = this._recentlyClosed;
+        var closed = new Set(this._recentlyClosed);
         var filtered = roomids.filter(function (roomid) {
-            return (!established.includes(roomid)
-                && !closed.includes(roomid));
+            return (!_this._connections.has(roomid)
+                && !closed.has(roomid));
         });
         new Set(filtered).forEach(function (roomid) { _this.setupRoom(roomid); });
         this.clearClosed();
@@ -146,7 +145,7 @@ var FixedGuardController = /** @class */ (function (_super) {
         return new index_5.FixedGuardMonitor(addr, info);
     };
     FixedGuardController.prototype.roomExists = function (roomid) {
-        return this.connected.includes(roomid);
+        return this._connections.has(roomid);
     };
     return FixedGuardController;
 }(GuardController));
@@ -160,16 +159,17 @@ var DynamicGuardController = /** @class */ (function (_super) {
         return new index_5.DynamicGuardMonitor(addr, info);
     };
     DynamicGuardController.prototype.roomExists = function (roomid) {
-        return this._recentlyClosed.includes(roomid) || this.connected.includes(roomid);
+        return this._recentlyClosed.includes(roomid) || this._connections.has(roomid);
     };
     return DynamicGuardController;
 }(GuardController));
 exports.DynamicGuardController = DynamicGuardController;
 var RaffleController = /** @class */ (function (_super) {
     __extends(RaffleController, _super);
-    function RaffleController() {
+    function RaffleController(roomCollector) {
         var _this = _super.call(this) || this;
         _this._roomidHandler = new index_5.RoomidHandler();
+        _this._roomCollector = roomCollector;
         _this._areas = [1, 2, 3, 4, 5, 6];
         _this._nameOfArea = {
             1: '娱乐',
@@ -191,30 +191,27 @@ var RaffleController = /** @class */ (function (_super) {
     RaffleController.prototype.start = function () {
         var _this = this;
         this._areas.forEach(function (areaid) {
-            _this.getRoomsInArea(areaid).then(function (rooms) { return _this.setupMonitorInArea(areaid, rooms); });
+            _this.setupArea(areaid);
         });
     };
     RaffleController.prototype.stop = function () {
         _super.prototype.stop.call(this);
         this._roomidHandler.stop();
     };
-    RaffleController.prototype.getRoomsInArea = function (areaid) {
-        return (index_2.Bilibili.getRoomsInArea(areaid, 10, 10)
-            .then(function (roomInfoList) {
-            return roomInfoList.map(function (roomInfo) { return roomInfo['roomid']; });
-        })
-            .catch(function (error) {
-            index_1.cprint("Bilibili.getRoomsInArea - " + error.message, chalk.red);
-            return Promise.resolve([]);
-        }));
-    };
-    RaffleController.prototype.setupMonitorInArea = function (areaid, rooms) {
+    RaffleController.prototype.setupArea = function (areaid, numRoomsQueried) {
         var _this = this;
+        if (numRoomsQueried === void 0) { numRoomsQueried = 10; }
+        this._roomCollector.getRaffleRoomsInArea(areaid, numRoomsQueried).then(function (rooms) { return _this.setupMonitorInArea(areaid, rooms, numRoomsQueried); });
+    };
+    RaffleController.prototype.setupMonitorInArea = function (areaid, rooms, numRoomsQueried) {
+        var _this = this;
+        if (numRoomsQueried === void 0) { numRoomsQueried = 10; }
         var task = function () { return __awaiter(_this, void 0, void 0, function () {
-            var done, max, i, roomid, streaming, error_1;
+            var done, max, i, roomid, error_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        if (!!this._connections.has(areaid)) return [3 /*break*/, 7];
                         done = false;
                         max = rooms.length;
                         i = 0;
@@ -227,8 +224,7 @@ var RaffleController = /** @class */ (function (_super) {
                         roomid = rooms[i];
                         return [4 /*yield*/, index_2.Bilibili.isLive(roomid)];
                     case 3:
-                        streaming = _a.sent();
-                        if (streaming && !this._connections.has(areaid)) {
+                        if (_a.sent()) {
                             done = true;
                             this.setupRoom(roomid, areaid);
                         }
@@ -240,7 +236,17 @@ var RaffleController = /** @class */ (function (_super) {
                     case 5:
                         ++i;
                         return [3 /*break*/, 1];
-                    case 6: return [2 /*return*/];
+                    case 6:
+                        if (!done) {
+                            if (numRoomsQueried < 1000) {
+                                this.setupArea(areaid, numRoomsQueried + 10);
+                            }
+                            else {
+                                index_1.cprint("RaffleController - Can't find a room to set up monitor in " + this._nameOfArea[areaid] + "\u533A", chalk.red);
+                            }
+                        }
+                        _a.label = 7;
+                    case 7: return [2 /*return*/];
                 }
             });
         }); };
@@ -268,7 +274,7 @@ var RaffleController = /** @class */ (function (_super) {
             var reason = "@room " + roomid + " in " + _this._nameOfArea[areaid] + "\u533A is closed.";
             index_1.cprint(reason, chalk.yellowBright);
             _this._connections.delete(areaid);
-            _this.getRoomsInArea(areaid).then(function (rooms) { return _this.setupMonitorInArea(areaid, rooms); });
+            _this.setupArea(areaid);
         })
             .on('add_to_db', function () { _this.emit('add_to_db', roomid); })
             .on('roomid', function (roomid) { _this._roomidHandler.add(roomid); });
