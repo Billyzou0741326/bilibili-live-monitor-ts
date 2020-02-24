@@ -166,10 +166,10 @@ var DynamicGuardController = /** @class */ (function (_super) {
 exports.DynamicGuardController = DynamicGuardController;
 var RaffleController = /** @class */ (function (_super) {
     __extends(RaffleController, _super);
-    function RaffleController() {
+    function RaffleController(roomCollector) {
         var _this = _super.call(this) || this;
         _this._roomidHandler = new index_5.RoomidHandler();
-        _this._loadBalancing = new index_3.AppConfig().loadBalancing;
+        _this._roomCollector = roomCollector;
         _this._areas = [1, 2, 3, 4, 5, 6];
         _this._nameOfArea = {
             1: '娱乐',
@@ -191,36 +191,23 @@ var RaffleController = /** @class */ (function (_super) {
     RaffleController.prototype.start = function () {
         var _this = this;
         this._areas.forEach(function (areaid) {
-            _this.getRoomsInArea(areaid).then(function (rooms) { return _this.setupMonitorInArea(areaid, rooms); });
+            _this.setupArea(areaid);
         });
     };
     RaffleController.prototype.stop = function () {
         _super.prototype.stop.call(this);
         this._roomidHandler.stop();
     };
-    RaffleController.prototype.getRoomsInArea = function (areaid, numRooms) {
+    RaffleController.prototype.setupArea = function (areaid, numRooms) {
         var _this = this;
         if (numRooms === void 0) { numRooms = 10; }
-        var pageSize = numRooms > 50 ? 50 : numRooms;
-        return (index_2.Bilibili.getRoomsInArea(areaid, pageSize, numRooms)
-            .then(function (roomInfoList) {
-            var roomIDs = roomInfoList.map(function (roomInfo) { return roomInfo.roomid; });
-            if (_this._loadBalancing.totalServers > 1) {
-                roomIDs = roomIDs.filter(function (roomid) { return roomid % _this._loadBalancing.totalServers === _this._loadBalancing.serverIndex; });
-            }
-            return roomIDs;
-        })
-            .catch(function (error) {
-            index_1.cprint("Bilibili.getRoomsInArea - " + error.message, chalk.red);
-            return Promise.resolve([]);
-        }));
+        this._roomCollector.getRaffleRoomsInArea(areaid, numRooms).then(function (rooms) { return _this.setupMonitorInArea(areaid, rooms, numRooms); });
     };
     RaffleController.prototype.setupMonitorInArea = function (areaid, rooms, numRoomsQueried) {
         var _this = this;
         if (numRoomsQueried === void 0) { numRoomsQueried = 10; }
         var task = function () { return __awaiter(_this, void 0, void 0, function () {
             var done, max, i, roomid, error_1;
-            var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -252,7 +239,7 @@ var RaffleController = /** @class */ (function (_super) {
                     case 6:
                         if (!done) {
                             if (numRoomsQueried < 1000) {
-                                this.getRoomsInArea(areaid, numRoomsQueried + 10).then(function (rooms) { return _this.setupMonitorInArea(areaid, rooms, numRoomsQueried + 10); });
+                                this.setupArea(areaid, numRoomsQueried + 10);
                             }
                             else {
                                 index_1.cprint("RaffleController - Can't find a room to set up monitor in " + this._nameOfArea[areaid] + "\u533A", chalk.red);
@@ -287,7 +274,7 @@ var RaffleController = /** @class */ (function (_super) {
             var reason = "@room " + roomid + " in " + _this._nameOfArea[areaid] + "\u533A is closed.";
             index_1.cprint(reason, chalk.yellowBright);
             _this._connections.delete(areaid);
-            _this.getRoomsInArea(areaid).then(function (rooms) { return _this.setupMonitorInArea(areaid, rooms); });
+            _this.setupArea(areaid);
         })
             .on('add_to_db', function () { _this.emit('add_to_db', roomid); })
             .on('roomid', function (roomid) { _this._roomidHandler.add(roomid); });

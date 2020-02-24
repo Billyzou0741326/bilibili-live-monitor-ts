@@ -56,9 +56,11 @@ var App = /** @class */ (function () {
         this._wsServer = new index_5.WsServer(this._appConfig.wsAddr);
         this._biliveServer = new index_5.WsServerBilive(this._appConfig.biliveAddr);
         this._httpServer = new index_5.HttpServer(this._appConfig.httpAddr);
-        this._roomCollector = new index_6.RoomCollector();
+        this._roomCollector = this._appConfig.loadBalancing.totalServers > 1
+            ? new index_6.SimpleLoadBalancingRoomDistributor(this._appConfig.loadBalancing)
+            : new index_6.RoomCollector();
         this._fixedController = new index_6.FixedGuardController();
-        this._raffleController = new index_6.RaffleController();
+        this._raffleController = new index_6.RaffleController(this._roomCollector);
         this._dynamicController = new index_6.DynamicGuardController();
         this._dynamicRefreshTask = new index_4.DelayedTask();
         this._running = false;

@@ -5,12 +5,12 @@ import { cprint } from '../fmt/index';
 import { Bilibili } from '../bilibili/index';
 import {
     AppConfig,
-    TCPAddress,
-    LoadBalancing, } from '../global/index';
+    TCPAddress, } from '../global/index';
 import { RateLimiter } from '../task/index';
 import {
     RaffleCategory,
     Raffle,
+    RoomCollector,
     RoomidHandler,
     RoomInfo,
     DanmuTCP,
@@ -142,12 +142,12 @@ export class RaffleController extends AbstractRoomController {
     private _nameOfArea:    {[key: number]: string};
     private _areas:         number[];
     private _roomidHandler: RoomidHandler;
-    private _loadBalancing: LoadBalancing;
+    private _roomCollector: RoomCollector;
 
-    public constructor() {
+    public constructor(roomCollector: RoomCollector) {
         super();
         this._roomidHandler = new RoomidHandler();
-        this._loadBalancing = new AppConfig().loadBalancing;
+        this._roomCollector = roomCollector;
         this._areas = [ 1, 2, 3, 4, 5, 6 ];
         this._nameOfArea = {
             1: '娱乐',
@@ -164,8 +164,7 @@ export class RaffleController extends AbstractRoomController {
 
     public start(): void {
         this._areas.forEach((areaid: number) => {
-            this.getRoomsInArea(areaid).then(
-                (rooms: number[]): void => this.setupMonitorInArea(areaid, rooms));
+            this.setupArea(areaid);
         });
     }
 
@@ -174,21 +173,9 @@ export class RaffleController extends AbstractRoomController {
         this._roomidHandler.stop();
     }
 
-    private getRoomsInArea(areaid: number, numRooms: number = 10): Promise<number[]> {
-        let pageSize: number = numRooms > 50 ? 50 : numRooms;
-        return (Bilibili.getRoomsInArea(areaid, pageSize, numRooms)
-            .then((roomInfoList: any[]): number[] => {
-                let roomIDs: number[] = roomInfoList.map((roomInfo: any): number => roomInfo.roomid);
-                if (this._loadBalancing.totalServers > 1) {
-                    roomIDs = roomIDs.filter((roomid: number): boolean => roomid % this._loadBalancing.totalServers === this._loadBalancing.serverIndex);
-                }
-                return roomIDs;
-            })
-            .catch((error: Error) => {
-                cprint(`Bilibili.getRoomsInArea - ${error.message}`, chalk.red);
-                return Promise.resolve([] as number[]);
-            })
-        );
+    private setupArea(areaid: number, numRooms: number = 10): void {
+        this._roomCollector.getRaffleRoomsInArea(areaid, numRooms).then(
+            (rooms: number[]): void => this.setupMonitorInArea(areaid, rooms, numRooms));
     }
 
     private setupMonitorInArea(areaid: number, rooms: number[], numRoomsQueried: number = 10): void {
@@ -215,8 +202,7 @@ export class RaffleController extends AbstractRoomController {
 
                 if (!done) {
                     if (numRoomsQueried < 1000) {
-                        this.getRoomsInArea(areaid, numRoomsQueried + 10).then(
-                            (rooms: number[]): void => this.setupMonitorInArea(areaid, rooms, numRoomsQueried + 10));
+                        this.setupArea(areaid, numRoomsQueried + 10);
                     } else {
                         cprint(`RaffleController - Can't find a room to set up monitor in ${this._nameOfArea[areaid]}区`, chalk.red);
                     }
@@ -251,8 +237,7 @@ export class RaffleController extends AbstractRoomController {
                 const reason = `@room ${roomid} in ${this._nameOfArea[areaid]}区 is closed.`;
                 cprint(reason, chalk.yellowBright);
                 this._connections.delete(areaid);
-                this.getRoomsInArea(areaid).then(
-                    (rooms: number[]): void => this.setupMonitorInArea(areaid, rooms));
+                this.setupArea(areaid);
             })
             .on('add_to_db', (): void => { this.emit('add_to_db', roomid) })
             .on('roomid', (roomid: number): void => { this._roomidHandler.add(roomid) });
