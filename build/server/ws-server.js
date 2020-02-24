@@ -29,16 +29,16 @@ var AbstractWsServer = /** @class */ (function () {
         this._healthTask.withTime(20 * 1000).withCallback(function () {
             if (_this._ws !== null) {
                 _this._clients = _this._clients.filter(function (clientStatus) {
-                    var client = clientStatus.client;
+                    var socket = clientStatus.socket;
                     var addr = clientStatus.addr;
                     if (!clientStatus.isAlive) {
                         index_2.cprint("Client disconnected at " + addr, chalk.blueBright);
-                        client.removeAllListeners();
-                        client.terminate();
+                        socket.removeAllListeners();
+                        socket.terminate();
                         return false;
                     }
                     clientStatus.isAlive = false;
-                    client.ping(function () { });
+                    socket.ping(function () { });
                     return true;
                 });
                 if (_this._clients.length > 0) {
@@ -69,8 +69,8 @@ var AbstractWsServer = /** @class */ (function () {
         this._errored = false;
         this._healthTask.stop();
         this._clients.forEach(function (clientStatus) {
-            clientStatus.client.close();
-            clientStatus.client.terminate();
+            clientStatus.socket.close();
+            clientStatus.socket.terminate();
         });
         this._clients = [];
     };
@@ -103,7 +103,7 @@ var AbstractWsServer = /** @class */ (function () {
         ws.on('connection', function (socket, req) {
             var remoteAddr = (req.socket.remoteAddress + ":" + req.socket.remotePort);
             var clientStatus = {
-                client: socket,
+                socket: socket,
                 isAlive: true,
                 addr: remoteAddr,
             };
@@ -148,9 +148,9 @@ var WsServer = /** @class */ (function (_super) {
         var json = data.toJson();
         if (json.length > 0) {
             this._clients.forEach(function (clientStatus) {
-                var client = clientStatus.client;
-                if (client.readyState === WebSocket.OPEN) {
-                    client.send(json, {
+                var socket = clientStatus.socket;
+                if (socket.readyState === WebSocket.OPEN) {
+                    socket.send(json, {
                         'binary': true,
                     });
                 }
@@ -168,9 +168,9 @@ var WsServerBilive = /** @class */ (function (_super) {
     WsServerBilive.prototype.broadcast = function (data) {
         var payload = this.parseMessage(data);
         this._clients.forEach(function (clientStatus) {
-            var client = clientStatus.client;
-            if (client.readyState === WebSocket.OPEN) {
-                client.send(payload);
+            var socket = clientStatus.socket;
+            if (socket.readyState === WebSocket.OPEN) {
+                socket.send(payload);
             }
         });
     };

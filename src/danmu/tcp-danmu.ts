@@ -52,7 +52,7 @@ export abstract class AbstractDanmuTCP extends EventEmitter implements Startable
     protected constructor(addr: TCPAddress, info: RoomInfo) {
         super();
         this.bind();
-        this._host = addr.host || 'localhost';
+        this._host = addr.host || '127.0.0.1';
         this._port = addr.port;
         this._roomid = info.roomid;
         this._areaid = info.areaid || 0;
@@ -858,7 +858,7 @@ class DanmuTCPReader {
 
     public getMessage(): Buffer | null {
         let result: Buffer | null = null;
-        if (this._totalLen <= 0 && this._data.length > 4) {
+        if (this._totalLen <= 0 && this._data.length >= 4) {
             this._totalLen = this._data.readUInt32BE(0);
         }
         if (this._totalLen > 0 && this._data.length >= this._totalLen) {

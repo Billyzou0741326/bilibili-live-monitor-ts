@@ -26,7 +26,7 @@ var AbstractDanmuTCP = /** @class */ (function (_super) {
     function AbstractDanmuTCP(addr, info) {
         var _this = _super.call(this) || this;
         _this.bind();
-        _this._host = addr.host || 'localhost';
+        _this._host = addr.host || '127.0.0.1';
         _this._port = addr.port;
         _this._roomid = info.roomid;
         _this._areaid = info.areaid || 0;
@@ -753,7 +753,7 @@ var DanmuTCPReader = /** @class */ (function () {
     };
     DanmuTCPReader.prototype.getMessage = function () {
         var result = null;
-        if (this._totalLen <= 0 && this._data.length > 4) {
+        if (this._totalLen <= 0 && this._data.length >= 4) {
             this._totalLen = this._data.readUInt32BE(0);
         }
         if (this._totalLen > 0 && this._data.length >= this._totalLen) {

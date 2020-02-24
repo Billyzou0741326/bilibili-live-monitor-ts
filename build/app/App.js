@@ -55,6 +55,7 @@ var App = /** @class */ (function () {
         this._emitter = new events_1.EventEmitter();
         this._wsServer = new index_5.WsServer(this._appConfig.wsAddr);
         this._biliveServer = new index_5.WsServerBilive(this._appConfig.biliveAddr);
+        this._bilihelperServer = new index_5.TCPServerBiliHelper(this._appConfig.bilihelperAddr);
         this._httpServer = new index_5.HttpServer(this._appConfig.httpAddr);
         this._roomCollector = this._appConfig.loadBalancing.totalServers > 1
             ? new index_6.SimpleLoadBalancingRoomDistributor(this._appConfig.loadBalancing)
@@ -126,6 +127,7 @@ var App = /** @class */ (function () {
                 _this.printGift(g);
                 _this._wsServer.broadcast(g);
                 _this._biliveServer.broadcast(g);
+                _this._bilihelperServer.broadcast(g);
             });
         }
     };
@@ -142,6 +144,7 @@ var App = /** @class */ (function () {
             this.setupServer();
             this._wsServer.start();
             this._biliveServer.start();
+            this._bilihelperServer.start();
             this._httpServer.start();
             this._raffleController.start();
             var fixedTask_1 = this._roomCollector.getFixedRooms();
@@ -171,6 +174,7 @@ var App = /** @class */ (function () {
             this._wsServer.stop();
             this._httpServer.stop();
             this._biliveServer.stop();
+            this._bilihelperServer.stop();
             this._db.stop();
             this._history.stop();
             this._fixedController.removeAllListeners();

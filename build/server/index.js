@@ -4,4 +4,5 @@ function __export(m) {
 }
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./ws-server"));
+__export(require("./tcp-server"));
 __export(require("./http-server"));

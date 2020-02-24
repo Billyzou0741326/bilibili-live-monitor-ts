@@ -13,7 +13,7 @@ interface WsAddress {
 
 interface ClientStatus {
     isAlive:            boolean;
-    readonly client:    WebSocket;
+    readonly socket:    WebSocket;
     readonly addr:      string;
 }
 
@@ -37,16 +37,16 @@ abstract class AbstractWsServer {
         this._healthTask.withTime(20 * 1000).withCallback((): void => {
             if (this._ws !== null) {
                 this._clients = this._clients.filter((clientStatus: ClientStatus): boolean => {
-                    const client = clientStatus.client;
+                    const socket = clientStatus.socket;
                     const addr = clientStatus.addr;
                     if (!clientStatus.isAlive) {
                         cprint(`Client disconnected at ${addr}`, chalk.blueBright);
-                        client.removeAllListeners();
-                        client.terminate();
+                        socket.removeAllListeners();
+                        socket.terminate();
                         return false;
                     }
                     clientStatus.isAlive = false;
-                    client.ping((): void => {});
+                    socket.ping((): void => {});
                     return true;
                 });
                 if (this._clients.length > 0) {
@@ -73,8 +73,8 @@ abstract class AbstractWsServer {
         this._errored = false;
         this._healthTask.stop();
         this._clients.forEach((clientStatus: ClientStatus): void => {
-            clientStatus.client.close();
-            clientStatus.client.terminate();
+            clientStatus.socket.close();
+            clientStatus.socket.terminate();
         });
         this._clients = [];
     }
@@ -114,7 +114,7 @@ abstract class AbstractWsServer {
                 `${req.socket.remoteAddress}:${req.socket.remotePort}`
             );
             const clientStatus: ClientStatus = {
-                client: socket,
+                socket: socket,
                 isAlive: true,
                 addr: remoteAddr,
             };
@@ -170,9 +170,9 @@ export class WsServer extends AbstractWsServer {
         const json = data.toJson();
         if (json.length > 0) {
             this._clients.forEach((clientStatus: ClientStatus): void => {
-                const client = clientStatus.client;
-                if (client.readyState === WebSocket.OPEN) {
-                    client.send(json, {
+                const socket = clientStatus.socket;
+                if (socket.readyState === WebSocket.OPEN) {
+                    socket.send(json, {
                         'binary': true,
                     });
                 }
@@ -191,9 +191,9 @@ export class WsServerBilive extends AbstractWsServer {
     public broadcast(data: Raffle): void {
         const payload: string = this.parseMessage(data);
         this._clients.forEach((clientStatus: any): void => {
-            const client: any = clientStatus.client;
-            if (client.readyState === WebSocket.OPEN) {
-                client.send(payload);
+            const socket: any = clientStatus.socket;
+            if (socket.readyState === WebSocket.OPEN) {
+                socket.send(payload);
             }
         });
     }
