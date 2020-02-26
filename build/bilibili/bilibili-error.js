@@ -23,6 +23,8 @@ var BilibiliError = /** @class */ (function (_super) {
         var _this = _super.apply(this, args) || this;
         _this._code = 'ERR_BILIBILI';
         _this._status = 0;
+        // Set the prototype explicitly (see https://github.com/Microsoft/TypeScript-wiki/blob/master/Breaking-Changes.md#extending-built-ins-like-error-array-and-map-may-no-longer-work).
+        Object.setPrototypeOf(_this, BilibiliError.prototype);
         return _this;
     }
     BilibiliError.prototype.withStatus = function (s) {
