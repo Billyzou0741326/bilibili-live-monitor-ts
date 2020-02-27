@@ -28,6 +28,7 @@ export class Database {
         this._saveTask = new DelayedTask();
         this._saveTask.withTime(2 * 60 * 1000).withCallback((): void => {
             (this.load()
+                .then((data: RoomData): void => { this._roomData = data; })
                 .then((): void => { this.save() })
                 .catch((error: Error): void => {
                     cprint(`(Database) - ${error.message}`, chalk.red);

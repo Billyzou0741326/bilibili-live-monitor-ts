@@ -16,6 +16,7 @@ var Database = /** @class */ (function () {
         this._saveTask = new index_1.DelayedTask();
         this._saveTask.withTime(2 * 60 * 1000).withCallback(function () {
             (_this.load()
+                .then(function (data) { _this._roomData = data; })
                 .then(function () { _this.save(); })
                 .catch(function (error) {
                 index_2.cprint("(Database) - " + error.message, chalk.red);
