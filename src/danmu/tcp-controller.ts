@@ -44,14 +44,12 @@ export abstract class AbstractRoomController extends EventEmitter {
         const roomids: number[] = ([] as number[]).concat(rooms);
         const closed: Set<number> = new Set<number>(this._recentlyClosed);
 
-        const filtered: number[] = roomids.filter((roomid: number): boolean => {
+        roomids.filter((roomid: number): boolean => {
             return (
                 !this._connections.has(roomid)
                 && !closed.has(roomid)
             );
-        });
-
-        new Set(filtered).forEach((roomid: number): void => { this.setupRoom(roomid) });
+        }).forEach((roomid: number): void => { this.setupRoom(roomid) });
         this.clearClosed();
     }
 
@@ -61,7 +59,7 @@ export abstract class AbstractRoomController extends EventEmitter {
 
     protected abstract setupRoom(roomid: number, areaid?: number): void;
 
-    private clearClosed(): void {
+    protected clearClosed(): void {
         const len = this._recentlyClosed.length;
         if (len > 50) {
             this._recentlyClosed.splice(0, len - 25);
@@ -80,6 +78,11 @@ abstract class GuardController extends AbstractRoomController {
 
     protected abstract roomExists(roomid: number): boolean;
 
+    protected onClose(roomid: number, listener: DanmuTCP): void {
+        this._connections.delete(roomid);
+        this._recentlyClosed.push(roomid);
+    }
+
     protected setupRoom(roomid: number, areaid?: number): void {
         if (this.roomExists(roomid)) {
             return;
@@ -92,14 +95,7 @@ abstract class GuardController extends AbstractRoomController {
         this._connections.set(roomid, listener);
         this._taskQueue.add((): void => { listener.start() });
         listener
-            .on('close', (): void => {
-                this._connections.delete(roomid);
-                this._recentlyClosed.push(roomid);
-                if ((listener as DynamicGuardMonitor).toFixed === true) {
-                    cprint(`Adding ${roomid} to fixed`, chalk.green);
-                    this.emit('to_fixed', roomid);
-                }
-            })
+            .on('close', (): void => { this.onClose(roomid, listener) })
             .on('add_to_db', (): void => { this.emit('add_to_db', roomid) });
         for (const category in RaffleCategory) {
             listener.on(category, (g: Raffle): void => { this.emit(category, g) });
@@ -134,6 +130,18 @@ export class DynamicGuardController extends GuardController {
 
     protected roomExists(roomid: number): boolean {
         return this._recentlyClosed.includes(roomid) || this._connections.has(roomid);
+    }
+
+    protected onClose(roomid: number, listener: DanmuTCP): void {
+        super.onClose(roomid, listener);
+        this.checkAddToFixed(roomid, listener as DynamicGuardMonitor);
+    }
+
+    protected checkAddToFixed(roomid: number, listener: DynamicGuardMonitor): void {
+        if (listener.toFixed) {
+            cprint(`Adding ${roomid} to fixed`, chalk.green);
+            this.emit('to_fixed', roomid);
+        }
     }
 }
 

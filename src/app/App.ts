@@ -44,7 +44,7 @@ export class App {
     public constructor() {
         this._appConfig = new AppConfig();
         this._appConfig.init();
-        this._db = new Database();
+        this._db = new Database(this._appConfig.roomCollectorStrategy.roomExpiry);
         this._history = new History();
         this._emitter = new EventEmitter();
         this._wsServer = new WsServer(this._appConfig.wsAddr);
@@ -52,15 +52,15 @@ export class App {
         this._bilihelperServer = new TCPServerBiliHelper(this._appConfig.bilihelperAddr);
         this._httpServer = new HttpServer(this._appConfig.httpAddr);
         this._roomCollector = this._appConfig.loadBalancing.totalServers > 1
-            ? new SimpleLoadBalancingRoomDistributor(this._appConfig.loadBalancing)
-            : new RoomCollector();
+            ? new SimpleLoadBalancingRoomDistributor(this._appConfig.loadBalancing, this._appConfig.roomCollectorStrategy)
+            : new RoomCollector(this._appConfig.roomCollectorStrategy);
         this._fixedController = new FixedGuardController();
         this._raffleController = new RaffleController(this._roomCollector);
-        this._dynamicController = new DynamicGuardController();
+            this._dynamicController = new DynamicGuardController();
         this._dynamicRefreshTask = new DelayedTask();
         this._running = false;
 
-        this._dynamicRefreshTask.withTime(120 * 1000).withCallback((): void => {
+        this._dynamicRefreshTask.withTime(this._appConfig.roomCollectorStrategy.dynamicRoomsQueryInterval * 1000).withCallback((): void => {
             const dynamicTask = this._roomCollector.getDynamicRooms();
             (async () => {
                 try {

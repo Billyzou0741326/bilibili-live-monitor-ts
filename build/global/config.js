@@ -18,6 +18,7 @@ var AppConfig = /** @class */ (function () {
         this._biliveAddr = settings['bilive-ws-server'];
         this._bilihelperAddr = settings['bilihelper-tcp-server'];
         this._loadBalancing = settings['load-balancing'];
+        this._roomCollectorStrategy = settings['room-collector-strategy'];
     }
     AppConfig.prototype.init = function () {
         if (this._initialized === false) {
@@ -75,6 +76,13 @@ var AppConfig = /** @class */ (function () {
     Object.defineProperty(AppConfig.prototype, "loadBalancing", {
         get: function () {
             return this._loadBalancing;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(AppConfig.prototype, "roomCollectorStrategy", {
+        get: function () {
+            return this._roomCollectorStrategy;
         },
         enumerable: true,
         configurable: true

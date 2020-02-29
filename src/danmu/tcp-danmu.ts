@@ -175,7 +175,7 @@ export abstract class AbstractDanmuTCP extends EventEmitter implements Startable
             this.start();
         }
         else {
-            this.emit('close');
+            this.emit('close', this);
         }
     }
 

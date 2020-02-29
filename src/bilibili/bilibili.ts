@@ -816,7 +816,7 @@ export class Bilibili extends BilibiliBase {
      * @param   {Integer}   count
      * @returns {Promise}   resolve([ { 'roomid': roomid, 'online': online }, ... ])
      */
-    static getRoomsInArea(areaid: number, size: number=99, count: number=Infinity): Promise<any> {
+    static getRoomsInArea(areaid: number, size: number=99, count: number=Infinity, sortType='live_time'): Promise<any> {
         const page_size = size > 99 || size < 0 ? 99 : size;
 
         let promises: Promise<any>[] = [];
@@ -829,14 +829,14 @@ export class Bilibili extends BilibiliBase {
         }).then((room_count: number): Promise<any> => {
 
             room_count = Math.min(count, room_count);
-            const PAGES: number = Math.round(room_count / page_size) + 2;
+            const PAGES: number = Math.ceil(room_count / page_size) + (count === Infinity ? 1 : 0); // If querying all rooms, add one page to query
 
-            for (let i = 1; i < PAGES; ++i) {
+            for (let i = 1; i <= PAGES; ++i) {
                 const params: any = {
                     'parent_area_id': areaid, 
                     'page': i, 
                     'page_size': page_size, 
-                    'sort_type': 'live_time',
+                    'sort_type': sortType,
                 };
 
                 const request: Request = (RequestBuilder.start()

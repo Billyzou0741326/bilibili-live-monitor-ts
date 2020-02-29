@@ -43,9 +43,12 @@ export class Xhr implements Sender {
 
             const promise = new Promise<Response>((resolve, reject) => {
                 const req = (xhr.request(options)
-                    .on('timeout', () => req.abort())
+                    .on('timeout', () => {
+                        req.abort();
+                        reject(new HttpError('Http request timed out'));
+                    })
                     .on('abort', () => reject(new HttpError('Http request aborted')))
-                    .on('error', () => reject(new HttpError('Http request errored')))
+                    .on('error', (error: Error) => reject(new HttpError(`Http request errored - ${error.message}`)))
                     .on('close', () => reject(new HttpError('Http request closed')))
                     .on('response', (response: HttpType.IncomingMessage) => {
                         const code: number = response.statusCode || 0;

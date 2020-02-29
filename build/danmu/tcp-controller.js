@@ -82,11 +82,10 @@ var AbstractRoomController = /** @class */ (function (_super) {
         var _this = this;
         var roomids = [].concat(rooms);
         var closed = new Set(this._recentlyClosed);
-        var filtered = roomids.filter(function (roomid) {
+        roomids.filter(function (roomid) {
             return (!_this._connections.has(roomid)
                 && !closed.has(roomid));
-        });
-        new Set(filtered).forEach(function (roomid) { _this.setupRoom(roomid); });
+        }).forEach(function (roomid) { _this.setupRoom(roomid); });
         this.clearClosed();
     };
     AbstractRoomController.prototype.stop = function () {
@@ -106,6 +105,10 @@ var GuardController = /** @class */ (function (_super) {
     function GuardController() {
         return _super.call(this) || this;
     }
+    GuardController.prototype.onClose = function (roomid, listener) {
+        this._connections.delete(roomid);
+        this._recentlyClosed.push(roomid);
+    };
     GuardController.prototype.setupRoom = function (roomid, areaid) {
         var _this = this;
         if (this.roomExists(roomid)) {
@@ -118,14 +121,7 @@ var GuardController = /** @class */ (function (_super) {
         this._connections.set(roomid, listener);
         this._taskQueue.add(function () { listener.start(); });
         listener
-            .on('close', function () {
-            _this._connections.delete(roomid);
-            _this._recentlyClosed.push(roomid);
-            if (listener.toFixed === true) {
-                index_1.cprint("Adding " + roomid + " to fixed", chalk.green);
-                _this.emit('to_fixed', roomid);
-            }
-        })
+            .on('close', function () { _this.onClose(roomid, listener); })
             .on('add_to_db', function () { _this.emit('add_to_db', roomid); });
         var _loop_1 = function (category) {
             listener.on(category, function (g) { _this.emit(category, g); });
@@ -160,6 +156,16 @@ var DynamicGuardController = /** @class */ (function (_super) {
     };
     DynamicGuardController.prototype.roomExists = function (roomid) {
         return this._recentlyClosed.includes(roomid) || this._connections.has(roomid);
+    };
+    DynamicGuardController.prototype.onClose = function (roomid, listener) {
+        _super.prototype.onClose.call(this, roomid, listener);
+        this.checkAddToFixed(roomid, listener);
+    };
+    DynamicGuardController.prototype.checkAddToFixed = function (roomid, listener) {
+        if (listener.toFixed) {
+            index_1.cprint("Adding " + roomid + " to fixed", chalk.green);
+            this.emit('to_fixed', roomid);
+        }
     };
     return DynamicGuardController;
 }(GuardController));

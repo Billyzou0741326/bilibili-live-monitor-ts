@@ -42,6 +42,16 @@
 }
 ```
 
+### 房间收集策略
+```javascript
+    "room-collector-strategy": {
+        "roomExpiry": 30,                     // 非活跃房间在数据库中的保存天数
+        "dynamicRoomsQueryInterval": 120,     // 查询动态房间列表间隔，单位为秒
+        "dynamicRoomsPageSize": 99,           // 查询动态房间列表时每页房间数。数值越大则总请求数越少，但每个请求传输时间及超时可能变大
+        "dynamicRoomsSortType": "live_time"   // 查询动态房间列表时排序方法。live_time是房间在线时间。online是人气值
+    }
+```
+
 ### 负载均衡
 如果需要使用多个服务器来均衡负载，可以修改load-balancing设置。totalServers是服务器总数，serverIndex是本服务器序号，在0与totalServers减1之间。每个服务器需使用不同序号。
 需要说明的是，负载并不是完全均衡。实现方式是取房间号对于服务器总数的余数，所以每个服务器监听的房间数目会有一定出入，但相差不会很多。每个服务器监听的房间并不会重复。

@@ -23,9 +23,12 @@ var Xhr = /** @class */ (function () {
         var sendRequest = function () {
             var promise = new Promise(function (resolve, reject) {
                 var req = (xhr.request(options)
-                    .on('timeout', function () { return req.abort(); })
+                    .on('timeout', function () {
+                    req.abort();
+                    reject(new index_1.HttpError('Http request timed out'));
+                })
                     .on('abort', function () { return reject(new index_1.HttpError('Http request aborted')); })
-                    .on('error', function () { return reject(new index_1.HttpError('Http request errored')); })
+                    .on('error', function (error) { return reject(new index_1.HttpError("Http request errored - " + error.message)); })
                     .on('close', function () { return reject(new index_1.HttpError('Http request closed')); })
                     .on('response', function (response) {
                     var code = response.statusCode || 0;

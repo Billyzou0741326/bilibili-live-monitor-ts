@@ -17,14 +17,16 @@ export class Database {
 
     private _filename:  string;
     private _roomData:  RoomData;
+    private _expiry:    number;
     private _saveTask:  DelayedTask;
 
-    constructor(name?: string) {
+    constructor(expiry: number, name?: string) {
         if (typeof name === 'undefined') {
             name = 'record.json';
         }
         this._filename = path.resolve(__dirname, name);
         this._roomData = {};
+        this._expiry = 1000 * 60 * 60 * 24 * expiry; // expiry is in days
         this._saveTask = new DelayedTask();
         this._saveTask.withTime(2 * 60 * 1000).withCallback((): void => {
             (this.load()
@@ -105,7 +107,7 @@ export class Database {
     }
 
     filter(data: RoomData): RoomData {
-        const threshold: number = new Date().valueOf() - 1000 * 60 * 60 * 24 * 30;
+        const threshold: number = new Date().valueOf() - this._expiry;
         const result: any = Object.assign(new Object(), data);
         Object.entries(result).forEach((entry: any): void => {
             if (entry[1].updated_at < threshold) {
