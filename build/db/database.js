@@ -6,14 +6,19 @@ var chalk = require("chalk");
 var index_1 = require("../task/index");
 var index_2 = require("../fmt/index");
 var Database = /** @class */ (function () {
-    function Database(expiry, name) {
+    function Database(options) {
         var _this = this;
-        if (typeof name === 'undefined') {
-            name = 'record.json';
+        var name = 'record.json'; // name defaults to 'record.json'
+        var expiry = 1000 * 60 * 60 * 3; // expiry defaults to 3 days
+        if (typeof options !== 'undefined') {
+            name = options.name || name; // custom configuration
+            if (options.expiry && Number.isInteger(options.expiry)) {
+                expiry = 1000 * 60 * 60 * options.expiry; // expiry is in days
+            }
         }
         this._filename = path.resolve(__dirname, name);
         this._roomData = {};
-        this._expiry = 1000 * 60 * 60 * 24 * expiry; // expiry is in days
+        this._expiry = expiry;
         this._saveTask = new index_1.DelayedTask();
         this._saveTask.withTime(2 * 60 * 1000).withCallback(function () {
             (_this.load()

@@ -25,10 +25,8 @@ export interface LoadBalancing {
 }
 
 export interface RoomCollectorStrategy {
-    readonly roomExpiry:                number;
+    readonly fixedRoomExpiry:           number;
     readonly dynamicRoomsQueryInterval: number;
-    readonly dynamicRoomsPageSize:      number;
-    readonly dynamicRoomsSortType:      string;
 }
 
 export class AppConfig implements AppSettings {

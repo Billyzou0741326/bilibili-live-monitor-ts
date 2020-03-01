@@ -816,8 +816,12 @@ export class Bilibili extends BilibiliBase {
      * @param   {Integer}   count
      * @returns {Promise}   resolve([ { 'roomid': roomid, 'online': online }, ... ])
      */
-    static getRoomsInArea(areaid: number, size: number=99, count: number=Infinity, sortType='live_time'): Promise<any> {
+    static getRoomsInArea(areaid: number, size: number=99, count: number=Infinity, sortType: string='live_time'): Promise<any> {
         const page_size = size > 99 || size < 0 ? 99 : size;
+        const ok_sort_types = [ 'live_time', 'online', 'sort_type_169' ];
+        if (!ok_sort_types.includes(sortType)) {
+            sortType = ok_sort_types[0];
+        }
 
         let promises: Promise<any>[] = [];
 

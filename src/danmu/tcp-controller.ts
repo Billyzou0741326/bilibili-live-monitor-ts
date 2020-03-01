@@ -152,10 +152,10 @@ export class RaffleController extends AbstractRoomController {
     private _roomidHandler: RoomidHandler;
     private _roomCollector: RoomCollector;
 
-    public constructor(roomCollector: RoomCollector) {
+    public constructor(roomCollector?: RoomCollector) {
         super();
         this._roomidHandler = new RoomidHandler();
-        this._roomCollector = roomCollector;
+        this._roomCollector = roomCollector || new RoomCollector();
         this._areas = [ 1, 2, 3, 4, 5, 6 ];
         this._nameOfArea = {
             1: '娱乐',

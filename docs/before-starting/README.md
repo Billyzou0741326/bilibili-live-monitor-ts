@@ -45,10 +45,8 @@
 ### 房间收集策略
 ```javascript
     "room-collector-strategy": {
-        "roomExpiry": 30,                     // 非活跃房间在数据库中的保存天数
+        "fixedRoomExpiry": 30,                // 非活跃房间在数据库中的保存天数
         "dynamicRoomsQueryInterval": 120,     // 查询动态房间列表间隔，单位为秒
-        "dynamicRoomsPageSize": 99,           // 查询动态房间列表时每页房间数。数值越大则总请求数越少，但每个请求传输时间及超时可能变大
-        "dynamicRoomsSortType": "live_time"   // 查询动态房间列表时排序方法。live_time是房间在线时间。online是人气值
     }
 ```
 

@@ -6,14 +6,13 @@ import {
     RoomCollectorStrategy,
     LoadBalancing, } from '../global/index';
 
+
 export class RoomCollector {
 
     private _db:            Database;
-    private _strategy:      RoomCollectorStrategy;
 
-    public constructor(strategy: RoomCollectorStrategy) {
-        this._db = new Database(strategy.roomExpiry);
-        this._strategy = strategy;
+    public constructor() {
+        this._db = new Database();
     }
 
     public getFixedRooms(): Promise<Set<number>> {
@@ -41,7 +40,7 @@ export class RoomCollector {
             numDynamicRooms = Infinity;
         }
 
-        const task = (Bilibili.getRoomsInArea(0, this._strategy.dynamicRoomsPageSize, numDynamicRooms, this._strategy.dynamicRoomsSortType)
+        const task = (Bilibili.getRoomsInArea(0, 99, numDynamicRooms)
             .then((resp: any): number[] => {
                 return this.filterRooms(resp.map((entry: any) => entry['roomid']));
             })
@@ -54,7 +53,7 @@ export class RoomCollector {
     }
 
     public getRaffleRoomsInArea(areaid: number, numRooms: number): Promise<number[]> {
-        let pageSize: number = numRooms > 50 ? 50 : numRooms;
+        let pageSize: number = (numRooms < 1 || numRooms > 99) ? 99 : numRooms;
         return (Bilibili.getRoomsInArea(areaid, pageSize, numRooms)
             .then((roomInfoList: any[]): number[] => {
                 return this.filterRooms(roomInfoList.map((roomInfo: any): number => roomInfo.roomid));
@@ -73,14 +72,20 @@ export class RoomCollector {
 }
 
 export class SimpleLoadBalancingRoomDistributor extends RoomCollector {
+
     private _loadBalancing:  LoadBalancing;
 
-    public constructor(loadBalancing: LoadBalancing, strategy: RoomCollectorStrategy) {
-        super(strategy);
-        this._loadBalancing = loadBalancing;
+    public constructor(loadBalancing?: LoadBalancing) {
+        super();
+
+        this._loadBalancing = loadBalancing || {
+            totalServers:   1,
+            serverIndex:    0,
+        } as LoadBalancing;
     }
 
     protected filterRooms(rooms: number[]): number[] {
         return rooms.filter((roomid: number): boolean => roomid % this._loadBalancing.totalServers === this._loadBalancing.serverIndex);
     }
+
 }

@@ -50,22 +50,23 @@ var App = /** @class */ (function () {
         var _this = this;
         this._appConfig = new index_3.AppConfig();
         this._appConfig.init();
-        this._db = new index_2.Database(this._appConfig.roomCollectorStrategy.roomExpiry);
+        this._db = new index_2.Database({ expiry: this._appConfig.roomCollectorStrategy.fixedRoomExpiry });
         this._history = new index_6.History();
         this._emitter = new events_1.EventEmitter();
         this._wsServer = new index_5.WsServer(this._appConfig.wsAddr);
         this._biliveServer = new index_5.WsServerBilive(this._appConfig.biliveAddr);
         this._bilihelperServer = new index_5.TCPServerBiliHelper(this._appConfig.bilihelperAddr);
         this._httpServer = new index_5.HttpServer(this._appConfig.httpAddr);
-        this._roomCollector = this._appConfig.loadBalancing.totalServers > 1
-            ? new index_6.SimpleLoadBalancingRoomDistributor(this._appConfig.loadBalancing, this._appConfig.roomCollectorStrategy)
-            : new index_6.RoomCollector(this._appConfig.roomCollectorStrategy);
+        this._roomCollector = (this._appConfig.loadBalancing.totalServers > 1
+            ? new index_6.SimpleLoadBalancingRoomDistributor(this._appConfig.loadBalancing)
+            : new index_6.RoomCollector());
         this._fixedController = new index_6.FixedGuardController();
         this._raffleController = new index_6.RaffleController(this._roomCollector);
         this._dynamicController = new index_6.DynamicGuardController();
         this._dynamicRefreshTask = new index_4.DelayedTask();
         this._running = false;
-        this._dynamicRefreshTask.withTime(this._appConfig.roomCollectorStrategy.dynamicRoomsQueryInterval * 1000).withCallback(function () {
+        var dynRefreshInterval = this._appConfig.roomCollectorStrategy.dynamicRoomsQueryInterval * 1000;
+        this._dynamicRefreshTask.withTime(dynRefreshInterval).withCallback(function () {
             var dynamicTask = _this._roomCollector.getDynamicRooms();
             (function () { return __awaiter(_this, void 0, void 0, function () {
                 var roomids, establishedFix_1, establishedDyn_1, newIds, error_1;

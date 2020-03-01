@@ -44,23 +44,24 @@ export class App {
     public constructor() {
         this._appConfig = new AppConfig();
         this._appConfig.init();
-        this._db = new Database(this._appConfig.roomCollectorStrategy.roomExpiry);
+        this._db = new Database({ expiry: this._appConfig.roomCollectorStrategy.fixedRoomExpiry });
         this._history = new History();
         this._emitter = new EventEmitter();
         this._wsServer = new WsServer(this._appConfig.wsAddr);
         this._biliveServer = new WsServerBilive(this._appConfig.biliveAddr);
         this._bilihelperServer = new TCPServerBiliHelper(this._appConfig.bilihelperAddr);
         this._httpServer = new HttpServer(this._appConfig.httpAddr);
-        this._roomCollector = this._appConfig.loadBalancing.totalServers > 1
-            ? new SimpleLoadBalancingRoomDistributor(this._appConfig.loadBalancing, this._appConfig.roomCollectorStrategy)
-            : new RoomCollector(this._appConfig.roomCollectorStrategy);
+        this._roomCollector = (this._appConfig.loadBalancing.totalServers > 1
+            ? new SimpleLoadBalancingRoomDistributor(this._appConfig.loadBalancing)
+            : new RoomCollector());
         this._fixedController = new FixedGuardController();
         this._raffleController = new RaffleController(this._roomCollector);
-            this._dynamicController = new DynamicGuardController();
+        this._dynamicController = new DynamicGuardController();
         this._dynamicRefreshTask = new DelayedTask();
         this._running = false;
 
-        this._dynamicRefreshTask.withTime(this._appConfig.roomCollectorStrategy.dynamicRoomsQueryInterval * 1000).withCallback((): void => {
+        const dynRefreshInterval = this._appConfig.roomCollectorStrategy.dynamicRoomsQueryInterval * 1000;
+        this._dynamicRefreshTask.withTime(dynRefreshInterval).withCallback((): void => {
             const dynamicTask = this._roomCollector.getDynamicRooms();
             (async () => {
                 try {

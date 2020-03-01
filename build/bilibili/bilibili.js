@@ -692,6 +692,10 @@ var Bilibili = /** @class */ (function (_super) {
         if (count === void 0) { count = Infinity; }
         if (sortType === void 0) { sortType = 'live_time'; }
         var page_size = size > 99 || size < 0 ? 99 : size;
+        var ok_sort_types = ['live_time', 'online', 'sort_type_169'];
+        if (!ok_sort_types.includes(sortType)) {
+            sortType = ok_sort_types[0];
+        }
         var promises = [];
         var promise = Bilibili.getLiveCount().catch(function (error) {
             index_3.cprint("Bilibili.getLiveCount - " + error.message, chalk.red);

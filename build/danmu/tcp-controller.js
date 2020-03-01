@@ -175,7 +175,7 @@ var RaffleController = /** @class */ (function (_super) {
     function RaffleController(roomCollector) {
         var _this = _super.call(this) || this;
         _this._roomidHandler = new index_5.RoomidHandler();
-        _this._roomCollector = roomCollector;
+        _this._roomCollector = roomCollector || new index_5.RoomCollector();
         _this._areas = [1, 2, 3, 4, 5, 6];
         _this._nameOfArea = {
             1: '娱乐',

@@ -20,13 +20,20 @@ export class Database {
     private _expiry:    number;
     private _saveTask:  DelayedTask;
 
-    constructor(expiry: number, name?: string) {
-        if (typeof name === 'undefined') {
-            name = 'record.json';
+    constructor(options?: { expiry?: number, name?: string }) {
+        let name: string = 'record.json';                   // name defaults to 'record.json'
+        let expiry: number = 1000 * 60 * 60 * 3;            // expiry defaults to 3 days
+
+        if (typeof options !== 'undefined') {
+            name = options.name || name;                    // custom configuration
+            if (options.expiry && Number.isInteger(options.expiry)) {
+                expiry = 1000 * 60 * 60 * 24 * options.expiry;   // expiry is in days
+            }
         }
+
         this._filename = path.resolve(__dirname, name);
         this._roomData = {};
-        this._expiry = 1000 * 60 * 60 * 24 * expiry; // expiry is in days
+        this._expiry = expiry; 
         this._saveTask = new DelayedTask();
         this._saveTask.withTime(2 * 60 * 1000).withCallback((): void => {
             (this.load()

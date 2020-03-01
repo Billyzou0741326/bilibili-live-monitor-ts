@@ -18,9 +18,8 @@ var index_1 = require("../db/index");
 var index_2 = require("../bilibili/index");
 var index_3 = require("../fmt/index");
 var RoomCollector = /** @class */ (function () {
-    function RoomCollector(strategy) {
-        this._db = new index_1.Database(strategy.roomExpiry);
-        this._strategy = strategy;
+    function RoomCollector() {
+        this._db = new index_1.Database();
     }
     RoomCollector.prototype.getFixedRooms = function () {
         var _this = this;
@@ -47,7 +46,7 @@ var RoomCollector = /** @class */ (function () {
         if (numDynamicRooms === 0) {
             numDynamicRooms = Infinity;
         }
-        var task = (index_2.Bilibili.getRoomsInArea(0, this._strategy.dynamicRoomsPageSize, numDynamicRooms, this._strategy.dynamicRoomsSortType)
+        var task = (index_2.Bilibili.getRoomsInArea(0, 99, numDynamicRooms)
             .then(function (resp) {
             return _this.filterRooms(resp.map(function (entry) { return entry['roomid']; }));
         })
@@ -59,7 +58,7 @@ var RoomCollector = /** @class */ (function () {
     };
     RoomCollector.prototype.getRaffleRoomsInArea = function (areaid, numRooms) {
         var _this = this;
-        var pageSize = numRooms > 50 ? 50 : numRooms;
+        var pageSize = (numRooms < 1 || numRooms > 99) ? 99 : numRooms;
         return (index_2.Bilibili.getRoomsInArea(areaid, pageSize, numRooms)
             .then(function (roomInfoList) {
             return _this.filterRooms(roomInfoList.map(function (roomInfo) { return roomInfo.roomid; }));
@@ -77,9 +76,12 @@ var RoomCollector = /** @class */ (function () {
 exports.RoomCollector = RoomCollector;
 var SimpleLoadBalancingRoomDistributor = /** @class */ (function (_super) {
     __extends(SimpleLoadBalancingRoomDistributor, _super);
-    function SimpleLoadBalancingRoomDistributor(loadBalancing, strategy) {
-        var _this = _super.call(this, strategy) || this;
-        _this._loadBalancing = loadBalancing;
+    function SimpleLoadBalancingRoomDistributor(loadBalancing) {
+        var _this = _super.call(this) || this;
+        _this._loadBalancing = loadBalancing || {
+            totalServers: 1,
+            serverIndex: 0,
+        };
         return _this;
     }
     SimpleLoadBalancingRoomDistributor.prototype.filterRooms = function (rooms) {
