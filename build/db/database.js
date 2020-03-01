@@ -9,11 +9,11 @@ var Database = /** @class */ (function () {
     function Database(options) {
         var _this = this;
         var name = 'record.json'; // name defaults to 'record.json'
-        var expiry = 1000 * 60 * 60 * 3; // expiry defaults to 3 days
+        var expiry = 1000 * 60 * 60 * 24 * 3; // expiry defaults to 3 days
         if (typeof options !== 'undefined') {
             name = options.name || name; // custom configuration
             if (options.expiry && Number.isInteger(options.expiry)) {
-                expiry = 1000 * 60 * 60 * options.expiry; // expiry is in days
+                expiry = 1000 * 60 * 60 * 24 * options.expiry; // expiry is in days
             }
         }
         this._filename = path.resolve(__dirname, name);

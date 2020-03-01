@@ -22,7 +22,7 @@ export class Database {
 
     constructor(options?: { expiry?: number, name?: string }) {
         let name: string = 'record.json';                   // name defaults to 'record.json'
-        let expiry: number = 1000 * 60 * 60 * 3;            // expiry defaults to 3 days
+        let expiry: number = 1000 * 60 * 60 * 24 * 3;            // expiry defaults to 3 days
 
         if (typeof options !== 'undefined') {
             name = options.name || name;                    // custom configuration
