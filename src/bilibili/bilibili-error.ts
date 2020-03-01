@@ -12,7 +12,7 @@ export class BilibiliError extends Error {
         Object.setPrototypeOf(this, BilibiliError.prototype);
     }
 
-    public withStatus(s: number): BilibiliError {
+    public withStatus(s: number): this {
         this._status = s;
         return this;
     }

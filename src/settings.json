@@ -22,5 +22,11 @@
     "load-balancing": {
         "totalServers": 1,
         "serverIndex": 0
+    },
+    "room-collector-strategy": {
+        "roomExpiry": 30,
+        "dynamicRoomsQueryInterval": 120,
+        "dynamicRoomsPageSize": 99,
+        "dynamicRoomsSortType": "live_time"
     }
 }

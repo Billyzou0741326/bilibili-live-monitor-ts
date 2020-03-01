@@ -2,14 +2,18 @@ import * as chalk from 'chalk';
 import { Database } from '../db/index';
 import { Bilibili } from '../bilibili/index';
 import { cprint } from '../fmt/index';
-import { LoadBalancing } from '../global/index';
+import {
+    RoomCollectorStrategy,
+    LoadBalancing, } from '../global/index';
 
 export class RoomCollector {
 
-    private _db:    Database;
+    private _db:            Database;
+    private _strategy:      RoomCollectorStrategy;
 
-    public constructor() {
-        this._db = new Database();
+    public constructor(strategy: RoomCollectorStrategy) {
+        this._db = new Database(strategy.roomExpiry);
+        this._strategy = strategy;
     }
 
     public getFixedRooms(): Promise<Set<number>> {
@@ -32,8 +36,12 @@ export class RoomCollector {
         });
     }
 
-    public getDynamicRooms(): Promise<number[]> {
-        const task = (Bilibili.getRoomsInArea(0)
+    public getDynamicRooms(numDynamicRooms: number = 0): Promise<number[]> {
+        if (numDynamicRooms === 0) {
+            numDynamicRooms = Infinity;
+        }
+
+        const task = (Bilibili.getRoomsInArea(0, this._strategy.dynamicRoomsPageSize, numDynamicRooms, this._strategy.dynamicRoomsSortType)
             .then((resp: any): number[] => {
                 return this.filterRooms(resp.map((entry: any) => entry['roomid']));
             })
@@ -67,8 +75,8 @@ export class RoomCollector {
 export class SimpleLoadBalancingRoomDistributor extends RoomCollector {
     private _loadBalancing:  LoadBalancing;
 
-    public constructor(loadBalancing: LoadBalancing) {
-        super();
+    public constructor(loadBalancing: LoadBalancing, strategy: RoomCollectorStrategy) {
+        super(strategy);
         this._loadBalancing = loadBalancing;
     }
 

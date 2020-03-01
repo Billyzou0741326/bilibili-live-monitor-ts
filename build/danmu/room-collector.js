@@ -18,8 +18,9 @@ var index_1 = require("../db/index");
 var index_2 = require("../bilibili/index");
 var index_3 = require("../fmt/index");
 var RoomCollector = /** @class */ (function () {
-    function RoomCollector() {
-        this._db = new index_1.Database();
+    function RoomCollector(strategy) {
+        this._db = new index_1.Database(strategy.roomExpiry);
+        this._strategy = strategy;
     }
     RoomCollector.prototype.getFixedRooms = function () {
         var _this = this;
@@ -40,9 +41,13 @@ var RoomCollector = /** @class */ (function () {
             return new Set(_this.filterRooms((_a = []).concat.apply(_a, results)));
         });
     };
-    RoomCollector.prototype.getDynamicRooms = function () {
+    RoomCollector.prototype.getDynamicRooms = function (numDynamicRooms) {
         var _this = this;
-        var task = (index_2.Bilibili.getRoomsInArea(0)
+        if (numDynamicRooms === void 0) { numDynamicRooms = 0; }
+        if (numDynamicRooms === 0) {
+            numDynamicRooms = Infinity;
+        }
+        var task = (index_2.Bilibili.getRoomsInArea(0, this._strategy.dynamicRoomsPageSize, numDynamicRooms, this._strategy.dynamicRoomsSortType)
             .then(function (resp) {
             return _this.filterRooms(resp.map(function (entry) { return entry['roomid']; }));
         })
@@ -72,8 +77,8 @@ var RoomCollector = /** @class */ (function () {
 exports.RoomCollector = RoomCollector;
 var SimpleLoadBalancingRoomDistributor = /** @class */ (function (_super) {
     __extends(SimpleLoadBalancingRoomDistributor, _super);
-    function SimpleLoadBalancingRoomDistributor(loadBalancing) {
-        var _this = _super.call(this) || this;
+    function SimpleLoadBalancingRoomDistributor(loadBalancing, strategy) {
+        var _this = _super.call(this, strategy) || this;
         _this._loadBalancing = loadBalancing;
         return _this;
     }

@@ -149,7 +149,7 @@ var AbstractDanmuTCP = /** @class */ (function (_super) {
             this.start();
         }
         else {
-            this.emit('close');
+            this.emit('close', this);
         }
     };
     AbstractDanmuTCP.prototype.onData = function (data) {

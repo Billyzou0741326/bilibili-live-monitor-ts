@@ -687,9 +687,10 @@ var Bilibili = /** @class */ (function (_super) {
      * @param   {Integer}   count
      * @returns {Promise}   resolve([ { 'roomid': roomid, 'online': online }, ... ])
      */
-    Bilibili.getRoomsInArea = function (areaid, size, count) {
+    Bilibili.getRoomsInArea = function (areaid, size, count, sortType) {
         if (size === void 0) { size = 99; }
         if (count === void 0) { count = Infinity; }
+        if (sortType === void 0) { sortType = 'live_time'; }
         var page_size = size > 99 || size < 0 ? 99 : size;
         var promises = [];
         var promise = Bilibili.getLiveCount().catch(function (error) {
@@ -697,13 +698,13 @@ var Bilibili = /** @class */ (function (_super) {
             return Promise.resolve(5000); // on error return 5000
         }).then(function (room_count) {
             room_count = Math.min(count, room_count);
-            var PAGES = Math.round(room_count / page_size) + 2;
-            for (var i = 1; i < PAGES; ++i) {
+            var PAGES = Math.ceil(room_count / page_size) + (count === Infinity ? 1 : 0); // If querying all rooms, add one page to query
+            for (var i = 1; i <= PAGES; ++i) {
                 var params = {
                     'parent_area_id': areaid,
                     'page': i,
                     'page_size': page_size,
-                    'sort_type': 'live_time',
+                    'sort_type': sortType,
                 };
                 var request = (index_2.RequestBuilder.start()
                     .withHost('api.live.bilibili.com')
