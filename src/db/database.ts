@@ -20,7 +20,7 @@ export class Database {
     private _expiry:    number;
     private _saveTask:  DelayedTask;
 
-    constructor(options?: { expiry?: number, name?: string }) {
+    public constructor(options?: { expiry?: number, name?: string }) {
         let name: string = 'record.json';                   // name defaults to 'record.json'
         let expiry: number = 1000 * 60 * 60 * 24 * 3;            // expiry defaults to 3 days
 
@@ -36,51 +36,55 @@ export class Database {
         this._expiry = expiry; 
         this._saveTask = new DelayedTask();
         this._saveTask.withTime(2 * 60 * 1000).withCallback((): void => {
-            (this.load()
-                .then((data: RoomData): void => { this._roomData = data; })
-                .then((): void => { this.save() })
-                .catch((error: Error): void => {
-                    cprint(`(Database) - ${error.message}`, chalk.red);
-                }));
+            this.update();
         });
         this.setup();
     }
 
-    stop(): void {
-        this._saveTask.stop();
+    public start(): void {
+        this.getRooms();
     }
 
-    setup(): void {
+    public stop(): Promise<void> {
+        this._saveTask.stop();
+        return this.update();
+    }
+
+    private setup(): void {
         if (fs.existsSync(this._filename) === false) {
             const data: string = JSON.stringify({}, null, 4);
             fs.writeFileSync(this._filename, data);
         }
     }
 
-    add(roomid: number): void {
+    public add(roomid: number): void {
         this._roomData[roomid] = {
             'updated_at': new Date().valueOf(),
         };
         this._saveTask.start();
     }
 
-    update(): void {
-        (this.load()
-            .catch((error: Error): Promise<RoomData> => Promise.resolve({} as RoomData))
-            .then((roomData: RoomData): void => this.save())
-        );
-    }
-
-    save(): void {
-        const data: string = JSON.stringify(this.filter(this._roomData), null, 4);
-        fs.writeFile(this._filename, data, (error: any): void => {
-            if (error) {
-                cprint(`(Database) - ${error.message}`, chalk.red);
-            }
+    private update(): Promise<void> {
+        return this.save().catch((error: Error): void => {
+            cprint(`(Database) - ${error.message}`, chalk.red);
         });
     }
 
-    readFile(): Promise<string> {
+    private save(): Promise<void> {
+        const data: string = JSON.stringify(this.filter(this._roomData), null, 4);
+        return new Promise((resolve, reject) => {
+            fs.writeFile(this._filename, data, (error: any): void => {
+                if (error) {
+                    reject(error);
+                } else {
+                    //cprint('Database: fixed room info saved.', chalk.yellow);
+                    resolve();
+                }
+            })
+        });
+    }
+
+    private readFile(): Promise<string> {
         return new Promise((resolve, reject): void => {
             fs.readFile(this._filename, 'utf8', (error: any, data: string | Buffer): void => {
                 if (error) {
@@ -94,7 +98,7 @@ export class Database {
         });
     }
 
-    load(): Promise<RoomData> {
+    private load(): Promise<RoomData> {
         return this.readFile().then((data: string) => {
             let result: RoomData = {};
             try {
@@ -113,7 +117,7 @@ export class Database {
         });
     }
 
-    filter(data: RoomData): RoomData {
+    private filter(data: RoomData): RoomData {
         const threshold: number = new Date().valueOf() - this._expiry;
         const result: any = Object.assign(new Object(), data);
         Object.entries(result).forEach((entry: any): void => {
@@ -124,7 +128,7 @@ export class Database {
         return result as RoomData;
     }
 
-    getRooms(): Promise<number[]> {
+    public getRooms(): Promise<number[]> {
         return (this.load()
             .then((data: RoomData): RoomData => this.filter(data))
             .then((data: RoomData): number[] => Object.keys(data).map((d: string): number => +d))

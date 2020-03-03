@@ -48,7 +48,7 @@ export class AppConfig implements AppSettings {
     private _loadBalancing:             LoadBalancing;
     private _roomCollectorStrategy:     RoomCollectorStrategy;
 
-    constructor() {
+    public constructor() {
         this._debug = false;
         this._verbose = false;
         this._tcp_error = false;
@@ -67,14 +67,14 @@ export class AppConfig implements AppSettings {
         this._roomCollectorStrategy = settings['room-collector-strategy'] as RoomCollectorStrategy;
     }
 
-    init() {
+    public init() {
         if (this._initialized === false) {
             this.readArgs();
             this._initialized = true;
         }
     }
 
-    readArgs(): AppConfig {
+    public readArgs(): AppConfig {
         if (process.argv.includes('-v')) {
             this._verbose = true;
         }
@@ -87,63 +87,63 @@ export class AppConfig implements AppSettings {
         return this;
     }
 
-    get danmuAddr(): TCPAddress {
+    public get danmuAddr(): TCPAddress {
         return this._danmuAddr;
     }
 
-    get wsAddr(): TCPAddress {
+    public get wsAddr(): TCPAddress {
         return this._wsAddr;
     }
 
-    get httpAddr(): TCPAddress {
+    public get httpAddr(): TCPAddress {
         return this._httpAddr;
     }
 
-    get biliveAddr(): TCPAddress {
+    public get biliveAddr(): TCPAddress {
         return this._biliveAddr;
     }
 
-    get bilihelperAddr(): TCPAddress {
+    public get bilihelperAddr(): TCPAddress {
         return this._bilihelperAddr;
     }
 
-    get loadBalancing(): LoadBalancing {
+    public get loadBalancing(): LoadBalancing {
         return this._loadBalancing;
     }
 
-    get roomCollectorStrategy(): RoomCollectorStrategy {
+    public get roomCollectorStrategy(): RoomCollectorStrategy {
         return this._roomCollectorStrategy;
     }
 
-    get debug(): boolean {
+    public get debug(): boolean {
         return this._debug;
     }
 
-    get verbose(): boolean {
+    public get verbose(): boolean {
         return this._verbose;
     }
 
-    get tcp_error(): boolean {
+    public get tcp_error(): boolean {
         return this._tcp_error;
     }
 
-    get appkey(): string {
+    public get appkey(): string {
         return this._appkey;
     }
 
-    get appSecret(): string {
+    public get appSecret(): string {
         return this._appSecret;
     }
 
-    get appCommon(): {[key:string]:string} {
+    public get appCommon(): {[key:string]:string} {
         return this._appCommon;
     }
 
-    get appHeaders(): {[key:string]:string} {
+    public get appHeaders(): {[key:string]:string} {
         return this._appHeaders;
     }
 
-    get webHeaders(): {[key:string]:string} {
+    public get webHeaders(): {[key:string]:string} {
         return this._webHeaders;
     }
 }

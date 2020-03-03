@@ -21,17 +21,16 @@ var Database = /** @class */ (function () {
         this._expiry = expiry;
         this._saveTask = new index_1.DelayedTask();
         this._saveTask.withTime(2 * 60 * 1000).withCallback(function () {
-            (_this.load()
-                .then(function (data) { _this._roomData = data; })
-                .then(function () { _this.save(); })
-                .catch(function (error) {
-                index_2.cprint("(Database) - " + error.message, chalk.red);
-            }));
+            _this.update();
         });
         this.setup();
     }
+    Database.prototype.start = function () {
+        this.getRooms();
+    };
     Database.prototype.stop = function () {
         this._saveTask.stop();
+        return this.update();
     };
     Database.prototype.setup = function () {
         if (fs.existsSync(this._filename) === false) {
@@ -46,17 +45,23 @@ var Database = /** @class */ (function () {
         this._saveTask.start();
     };
     Database.prototype.update = function () {
-        var _this = this;
-        (this.load()
-            .catch(function (error) { return Promise.resolve({}); })
-            .then(function (roomData) { return _this.save(); }));
+        return this.save().catch(function (error) {
+            index_2.cprint("(Database) - " + error.message, chalk.red);
+        });
     };
     Database.prototype.save = function () {
+        var _this = this;
         var data = JSON.stringify(this.filter(this._roomData), null, 4);
-        fs.writeFile(this._filename, data, function (error) {
-            if (error) {
-                index_2.cprint("(Database) - " + error.message, chalk.red);
-            }
+        return new Promise(function (resolve, reject) {
+            fs.writeFile(_this._filename, data, function (error) {
+                if (error) {
+                    reject(error);
+                }
+                else {
+                    //cprint('Database: fixed room info saved.', chalk.yellow);
+                    resolve();
+                }
+            });
         });
     };
     Database.prototype.readFile = function () {
