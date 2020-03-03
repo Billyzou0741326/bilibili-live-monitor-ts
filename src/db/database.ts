@@ -24,7 +24,7 @@ export class FileWatcher {
     public constructor(filename: string, task?: DelayedTask) {
         this._filename = path.resolve(__dirname, filename);
         this._fsWatcher = null;
-        this._listenerTask = null;
+        this._listenerTask = task || null;
         this._paused = false;
     }
 
