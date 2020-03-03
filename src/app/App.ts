@@ -1,5 +1,4 @@
 import * as chalk from 'chalk';
-import * as readline from 'readline';
 import { table } from 'table';
 import { EventEmitter } from 'events';
 import { cprint } from '../fmt/index';
@@ -148,25 +147,6 @@ export class App {
                 this._dynamicController.add(filtered);
                 this._dynamicRefreshTask.start();
             })();
-
-            if (process.platform === 'win32') {
-                readline.createInterface({
-                    input: process.stdin,
-                    output: process.stdout
-                }).on('SIGINT', () => {
-                    (process.emit as Function)('SIGINT');
-                });
-            }
-
-            process.on('SIGINT', () => {
-                cprint('SIGINT received, shutting down...', chalk.yellow);
-                this._db.stop().then(
-                    () => {
-                        cprint('Graceful shutdown sequence executed, now exits.', chalk.yellow);
-                        process.exit();
-                    }
-                );
-            });
         }
     }
 
