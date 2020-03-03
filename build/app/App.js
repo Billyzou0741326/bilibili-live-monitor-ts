@@ -37,7 +37,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var chalk = require("chalk");
-var readline = require("readline");
 var table_1 = require("table");
 var events_1 = require("events");
 var index_1 = require("../fmt/index");
@@ -170,21 +169,6 @@ var App = /** @class */ (function () {
                     }
                 });
             }); })();
-            if (process.platform === 'win32') {
-                readline.createInterface({
-                    input: process.stdin,
-                    output: process.stdout
-                }).on('SIGINT', function () {
-                    process.emit('SIGINT');
-                });
-            }
-            process.on('SIGINT', function () {
-                index_1.cprint('SIGINT received, shutting down...', chalk.yellow);
-                _this._db.stop().then(function () {
-                    index_1.cprint('Graceful shutdown sequence executed, now exits.', chalk.yellow);
-                    process.exit();
-                });
-            });
         }
     };
     App.prototype.stop = function () {

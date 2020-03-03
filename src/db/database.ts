@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as chalk from 'chalk';
+import { promises as fsPromises } from 'fs';
 import { DelayedTask } from '../task/index';
 import { cprint } from '../fmt/index';
 
@@ -17,28 +18,43 @@ export class FileWatcher {
 
     private _filename:      string;
     private _fsWatcher:     fs.FSWatcher | null;
-    private _listenerTask:  DelayedTask;
+    private _listenerTask:  DelayedTask | null;
     private _paused:        boolean;
 
-    public constructor(filename: string, listener: () => void, delay?: number) {
-        this._filename = filename;
+    public constructor(filename: string, task?: DelayedTask) {
+        this._filename = path.resolve(__dirname, filename);
         this._fsWatcher = null;
-        this._listenerTask = new DelayedTask().withTime(delay ? delay : 10).withCallback((): void => listener() );
+        this._listenerTask = null;
         this._paused = false;
     }
 
+    public withTask(task: DelayedTask | null): this {
+        this._listenerTask = task;
+        return this;
+    }
+
     public start(): void {
-        this._fsWatcher = fs.watch(this._filename)
-            .on('change', (): void => {
-                if (!this._paused) {
-                    this._listenerTask.start();
-                }
-            });
+        if (this._fsWatcher === null) {
+            this._fsWatcher = fs.watch(this._filename)
+                .on('change', (): void => {
+                    if (!this._paused) {
+                        this._listenerTask && this._listenerTask.start();
+                    }
+                })
+                .on('error', (error: Error): void => {
+                    cprint(`(FileWatcher) - ${error.message}`, chalk.red);
+                    this._fsWatcher && this._fsWatcher.close();
+                })
+                .on('close', (): void => {
+                    this._listenerTask && this._listenerTask.stop();
+                    this._fsWatcher = null;
+                });
+        }
     }
 
     public stop(): void {
         if (this._fsWatcher !== null) {
-            this._fsWatcher!.close();
+            this._fsWatcher.close();
         }
     }
 
@@ -60,13 +76,13 @@ export class Database {
     private _watcher:   FileWatcher;
 
     public constructor(options?: { expiry?: number, name?: string }) {
-        let name: string = 'record.json';                   // name defaults to 'record.json'
-        let expiry: number = 1000 * 60 * 60 * 24 * 3;            // expiry defaults to 3 days
+        let name: string = 'record.json';                       // name defaults to 'record.json'
+        let expiry: number = 1000 * 60 * 60 * 24 * 3;           // expiry defaults to 3 days
 
         if (typeof options !== 'undefined') {
-            name = options.name || name;                    // custom configuration
+            name = options.name || name;                        // custom configuration
             if (options.expiry && Number.isInteger(options.expiry)) {
-                expiry = 1000 * 60 * 60 * 24 * options.expiry;   // expiry is in days
+                expiry = 1000 * 60 * 60 * 24 * options.expiry;  // expiry is in days
             }
         }
 
@@ -77,21 +93,19 @@ export class Database {
         this._saveTask.withTime(2 * 60 * 1000).withCallback((): void => {
             this.update();
         });
-        this._watcher = new FileWatcher(this._filename, (): void => {
+        this._watcher = new FileWatcher(this._filename, new DelayedTask().withTime(100).withCallback((): void => {
             this.load();
-        });
+        }));
         this.setup();
     }
 
     public start(): void {
         this._watcher.start();
-        this.getRooms();
     }
 
-    public stop(): Promise<void> {
+    public stop(): void {
         this._saveTask.stop();
         this._watcher.stop();
-        return this.update();
     }
 
     private setup(): void {
@@ -109,43 +123,41 @@ export class Database {
     }
 
     private update(): Promise<void> {
-        return this.save().catch((error: Error): void => {
-            cprint(`(Database) - ${error.message}`, chalk.red);
-        });
+        return (async(): Promise<void> => {
+            try {
+                this.save();
+            }
+            catch (error) {
+                cprint(`(Database) - ${error.message}`, chalk.red);
+            }
+        })();
     }
 
     private save(): Promise<void> {
         const data: string = JSON.stringify(this.filter(this._roomData), null, 4);
         this._watcher.pause();
-        return new Promise((resolve, reject) => {
-            fs.writeFile(this._filename, data, (error: any): void => {
+        return (async(): Promise<void> => {
+            try {
+                await fsPromises.writeFile(this._filename, data);
                 this._watcher.resume();
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve();
-                }
-            })
-        });
+            }
+            catch (error) {
+                this._watcher.resume();
+                throw error;
+            }
+        })();
     }
 
     private readFile(): Promise<string> {
-        return new Promise((resolve, reject): void => {
-            fs.readFile(this._filename, 'utf8', (error: any, data: string | Buffer): void => {
-                if (error) {
-                    reject(error);
-                }
-                else if (data instanceof Buffer) {
-                    data = data.toString();
-                }
-                resolve(data as string);
-            });
-        });
+        return fsPromises.readFile(this._filename, { encoding: 'utf8' });
     }
 
     private load(): Promise<RoomData> {
-        return this.readFile().then((data: string) => {
-            let result: RoomData = {};
+        return (async(): Promise<RoomData> => {
+
+            let result = {} as RoomData;
+            const data: string = await this.readFile();
+
             try {
                 result = JSON.parse(data);
                 Object.keys(result).forEach((roomid: string): void => {
@@ -158,8 +170,9 @@ export class Database {
             catch (error) {
                 cprint(`(Database) - ${error.message}`, chalk.red);
             }
+
             return result;
-        });
+        })();
     }
 
     private filter(data: RoomData): RoomData {
@@ -174,13 +187,19 @@ export class Database {
     }
 
     public getRooms(): Promise<number[]> {
-        return (this.load()
-            .then((data: RoomData): RoomData => this.filter(data))
-            .then((data: RoomData): number[] => Object.keys(data).map((d: string): number => +d))
-            .catch((error: Error): Promise<number[]> => {
+        return (async(): Promise<number[]> => {
+            let result: number[] = [];
+
+            try {
+                const roomData: RoomData = await this.load();
+                const filtered: RoomData = this.filter(roomData);
+                result = Object.keys(filtered).map((d: string): number => +d);
+            }
+            catch (error) {
                 cprint(`(Database) - ${error.message}`, chalk.red);
-                return Promise.resolve([]);
-            })
-        );
+            }
+
+            return result;
+        })();
     }
 }
