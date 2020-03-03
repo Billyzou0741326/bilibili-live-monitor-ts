@@ -1,4 +1,5 @@
 import * as chalk from 'chalk';
+import * as readline from 'readline';
 import { table } from 'table';
 import { EventEmitter } from 'events';
 import { cprint } from '../fmt/index';
@@ -135,6 +136,7 @@ export class App {
             this._biliveServer.start();
             this._bilihelperServer.start();
             this._httpServer.start();
+            this._db.start();
             this._raffleController.start();
             const fixedTask = this._roomCollector.getFixedRooms();
             const dynamicTask = this._roomCollector.getDynamicRooms();
@@ -142,10 +144,29 @@ export class App {
                 const fixedRooms: Set<number> = await fixedTask;
                 this._fixedController.add(Array.from(fixedRooms));
                 const dynamicRooms: number[] = await dynamicTask;
-                const filtered = dynamicRooms.filter((roomid: number): boolean => !fixedRooms.has(roomid));
+                const filtered: number[] = dynamicRooms.filter((roomid: number): boolean => !fixedRooms.has(roomid));
                 this._dynamicController.add(filtered);
                 this._dynamicRefreshTask.start();
             })();
+
+            if (process.platform === 'win32') {
+                readline.createInterface({
+                    input: process.stdin,
+                    output: process.stdout
+                }).on('SIGINT', () => {
+                    (process.emit as Function)('SIGINT');
+                });
+            }
+
+            process.on('SIGINT', () => {
+                cprint('SIGINT received, shutting down...', chalk.yellow);
+                this._db.stop().then(
+                    () => {
+                        cprint('Graceful shutdown sequence executed, now exits.', chalk.yellow);
+                        process.exit();
+                    }
+                );
+            });
         }
     }
 
