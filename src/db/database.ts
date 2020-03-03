@@ -13,12 +13,51 @@ interface RoomData {
     [key: number]:  RoomEntry;
 }
 
+export class FileWatcher {
+
+    private _filename:      string;
+    private _fsWatcher:     fs.FSWatcher | null;
+    private _listenerTask:  DelayedTask;
+    private _paused:        boolean;
+
+    public constructor(filename: string, listener: () => void, delay?: number) {
+        this._filename = filename;
+        this._fsWatcher = null;
+        this._listenerTask = new DelayedTask().withTime(delay ? delay : 10).withCallback((): void => listener() );
+        this._paused = false;
+    }
+
+    public start(): void {
+        this._fsWatcher = fs.watch(this._filename)
+            .on('change', (): void => {
+                if (!this._paused) {
+                    this._listenerTask.start();
+                }
+            });
+    }
+
+    public stop(): void {
+        if (this._fsWatcher !== null) {
+            this._fsWatcher!.close();
+        }
+    }
+
+    public pause(): void {
+        this._paused = true;
+    }
+
+    public resume(): void {
+        this._paused = false;
+    }
+}
+
 export class Database {
 
     private _filename:  string;
     private _roomData:  RoomData;
     private _expiry:    number;
     private _saveTask:  DelayedTask;
+    private _watcher:   FileWatcher;
 
     public constructor(options?: { expiry?: number, name?: string }) {
         let name: string = 'record.json';                   // name defaults to 'record.json'
@@ -38,15 +77,20 @@ export class Database {
         this._saveTask.withTime(2 * 60 * 1000).withCallback((): void => {
             this.update();
         });
+        this._watcher = new FileWatcher(this._filename, (): void => {
+            this.load();
+        });
         this.setup();
     }
 
     public start(): void {
+        this._watcher.start();
         this.getRooms();
     }
 
     public stop(): Promise<void> {
         this._saveTask.stop();
+        this._watcher.stop();
         return this.update();
     }
 
@@ -72,12 +116,13 @@ export class Database {
 
     private save(): Promise<void> {
         const data: string = JSON.stringify(this.filter(this._roomData), null, 4);
+        this._watcher.pause();
         return new Promise((resolve, reject) => {
             fs.writeFile(this._filename, data, (error: any): void => {
+                this._watcher.resume();
                 if (error) {
                     reject(error);
                 } else {
-                    //cprint('Database: fixed room info saved.', chalk.yellow);
                     resolve();
                 }
             })

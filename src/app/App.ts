@@ -144,7 +144,7 @@ export class App {
                 const fixedRooms: Set<number> = await fixedTask;
                 this._fixedController.add(Array.from(fixedRooms));
                 const dynamicRooms: number[] = await dynamicTask;
-                const filtered = dynamicRooms.filter((roomid: number): boolean => !fixedRooms.has(roomid));
+                const filtered: number[] = dynamicRooms.filter((roomid: number): boolean => !fixedRooms.has(roomid));
                 this._dynamicController.add(filtered);
                 this._dynamicRefreshTask.start();
             })();
