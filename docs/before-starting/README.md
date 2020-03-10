@@ -67,10 +67,12 @@
 3. 执行`tsc`
 
 ## Linux
-> 用root权限打开`/etc/security/limits.conf`加上这两行 (这个是放宽连接数限制的)
+> 用root权限打开`/etc/security/limits.conf`加上这几行 (这个是放宽连接数限制的)
 ```
 * hard nofile 65536
 * soft nofile 65536
+* hard nproc 1024
+* soft nproc 1024
 ```
 
 ## Windows
