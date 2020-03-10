@@ -3,10 +3,12 @@
 ## Linux运行出现EMFILE Error怎么处理？
 EMFILE报错说明系统开启的file descriptor超出限制了，一般Linux默认的nofile上限是1024，这显然是不够的。
 
-1. 以root权限打开`/etc/security/limits.conf`加上这两行：  
+1. 以root权限打开`/etc/security/limits.conf`加上这几行：  
     ```
     * hard nofile 65536
     * soft nofile 65536
+    * hard nproc 1024
+    * soft nproc 1024
     ```
 2. 重新登录命令行
 
