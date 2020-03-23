@@ -654,11 +654,11 @@ var Bilibili = /** @class */ (function (_super) {
      */
     Bilibili.getRoomInfo = function (roomid) {
         var params = {
-            'id': roomid,
+            'room_id': roomid,
         };
         var request = (index_2.RequestBuilder.start()
             .withHost('api.live.bilibili.com')
-            .withPath('/room/v1/Room/room_init')
+            .withPath('/xlive/web-room/v1/index/getInfoByRoom')
             .withMethod(index_2.RequestMethods.GET)
             .withParams(params)
             .withHeaders(config.webHeaders)
@@ -674,7 +674,7 @@ var Bilibili = /** @class */ (function (_super) {
      */
     Bilibili.isLive = function (roomid) {
         return Bilibili.getRoomInfo(roomid).then(function (jsonObj) {
-            var isLive = jsonObj['data']['live_status'] === 1 ? true : false;
+            var isLive = jsonObj['data']['room_info']['live_status'] === 1 ? true : false;
             return isLive;
         });
     };
