@@ -779,11 +779,11 @@ export class Bilibili extends BilibiliBase {
      */
     static getRoomInfo(roomid: number): Promise<any> {
         const params: any = {
-            'id': roomid, 
+            'room_id': roomid,
         };
         const request: Request = (RequestBuilder.start()
             .withHost('api.live.bilibili.com')
-            .withPath('/room/v1/Room/room_init')
+            .withPath('/xlive/web-room/v1/index/getInfoByRoom')
             .withMethod(RequestMethods.GET)
             .withParams(params)
             .withHeaders(config.webHeaders)
@@ -802,7 +802,7 @@ export class Bilibili extends BilibiliBase {
      */
     static isLive(roomid: number): Promise<boolean> {
         return Bilibili.getRoomInfo(roomid).then((jsonObj: any): boolean => {
-            const isLive: boolean = jsonObj['data']['live_status'] === 1 ? true : false;
+            const isLive: boolean = jsonObj['data']['room_info']['live_status'] === 1 ? true : false;
             return isLive;
         });
     }
