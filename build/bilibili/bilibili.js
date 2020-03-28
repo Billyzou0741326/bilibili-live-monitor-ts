@@ -47,10 +47,10 @@ var Bilibili = /** @class */ (function (_super) {
             data['password'] = hashedPassword;
             data['ts'] = Math.floor(0.001 * new Date().valueOf());
             var payload = Bilibili.parseAppParams(sort(data));
-            var request = (index_2.RequestBuilder.start()
+            var request = (index_2.Request.Builder()
                 .withHost('passport.bilibili.com')
                 .withPath('/api/v3/oauth2/login')
-                .withMethod(index_2.RequestMethods.POST)
+                .withMethod(index_2.Request.POST)
                 .withHeaders(config.appHeaders)
                 .withData(payload)
                 .withContentType('application/x-www-form-urlencoded')
@@ -64,10 +64,10 @@ var Bilibili = /** @class */ (function (_super) {
         data['appkey'] = config.appkey;
         data['ts'] = Math.floor(0.001 * new Date().valueOf());
         var payload = Bilibili.parseAppParams(sort(data));
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('passport.bilibili.com')
             .withPath('/api/oauth2/getKey')
-            .withMethod(index_2.RequestMethods.POST)
+            .withMethod(index_2.Request.POST)
             .withHeaders(config.appHeaders)
             .withData(payload)
             .withContentType('application/x-www-form-urlencoded')
@@ -89,10 +89,10 @@ var Bilibili = /** @class */ (function (_super) {
         data['roomid'] = roomid;
         data['ts'] = Math.floor(0.001 * new Date().valueOf());
         var payload = Bilibili.parseAppParams(sort(data));
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/xlive/lottery-interface/v1/lottery/getLotteryInfo')
-            .withMethod(index_2.RequestMethods.GET)
+            .withMethod(index_2.Request.GET)
             .withParams(payload)
             .withHeaders(config.appHeaders)
             .build());
@@ -118,10 +118,10 @@ var Bilibili = /** @class */ (function (_super) {
         data['type'] = type;
         data['ts'] = Math.floor(0.001 * new Date().valueOf());
         var payload = Bilibili.parseAppParams(sort(data));
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/xlive/lottery-interface/v4/smalltv/Getaward')
-            .withMethod(index_2.RequestMethods.POST)
+            .withMethod(index_2.Request.POST)
             .withHeaders(config.appHeaders)
             .withData(payload)
             .withContentType('application/x-www-form-urlencoded')
@@ -146,10 +146,10 @@ var Bilibili = /** @class */ (function (_super) {
         data['roomid'] = roomid;
         data['ts'] = Math.floor(0.001 * new Date().valueOf());
         var payload = Bilibili.parseAppParams(sort(data));
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/xlive/lottery-interface/v1/pk/join')
-            .withMethod(index_2.RequestMethods.POST)
+            .withMethod(index_2.Request.POST)
             .withHeaders(config.appHeaders)
             .withData(payload)
             .withContentType('application/x-www-form-urlencoded')
@@ -176,10 +176,10 @@ var Bilibili = /** @class */ (function (_super) {
         data['type'] = type || 'guard';
         data['ts'] = Math.floor(0.001 * new Date().valueOf());
         var payload = Bilibili.parseAppParams(sort(data));
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/xlive/lottery-interface/v2/Lottery/join')
-            .withMethod(index_2.RequestMethods.POST)
+            .withMethod(index_2.Request.POST)
             .withHeaders(config.appHeaders)
             .withData(payload)
             .withContentType('application/x-www-form-urlencoded')
@@ -202,10 +202,10 @@ var Bilibili = /** @class */ (function (_super) {
         data['id'] = id;
         data['ts'] = Math.floor(0.001 * new Date().valueOf());
         var payload = Bilibili.parseAppParams(sort(data));
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/xlive/lottery-interface/v1/storm/Join')
-            .withMethod(index_2.RequestMethods.POST)
+            .withMethod(index_2.Request.POST)
             .withHeaders(config.appHeaders)
             .withData(payload)
             .withContentType('application/x-www-form-urlencoded')
@@ -224,10 +224,10 @@ var Bilibili = /** @class */ (function (_super) {
         data['room_id'] = roomid;
         data['ts'] = Math.floor(0.001 * new Date().valueOf());
         var payload = Bilibili.parseAppParams(sort(data));
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/room/v1/Room/room_entry_action')
-            .withMethod(index_2.RequestMethods.POST)
+            .withMethod(index_2.Request.POST)
             .withHeaders(config.appHeaders)
             .withData(payload)
             .withContentType('application/x-www-form-urlencoded')
@@ -249,10 +249,10 @@ var Bilibili = /** @class */ (function (_super) {
         data['ts'] = Math.floor(0.001 * new Date().valueOf());
         data['access_key'] = appSession.access_token;
         var paramstr = Bilibili.parseAppParams(sort(data));
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/xlive/app-room/v1/index/getInfoByUser')
-            .withMethod(index_2.RequestMethods.GET)
+            .withMethod(index_2.Request.GET)
             .withHeaders(config.appHeaders)
             .withParams(paramstr)
             .build());
@@ -276,10 +276,10 @@ var Bilibili = /** @class */ (function (_super) {
         params['access_key'] = appSession.access_token;
         params['ts'] = Math.floor(0.001 * new Date().valueOf());
         var paramstr = Bilibili.parseAppParams(sort(params));
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/heartbeat/v1/OnLine/mobileOnline')
-            .withMethod(index_2.RequestMethods.POST)
+            .withMethod(index_2.Request.POST)
             .withHeaders(config.appHeaders)
             .withParams(paramstr)
             .withData(payload)
@@ -303,10 +303,10 @@ var Bilibili = /** @class */ (function (_super) {
         data['from'] = 'main.ugc-video-detail.0.0';
         data['ts'] = Math.floor(0.001 * new Date().valueOf());
         var payload = Bilibili.parseAppParams(sort(data));
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('app.bilibili.com')
             .withPath('/x/v2/view/share/complete')
-            .withMethod(index_2.RequestMethods.POST)
+            .withMethod(index_2.Request.POST)
             .withHeaders(config.appHeaders)
             .withData(payload)
             .withContentType('application/x-www-form-urlencoded')
@@ -327,10 +327,10 @@ var Bilibili = /** @class */ (function (_super) {
         params['owner_id'] = owner_id;
         params['ts'] = Math.floor(0.001 * new Date().valueOf());
         var paramstr = Bilibili.parseAppParams(params);
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('api.vc.bilibili.com')
             .withPath('/link_setting/v1/link_setting/sign_in')
-            .withMethod(index_2.RequestMethods.GET)
+            .withMethod(index_2.Request.GET)
             .withHeaders(config.appHeaders)
             .withParams(paramstr)
             .build());
@@ -341,10 +341,10 @@ var Bilibili = /** @class */ (function (_super) {
         params['access_key'] = appSession.access_token;
         params['ts'] = Math.floor(0.001 * new Date().valueOf());
         var paramstr = Bilibili.parseAppParams(params);
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/lottery/v1/SilverBox/getCurrentTask')
-            .withMethod(index_2.RequestMethods.GET)
+            .withMethod(index_2.Request.GET)
             .withHeaders(config.appHeaders)
             .withParams(paramstr)
             .build());
@@ -364,10 +364,10 @@ var Bilibili = /** @class */ (function (_super) {
         params['time_end'] = time_end;
         params['ts'] = Math.floor(0.001 * new Date().valueOf());
         var paramstr = Bilibili.parseAppParams(params);
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/lottery/v1/SilverBox/getAward')
-            .withMethod(index_2.RequestMethods.GET)
+            .withMethod(index_2.Request.GET)
             .withHeaders(config.appHeaders)
             .withParams(paramstr)
             .build());
@@ -375,40 +375,40 @@ var Bilibili = /** @class */ (function (_super) {
     };
     /** --------------------------WEB----------------------------- */
     Bilibili.mainTaskInfo = function (webSession) {
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('account.bilibili.com')
             .withPath('/home/reward')
-            .withMethod(index_2.RequestMethods.GET)
+            .withMethod(index_2.Request.GET)
             .withHeaders(config.webHeaders)
             .withCookies(webSession)
             .build());
         return Bilibili.request(request);
     };
     Bilibili.liveTaskInfo = function (webSession) {
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/i/api/taskInfo')
-            .withMethod(index_2.RequestMethods.GET)
+            .withMethod(index_2.Request.GET)
             .withHeaders(config.webHeaders)
             .withCookies(webSession)
             .build());
         return Bilibili.request(request);
     };
     Bilibili.liveSignInfo = function (webSession) {
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/sign/GetSignInfo')
-            .withMethod(index_2.RequestMethods.GET)
+            .withMethod(index_2.Request.GET)
             .withHeaders(config.webHeaders)
             .withCookies(webSession)
             .build());
         return Bilibili.request(request);
     };
     Bilibili.liveSign = function (webSession) {
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/sign/doSign')
-            .withMethod(index_2.RequestMethods.GET)
+            .withMethod(index_2.Request.GET)
             .withHeaders(config.webHeaders)
             .withCookies(webSession)
             .build());
@@ -418,10 +418,10 @@ var Bilibili = /** @class */ (function (_super) {
         var roomid = info.roomid;
         var params = {};
         params['room_id'] = roomid;
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/xlive/web-room/v1/index/getInfoByUser')
-            .withMethod(index_2.RequestMethods.GET)
+            .withMethod(index_2.Request.GET)
             .withCookies(webSession)
             .withHeaders(config.webHeaders)
             .withParams(params)
@@ -435,10 +435,10 @@ var Bilibili = /** @class */ (function (_super) {
             'visit_id': '',
         };
         var payload = index_3.Params.stringify(data);
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/User/userOnlineHeart')
-            .withMethod(index_2.RequestMethods.POST)
+            .withMethod(index_2.Request.POST)
             .withHeaders(config.webHeaders)
             .withCookies(webSession)
             .withData(payload)
@@ -454,10 +454,10 @@ var Bilibili = /** @class */ (function (_super) {
             'csrf_token': csrf,
         };
         var payload = index_3.Params.stringify(data);
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/activity/v1/task/receive_award')
-            .withMethod(index_2.RequestMethods.POST)
+            .withMethod(index_2.Request.POST)
             .withHeaders(config.webHeaders)
             .withCookies(webSession)
             .withData(payload)
@@ -470,10 +470,10 @@ var Bilibili = /** @class */ (function (_super) {
             'build': 0,
             'mobi_app': 'web',
         };
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('api.vc.bilibili.com')
             .withPath('/link_group/v1/member/my_groups')
-            .withMethod(index_2.RequestMethods.GET)
+            .withMethod(index_2.Request.GET)
             .withParams(params)
             .withCookies(webSession)
             .withHeaders(config.webHeaders)
@@ -498,10 +498,10 @@ var Bilibili = /** @class */ (function (_super) {
         data['play_type'] = 0;
         data['start_ts'] = Math.floor(0.001 * new Date().valueOf()) - data['played_time'];
         var payload = index_3.Params.stringify(data);
-        var preRequest = (index_2.RequestBuilder.start()
+        var preRequest = (index_2.Request.Builder()
             .withHost('api.bilibili.com')
             .withPath('/x/report/web/heartbeat')
-            .withMethod(index_2.RequestMethods.POST)
+            .withMethod(index_2.Request.POST)
             .withHeaders(config.webHeaders)
             .withContentType('application/x-www-form-urlencoded')
             .withData(payload));
@@ -556,10 +556,10 @@ var Bilibili = /** @class */ (function (_super) {
             'is_trend': 1,
             'page_size': PAGE_SIZE,
         };
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/rankdb/v1/Rank2018/getWebTop')
-            .withMethod(index_2.RequestMethods.GET)
+            .withMethod(index_2.Request.GET)
             .withParams(params)
             .withHeaders(config.webHeaders)
             .build());
@@ -611,10 +611,10 @@ var Bilibili = /** @class */ (function (_super) {
             'is_trend': 1,
             'page_size': PAGE_SIZE,
         };
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/rankdb/v1/Rank2018/getWebTop')
-            .withMethod(index_2.RequestMethods.GET)
+            .withMethod(index_2.Request.GET)
             .withParams(params)
             .withHeaders(config.webHeaders)
             .build());
@@ -633,10 +633,10 @@ var Bilibili = /** @class */ (function (_super) {
             'page_size': 1,
             'sort_type': 'live_time',
         };
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/room/v3/area/getRoomList')
-            .withMethod(index_2.RequestMethods.GET)
+            .withMethod(index_2.Request.GET)
             .withHeaders(config.webHeaders)
             .withParams(params)
             .build());
@@ -656,10 +656,10 @@ var Bilibili = /** @class */ (function (_super) {
         var params = {
             'room_id': roomid,
         };
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/xlive/web-room/v1/index/getInfoByRoom')
-            .withMethod(index_2.RequestMethods.GET)
+            .withMethod(index_2.Request.GET)
             .withParams(params)
             .withHeaders(config.webHeaders)
             .build());
@@ -710,10 +710,10 @@ var Bilibili = /** @class */ (function (_super) {
                     'page_size': page_size,
                     'sort_type': sortType,
                 };
-                var request = (index_2.RequestBuilder.start()
+                var request = (index_2.Request.Builder()
                     .withHost('api.live.bilibili.com')
                     .withPath('/room/v3/area/getRoomList')
-                    .withMethod(index_2.RequestMethods.GET)
+                    .withMethod(index_2.Request.GET)
                     .withParams(params)
                     .withHeaders(config.webHeaders)
                     .build());
@@ -764,10 +764,10 @@ var Bilibili = /** @class */ (function (_super) {
         var promises = [];
         areas.forEach(function (areaid) {
             params['parent_area_id'] = areaid;
-            var request = (index_2.RequestBuilder.start()
+            var request = (index_2.Request.Builder()
                 .withHost('api.live.bilibili.com')
                 .withPath('/room/v3/area/getRoomList')
-                .withMethod(index_2.RequestMethods.GET)
+                .withMethod(index_2.Request.GET)
                 .withHeaders(config.webHeaders)
                 .withParams(params)
                 .build());
@@ -788,10 +788,10 @@ var Bilibili = /** @class */ (function (_super) {
             'csrf_token': webSession.bili_jct,
         };
         var payload = index_3.Params.stringify(data);
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/msg/send')
-            .withMethod(index_2.RequestMethods.POST)
+            .withMethod(index_2.Request.POST)
             .withContentType('application/x-www-form-urlencoded')
             .withHeaders(config.webHeaders)
             .withCookies(webSession)
@@ -803,20 +803,20 @@ var Bilibili = /** @class */ (function (_super) {
         var params = Object.assign(new Object(), config.appCommon);
         params['access_token'] = appSession.access_token;
         var paramstr = Bilibili.parseAppParams(sort(params));
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('passport.bilibili.com')
             .withPath('/api/v3/oauth2/info')
-            .withMethod(index_2.RequestMethods.GET)
+            .withMethod(index_2.Request.GET)
             .withHeaders(config.appHeaders)
             .withParams(paramstr)
             .build());
         return Bilibili.request(request);
     };
     Bilibili.isLoggedIn = function (webSession) {
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('account.bilibili.com')
             .withPath('/home/userInfo')
-            .withMethod(index_2.RequestMethods.GET)
+            .withMethod(index_2.Request.GET)
             .withHeaders(config.webHeaders)
             .withCookies(webSession)
             .build());
@@ -831,10 +831,10 @@ var Bilibili = /** @class */ (function (_super) {
         data['csrf_token'] = webSession.bili_jct;
         var payload = index_3.Params.stringify(data);
         console.log(payload);
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/room/v1/Room/startLive')
-            .withMethod(index_2.RequestMethods.POST)
+            .withMethod(index_2.Request.POST)
             .withHeaders(config.webHeaders)
             .withCookies(webSession)
             .withData(payload)
@@ -848,10 +848,10 @@ var Bilibili = /** @class */ (function (_super) {
     Bilibili.videoInfo = function (aid) {
         var data = {};
         data['aid'] = aid;
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('api.bilibili.com')
             .withPath('/x/web-interface/view')
-            .withMethod(index_2.RequestMethods.GET)
+            .withMethod(index_2.Request.GET)
             .withHeaders(config.webHeaders)
             .withParams(data)
             .build());
@@ -875,10 +875,10 @@ var Bilibili = /** @class */ (function (_super) {
         data['type'] = 3;
         data['sub_type'] = 0;
         var payload = index_3.Params.stringify(data);
-        var request = (index_2.RequestBuilder.start()
+        var request = (index_2.Request.Builder()
             .withHost('api.bilibili.com')
             .withPath('/x/click-interface/click/web/h5')
-            .withMethod(index_2.RequestMethods.POST)
+            .withMethod(index_2.Request.POST)
             .withHeaders(config.webHeaders)
             .withContentType('application/x-www-form-urlencoded')
             .withData(payload)

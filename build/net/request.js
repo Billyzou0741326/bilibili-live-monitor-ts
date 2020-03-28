@@ -78,6 +78,44 @@ var Request = /** @class */ (function () {
             timeout: timeout,
         };
     };
+    Request.Builder = function () {
+        return new RequestBuilder();
+    };
+    Object.defineProperty(Request, "GET", {
+        get: function () {
+            return RequestMethods.GET;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Request, "PUT", {
+        get: function () {
+            return RequestMethods.PUT;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Request, "POST", {
+        get: function () {
+            return RequestMethods.POST;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Request, "HEAD", {
+        get: function () {
+            return RequestMethods.HEAD;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Request, "DELETE", {
+        get: function () {
+            return RequestMethods.DELETE;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(Request.prototype, "host", {
         get: function () {
             return this._host;

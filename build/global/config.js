@@ -149,15 +149,17 @@ exports.AppConfig = AppConfig;
 var statistics = {
     'appId': 1,
     'platform': 3,
-    'version': '5.53.1',
-    'abtest': '507',
+    'version': '5.55.1',
+    'abtest': '',
 };
+// const appkey: string = 'fb2c5b71e05297d0';                          // Alternative  APP_KEY
+// const appSecret: string = '0a32fa204cd3a2f857cbe73444511e32';       // Alternative  SECRET_KEY
 var appkey = '1d8b6e7d45233436';
 var appSecret = '560c52ccd288fed045859ed18bffd973';
 var appCommon = {
     'appkey': appkey,
-    'build': 5531000,
-    'channel': 'html5_app_bili',
+    'build': 5551100,
+    'channel': 'bili',
     'device': 'android',
     'mobi_app': 'android',
     'platform': 'android',
@@ -165,7 +167,7 @@ var appCommon = {
 };
 var appHeaders = {
     'Connection': 'close',
-    'User-Agent': 'Mozilla/5.0 BiliDroid/5.53.1 (bbcallen@gmail.com)',
+    'User-Agent': 'Mozilla/5.0 BiliDroid/5.55.1 (bbcallen@gmail.com)',
 };
 var webHeaders = {
     'Connection': 'close',

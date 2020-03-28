@@ -92,6 +92,30 @@ class Request {
         };
     }
 
+    static Builder(): RequestBuilder {
+        return new RequestBuilder();
+    }
+
+    static get GET(): RequestMethods {
+        return RequestMethods.GET;
+    }
+
+    static get PUT(): RequestMethods {
+        return RequestMethods.PUT;
+    }
+
+    static get POST(): RequestMethods {
+        return RequestMethods.POST;
+    }
+
+    static get HEAD(): RequestMethods {
+        return RequestMethods.HEAD;
+    }
+
+    static get DELETE(): RequestMethods {
+        return RequestMethods.DELETE;
+    }
+
     get host(): string {
         return this._host;
     }

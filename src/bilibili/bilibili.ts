@@ -7,8 +7,6 @@ import {
     WebSession, } from './index';
 import {
     Request,
-    RequestBuilder,
-    RequestMethods,
     Response, } from '../net/index';
 import {
     cprint,
@@ -65,10 +63,10 @@ export class Bilibili extends BilibiliBase {
 
             const payload: string = Bilibili.parseAppParams(sort(data));
 
-            const request: Request = (RequestBuilder.start()
+            const request: Request = (Request.Builder()
                 .withHost('passport.bilibili.com')
                 .withPath('/api/v3/oauth2/login')
-                .withMethod(RequestMethods.POST)
+                .withMethod(Request.POST)
                 .withHeaders(config.appHeaders)
                 .withData(payload)
                 .withContentType('application/x-www-form-urlencoded')
@@ -85,10 +83,10 @@ export class Bilibili extends BilibiliBase {
         data['ts'] = Math.floor(0.001 * new Date().valueOf());
         const payload: string = Bilibili.parseAppParams(sort(data));
 
-        const request: Request = (RequestBuilder.start()
+        const request: Request = (Request.Builder()
             .withHost('passport.bilibili.com')
             .withPath('/api/oauth2/getKey')
-            .withMethod(RequestMethods.POST)
+            .withMethod(Request.POST)
             .withHeaders(config.appHeaders)
             .withData(payload)
             .withContentType('application/x-www-form-urlencoded')
@@ -113,10 +111,10 @@ export class Bilibili extends BilibiliBase {
         data['ts'] = Math.floor(0.001 * new Date().valueOf());
         const payload: string = Bilibili.parseAppParams(sort(data));
 
-        const request: Request = (RequestBuilder.start()
+        const request: Request = (Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/xlive/lottery-interface/v1/lottery/getLotteryInfo')
-            .withMethod(RequestMethods.GET)
+            .withMethod(Request.GET)
             .withParams(payload)
             .withHeaders(config.appHeaders)
             .build()
@@ -145,10 +143,10 @@ export class Bilibili extends BilibiliBase {
         data['ts'] = Math.floor(0.001 * new Date().valueOf());
         const payload = Bilibili.parseAppParams(sort(data));
 
-        const request = (RequestBuilder.start()
+        const request = (Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/xlive/lottery-interface/v4/smalltv/Getaward')
-            .withMethod(RequestMethods.POST)
+            .withMethod(Request.POST)
             .withHeaders(config.appHeaders)
             .withData(payload)
             .withContentType('application/x-www-form-urlencoded')
@@ -177,10 +175,10 @@ export class Bilibili extends BilibiliBase {
         data['ts'] = Math.floor(0.001 * new Date().valueOf());
         const payload = Bilibili.parseAppParams(sort(data));
 
-        const request = (RequestBuilder.start()
+        const request = (Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/xlive/lottery-interface/v1/pk/join')
-            .withMethod(RequestMethods.POST)
+            .withMethod(Request.POST)
             .withHeaders(config.appHeaders)
             .withData(payload)
             .withContentType('application/x-www-form-urlencoded')
@@ -211,10 +209,10 @@ export class Bilibili extends BilibiliBase {
         data['ts'] = Math.floor(0.001 * new Date().valueOf());
         const payload = Bilibili.parseAppParams(sort(data));
 
-        const request = (RequestBuilder.start()
+        const request = (Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/xlive/lottery-interface/v2/Lottery/join')
-            .withMethod(RequestMethods.POST)
+            .withMethod(Request.POST)
             .withHeaders(config.appHeaders)
             .withData(payload)
             .withContentType('application/x-www-form-urlencoded')
@@ -241,10 +239,10 @@ export class Bilibili extends BilibiliBase {
         data['ts'] = Math.floor(0.001 * new Date().valueOf());
         const payload = Bilibili.parseAppParams(sort(data));
 
-        const request = (RequestBuilder.start()
+        const request = (Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/xlive/lottery-interface/v1/storm/Join')
-            .withMethod(RequestMethods.POST)
+            .withMethod(Request.POST)
             .withHeaders(config.appHeaders)
             .withData(payload)
             .withContentType('application/x-www-form-urlencoded')
@@ -267,10 +265,10 @@ export class Bilibili extends BilibiliBase {
         data['ts'] = Math.floor(0.001 * new Date().valueOf());
         const payload = Bilibili.parseAppParams(sort(data));
 
-        const request = (RequestBuilder.start()
+        const request = (Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/room/v1/Room/room_entry_action')
-            .withMethod(RequestMethods.POST)
+            .withMethod(Request.POST)
             .withHeaders(config.appHeaders)
             .withData(payload)
             .withContentType('application/x-www-form-urlencoded')
@@ -296,10 +294,10 @@ export class Bilibili extends BilibiliBase {
         data['access_key'] = appSession.access_token;
         const paramstr = Bilibili.parseAppParams(sort(data));
 
-        const request = (RequestBuilder.start()
+        const request = (Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/xlive/app-room/v1/index/getInfoByUser')
-            .withMethod(RequestMethods.GET)
+            .withMethod(Request.GET)
             .withHeaders(config.appHeaders)
             .withParams(paramstr)
             .build()
@@ -329,10 +327,10 @@ export class Bilibili extends BilibiliBase {
         params['ts'] = Math.floor(0.001 * new Date().valueOf());
         const paramstr = Bilibili.parseAppParams(sort(params));
 
-        const request = (RequestBuilder.start()
+        const request = (Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/heartbeat/v1/OnLine/mobileOnline')
-            .withMethod(RequestMethods.POST)
+            .withMethod(Request.POST)
             .withHeaders(config.appHeaders)
             .withParams(paramstr)
             .withData(payload)
@@ -360,10 +358,10 @@ export class Bilibili extends BilibiliBase {
         data['ts'] = Math.floor(0.001 * new Date().valueOf());
         const payload = Bilibili.parseAppParams(sort(data));
 
-        const request = (RequestBuilder.start()
+        const request = (Request.Builder()
             .withHost('app.bilibili.com')
             .withPath('/x/v2/view/share/complete')
-            .withMethod(RequestMethods.POST)
+            .withMethod(Request.POST)
             .withHeaders(config.appHeaders)
             .withData(payload)
             .withContentType('application/x-www-form-urlencoded')
@@ -388,10 +386,10 @@ export class Bilibili extends BilibiliBase {
         params['ts'] = Math.floor(0.001 * new Date().valueOf());
         const paramstr = Bilibili.parseAppParams(params);
 
-        const request = (RequestBuilder.start()
+        const request = (Request.Builder()
             .withHost('api.vc.bilibili.com')
             .withPath('/link_setting/v1/link_setting/sign_in')
-            .withMethod(RequestMethods.GET)
+            .withMethod(Request.GET)
             .withHeaders(config.appHeaders)
             .withParams(paramstr)
             .build()
@@ -406,10 +404,10 @@ export class Bilibili extends BilibiliBase {
         params['ts'] = Math.floor(0.001 * new Date().valueOf());
         const paramstr = Bilibili.parseAppParams(params);
 
-        const request = (RequestBuilder.start()
+        const request = (Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/lottery/v1/SilverBox/getCurrentTask')
-            .withMethod(RequestMethods.GET)
+            .withMethod(Request.GET)
             .withHeaders(config.appHeaders)
             .withParams(paramstr)
             .build()
@@ -433,10 +431,10 @@ export class Bilibili extends BilibiliBase {
         params['ts'] = Math.floor(0.001 * new Date().valueOf());
         const paramstr = Bilibili.parseAppParams(params);
 
-        const request = (RequestBuilder.start()
+        const request = (Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/lottery/v1/SilverBox/getAward')
-            .withMethod(RequestMethods.GET)
+            .withMethod(Request.GET)
             .withHeaders(config.appHeaders)
             .withParams(paramstr)
             .build()
@@ -448,10 +446,10 @@ export class Bilibili extends BilibiliBase {
     /** --------------------------WEB----------------------------- */
 
     static mainTaskInfo(webSession: WebSession): Promise<any> {
-        const request = (RequestBuilder.start()
+        const request = (Request.Builder()
             .withHost('account.bilibili.com')
             .withPath('/home/reward')
-            .withMethod(RequestMethods.GET)
+            .withMethod(Request.GET)
             .withHeaders(config.webHeaders)
             .withCookies(webSession)
             .build()
@@ -461,10 +459,10 @@ export class Bilibili extends BilibiliBase {
     }
 
     static liveTaskInfo(webSession: WebSession): Promise<any> {
-        const request = (RequestBuilder.start()
+        const request = (Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/i/api/taskInfo')
-            .withMethod(RequestMethods.GET)
+            .withMethod(Request.GET)
             .withHeaders(config.webHeaders)
             .withCookies(webSession)
             .build()
@@ -474,10 +472,10 @@ export class Bilibili extends BilibiliBase {
     }
 
     static liveSignInfo(webSession: WebSession): Promise<any> {
-        const request = (RequestBuilder.start()
+        const request = (Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/sign/GetSignInfo')
-            .withMethod(RequestMethods.GET)
+            .withMethod(Request.GET)
             .withHeaders(config.webHeaders)
             .withCookies(webSession)
             .build()
@@ -487,10 +485,10 @@ export class Bilibili extends BilibiliBase {
     }
 
     static liveSign(webSession: WebSession): Promise<any> {
-        const request = (RequestBuilder.start()
+        const request = (Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/sign/doSign')
-            .withMethod(RequestMethods.GET)
+            .withMethod(Request.GET)
             .withHeaders(config.webHeaders)
             .withCookies(webSession)
             .build()
@@ -504,10 +502,10 @@ export class Bilibili extends BilibiliBase {
         const params: any = {};
         params['room_id'] = roomid;
 
-        const request = (RequestBuilder.start()
+        const request = (Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/xlive/web-room/v1/index/getInfoByUser')
-            .withMethod(RequestMethods.GET)
+            .withMethod(Request.GET)
             .withCookies(webSession)
             .withHeaders(config.webHeaders)
             .withParams(params)
@@ -525,10 +523,10 @@ export class Bilibili extends BilibiliBase {
         };
         const payload = Params.stringify(data);
 
-        const request = (RequestBuilder.start()
+        const request = (Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/User/userOnlineHeart')
-            .withMethod(RequestMethods.POST)
+            .withMethod(Request.POST)
             .withHeaders(config.webHeaders)
             .withCookies(webSession)
             .withData(payload)
@@ -548,10 +546,10 @@ export class Bilibili extends BilibiliBase {
         };
         const payload = Params.stringify(data);
 
-        const request = (RequestBuilder.start()
+        const request = (Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/activity/v1/task/receive_award')
-            .withMethod(RequestMethods.POST)
+            .withMethod(Request.POST)
             .withHeaders(config.webHeaders)
             .withCookies(webSession)
             .withData(payload)
@@ -568,10 +566,10 @@ export class Bilibili extends BilibiliBase {
             'mobi_app': 'web',
         };
 
-        const request = (RequestBuilder.start()
+        const request = (Request.Builder()
             .withHost('api.vc.bilibili.com')
             .withPath('/link_group/v1/member/my_groups')
-            .withMethod(RequestMethods.GET)
+            .withMethod(Request.GET)
             .withParams(params)
             .withCookies(webSession)
             .withHeaders(config.webHeaders)
@@ -600,10 +598,10 @@ export class Bilibili extends BilibiliBase {
         data['start_ts'] = Math.floor(0.001 * new Date().valueOf()) - data['played_time'];
         const payload = Params.stringify(data);
 
-        let preRequest: RequestBuilder = (RequestBuilder.start()
+        let preRequest: any = (Request.Builder()
             .withHost('api.bilibili.com')
             .withPath('/x/report/web/heartbeat')
-            .withMethod(RequestMethods.POST)
+            .withMethod(Request.POST)
             .withHeaders(config.webHeaders)
             .withContentType('application/x-www-form-urlencoded')
             .withData(payload)
@@ -667,10 +665,10 @@ export class Bilibili extends BilibiliBase {
             'page_size': PAGE_SIZE,
         };
 
-        const request = (RequestBuilder.start()
+        const request = (Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/rankdb/v1/Rank2018/getWebTop')
-            .withMethod(RequestMethods.GET)
+            .withMethod(Request.GET)
             .withParams(params)
             .withHeaders(config.webHeaders)
             .build()
@@ -730,10 +728,10 @@ export class Bilibili extends BilibiliBase {
             'page_size': PAGE_SIZE,
         };
 
-        const request: Request = (RequestBuilder.start()
+        const request: Request = (Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/rankdb/v1/Rank2018/getWebTop')
-            .withMethod(RequestMethods.GET)
+            .withMethod(Request.GET)
             .withParams(params)
             .withHeaders(config.webHeaders)
             .build()
@@ -755,10 +753,10 @@ export class Bilibili extends BilibiliBase {
             'page_size': 1,
             'sort_type': 'live_time',
         };
-        const request: Request = (RequestBuilder.start()
+        const request: Request = (Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/room/v3/area/getRoomList')
-            .withMethod(RequestMethods.GET)
+            .withMethod(Request.GET)
             .withHeaders(config.webHeaders)
             .withParams(params)
             .build()
@@ -781,10 +779,10 @@ export class Bilibili extends BilibiliBase {
         const params: any = {
             'room_id': roomid,
         };
-        const request: Request = (RequestBuilder.start()
+        const request: Request = (Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/xlive/web-room/v1/index/getInfoByRoom')
-            .withMethod(RequestMethods.GET)
+            .withMethod(Request.GET)
             .withParams(params)
             .withHeaders(config.webHeaders)
             .build()
@@ -843,10 +841,10 @@ export class Bilibili extends BilibiliBase {
                     'sort_type': sortType,
                 };
 
-                const request: Request = (RequestBuilder.start()
+                const request: Request = (Request.Builder()
                     .withHost('api.live.bilibili.com')
                     .withPath('/room/v3/area/getRoomList')
-                    .withMethod(RequestMethods.GET)
+                    .withMethod(Request.GET)
                     .withParams(params)
                     .withHeaders(config.webHeaders)
                     .build()
@@ -906,10 +904,10 @@ export class Bilibili extends BilibiliBase {
         areas.forEach((areaid: number): void => {
 
             params['parent_area_id'] = areaid;
-            const request: Request = (RequestBuilder.start()
+            const request: Request = (Request.Builder()
                 .withHost('api.live.bilibili.com')
                 .withPath('/room/v3/area/getRoomList')
-                .withMethod(RequestMethods.GET)
+                .withMethod(Request.GET)
                 .withHeaders(config.webHeaders)
                 .withParams(params)
                 .build()
@@ -936,10 +934,10 @@ export class Bilibili extends BilibiliBase {
         };
         const payload = Params.stringify(data);
 
-        const request = (RequestBuilder.start()
+        const request = (Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/msg/send')
-            .withMethod(RequestMethods.POST)
+            .withMethod(Request.POST)
             .withContentType('application/x-www-form-urlencoded')
             .withHeaders(config.webHeaders)
             .withCookies(webSession)
@@ -955,10 +953,10 @@ export class Bilibili extends BilibiliBase {
         params['access_token'] = appSession.access_token;
         const paramstr = Bilibili.parseAppParams(sort(params));
 
-        const request = (RequestBuilder.start()
+        const request = (Request.Builder()
             .withHost('passport.bilibili.com')
             .withPath('/api/v3/oauth2/info')
-            .withMethod(RequestMethods.GET)
+            .withMethod(Request.GET)
             .withHeaders(config.appHeaders)
             .withParams(paramstr)
             .build()
@@ -967,10 +965,10 @@ export class Bilibili extends BilibiliBase {
     }
 
     static isLoggedIn(webSession: WebSession): Promise<any> {
-        const request = (RequestBuilder.start()
+        const request = (Request.Builder()
             .withHost('account.bilibili.com')
             .withPath('/home/userInfo')
-            .withMethod(RequestMethods.GET)
+            .withMethod(Request.GET)
             .withHeaders(config.webHeaders)
             .withCookies(webSession)
             .build()
@@ -988,10 +986,10 @@ export class Bilibili extends BilibiliBase {
         const payload = Params.stringify(data)
         console.log(payload);
 
-        const request = (RequestBuilder.start()
+        const request = (Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/room/v1/Room/startLive')
-            .withMethod(RequestMethods.POST)
+            .withMethod(Request.POST)
             .withHeaders(config.webHeaders)
             .withCookies(webSession)
             .withData(payload)
@@ -1009,10 +1007,10 @@ export class Bilibili extends BilibiliBase {
         const data: any = {};
         data['aid'] = aid;
 
-        const request: Request = (RequestBuilder.start()
+        const request: Request = (Request.Builder()
             .withHost('api.bilibili.com')
             .withPath('/x/web-interface/view')
-            .withMethod(RequestMethods.GET)
+            .withMethod(Request.GET)
             .withHeaders(config.webHeaders)
             .withParams(data)
             .build()
@@ -1039,10 +1037,10 @@ export class Bilibili extends BilibiliBase {
         data['sub_type'] = 0;
         const payload = Params.stringify(data);
 
-        const request: Request = (RequestBuilder.start()
+        const request: Request = (Request.Builder()
             .withHost('api.bilibili.com')
             .withPath('/x/click-interface/click/web/h5')
-            .withMethod(RequestMethods.POST)
+            .withMethod(Request.POST)
             .withHeaders(config.webHeaders)
             .withContentType('application/x-www-form-urlencoded')
             .withData(payload)
