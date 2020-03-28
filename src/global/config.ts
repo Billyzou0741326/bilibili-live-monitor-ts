@@ -151,15 +151,17 @@ export class AppConfig implements AppSettings {
 const statistics: {[key:string]:string|number} = {
     'appId': 1,
     'platform': 3,
-    'version': '5.53.1',
-    'abtest': '507',
+    'version': '5.55.1',
+    'abtest': '',
 };
+// const appkey: string = 'fb2c5b71e05297d0';                          // Alternative  APP_KEY
+// const appSecret: string = '0a32fa204cd3a2f857cbe73444511e32';       // Alternative  SECRET_KEY
 const appkey: string = '1d8b6e7d45233436';
 const appSecret: string = '560c52ccd288fed045859ed18bffd973';
 const appCommon: {[key:string]:string|number} = {
     'appkey': appkey,
-    'build': 5531000,
-    'channel': 'html5_app_bili',
+    'build': 5551100,
+    'channel': 'bili',
     'device': 'android',
     'mobi_app': 'android',
     'platform': 'android',
@@ -167,7 +169,7 @@ const appCommon: {[key:string]:string|number} = {
 };
 const appHeaders: {[key:string]:string} = {
     'Connection': 'close',
-    'User-Agent': 'Mozilla/5.0 BiliDroid/5.53.1 (bbcallen@gmail.com)',
+    'User-Agent': 'Mozilla/5.0 BiliDroid/5.55.1 (bbcallen@gmail.com)',
 };
 
 const webHeaders: {[key:string]:string} = {
