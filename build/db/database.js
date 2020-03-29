@@ -131,14 +131,21 @@ var Database = /** @class */ (function () {
     Database.prototype.update = function () {
         var _this = this;
         return (function () { return __awaiter(_this, void 0, void 0, function () {
+            var error_1;
             return __generator(this, function (_a) {
-                try {
-                    this.save();
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, this.save()];
+                    case 1:
+                        _a.sent();
+                        return [3 /*break*/, 3];
+                    case 2:
+                        error_1 = _a.sent();
+                        index_2.cprint("(Database) - " + error_1.message, chalk.red);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
                 }
-                catch (error) {
-                    index_2.cprint("(Database) - " + error.message, chalk.red);
-                }
-                return [2 /*return*/];
             });
         }); })();
     };
@@ -147,7 +154,7 @@ var Database = /** @class */ (function () {
         var data = JSON.stringify(this.filter(this._roomData), null, 4);
         this._watcher.pause();
         return (function () { return __awaiter(_this, void 0, void 0, function () {
-            var error_1;
+            var error_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -158,9 +165,9 @@ var Database = /** @class */ (function () {
                         this._watcher.resume();
                         return [3 /*break*/, 3];
                     case 2:
-                        error_1 = _a.sent();
+                        error_2 = _a.sent();
                         this._watcher.resume();
-                        throw error_1;
+                        throw error_2;
                     case 3: return [2 /*return*/];
                 }
             });
@@ -211,7 +218,7 @@ var Database = /** @class */ (function () {
     Database.prototype.getRooms = function () {
         var _this = this;
         return (function () { return __awaiter(_this, void 0, void 0, function () {
-            var result, roomData, filtered, error_2;
+            var result, roomData, filtered, error_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -226,8 +233,8 @@ var Database = /** @class */ (function () {
                         result = Object.keys(filtered).map(function (d) { return +d; });
                         return [3 /*break*/, 4];
                     case 3:
-                        error_2 = _a.sent();
-                        index_2.cprint("(Database) - " + error_2.message, chalk.red);
+                        error_3 = _a.sent();
+                        index_2.cprint("(Database) - " + error_3.message, chalk.red);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/, result];
                 }

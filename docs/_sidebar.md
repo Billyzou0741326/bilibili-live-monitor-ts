@@ -1,5 +1,6 @@
 - [运行前](before-starting/README.md)
 - [运行程序](executing/README.md)
 - [推送格式](developer-reference/README.md)
+- [调试](debug/README.md)
 - [FAQ](faq/README.md)
 - [github](https://github.com/Billyzou0741326/bilibili-live-monitor-ts)

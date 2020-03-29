@@ -125,7 +125,7 @@ export class Database {
     private update(): Promise<void> {
         return (async(): Promise<void> => {
             try {
-                this.save();
+                await this.save();
             }
             catch (error) {
                 cprint(`(Database) - ${error.message}`, chalk.red);
