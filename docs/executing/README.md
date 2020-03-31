@@ -5,7 +5,7 @@
 ### 普通运行
  1. 命令行切换到package.json所在的目录
  2. `npm install`                       (执行一次就好)
- 3. `node ./build/main.js`              (正常运行)
+ 3. `npm start`                         (正常运行)
 
 ### pm2运行
 > 详情前往[pm2官网](https://pm2.io/docs/plus/overview/)
