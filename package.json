@@ -15,7 +15,9 @@
     "ws": "^7.2.0"
   },
   "devDependencies": {},
-  "scripts": {},
+  "scripts": {
+      "start": "node build/main.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Billyzou0741326/bilibili-live-monitor-js.git"
