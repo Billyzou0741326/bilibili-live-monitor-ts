@@ -115,14 +115,15 @@ var App = /** @class */ (function () {
             this._fixedController,
             this._raffleController,
         ];
-        controllers.forEach(function (controller) {
+        for (var _i = 0, controllers_1 = controllers; _i < controllers_1.length; _i++) {
+            var controller = controllers_1[_i];
             controller
                 .on('add_to_db', function (roomid) { _this._db.add(roomid); })
                 .on('to_fixed', function (roomid) { _this._fixedController.add(roomid); });
             for (var category in index_6.RaffleCategory) {
                 controller.on(category, handler(category));
             }
-        });
+        }
         for (var category in index_6.RaffleCategory) {
             this._emitter.on(category, function (g) {
                 _this.printGift(g);

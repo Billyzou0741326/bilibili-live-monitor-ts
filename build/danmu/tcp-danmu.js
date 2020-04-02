@@ -155,11 +155,11 @@ var AbstractDanmuTCP = /** @class */ (function (_super) {
     AbstractDanmuTCP.prototype.onData = function (data) {
         this._lastRead = new Date();
         this._reader.onData(data);
-        var msg = this._reader.getMessage();
+        var messages = this._reader.getMessages();
         try {
-            while (msg !== null) {
+            for (var _i = 0, messages_1 = messages; _i < messages_1.length; _i++) {
+                var msg = messages_1[_i];
                 this.onMessage(msg);
-                msg = this._reader.getMessage();
             }
         }
         catch (error) {
@@ -743,7 +743,7 @@ exports.RaffleMonitor = RaffleMonitor;
 var DanmuTCPReader = /** @class */ (function () {
     function DanmuTCPReader() {
         this._data = Buffer.alloc(0);
-        this._totalLen = 0;
+        this._nextMsgLen = 0;
     }
     DanmuTCPReader.prototype.onData = function (data) {
         if (typeof data === 'string') {
@@ -751,24 +751,24 @@ var DanmuTCPReader = /** @class */ (function () {
         }
         this._data = Buffer.concat([this._data, data]);
     };
-    DanmuTCPReader.prototype.getMessage = function () {
-        var result = null;
-        if (this._totalLen <= 0 && this._data.length >= 4) {
-            this._totalLen = this._data.readUInt32BE(0);
+    DanmuTCPReader.prototype.getMessages = function () {
+        var result = [];
+        if (this._nextMsgLen <= 0 && this._data.length >= 4) {
+            this._nextMsgLen = this._data.readUInt32BE(0);
         }
-        if (this._totalLen > 0 && this._data.length >= this._totalLen) {
-            result = this._data.slice(0, this._totalLen);
-            this._data = this._data.slice(this._totalLen, this._data.length);
+        while (this._nextMsgLen > 0 && this._data.length >= this._nextMsgLen) {
+            result.push(this._data.slice(0, this._nextMsgLen));
+            this._data = this._data.slice(this._nextMsgLen, this._data.length);
             var len = this._data.length;
             if (len === 0) {
-                this._totalLen = 0;
+                this._nextMsgLen = 0;
                 this._data = Buffer.alloc(0);
             }
             else if (len >= 4) {
-                this._totalLen = this._data.readUInt32BE(0);
+                this._nextMsgLen = this._data.readUInt32BE(0);
             }
             else {
-                this._totalLen = -1;
+                this._nextMsgLen = -1;
             }
         }
         return result;

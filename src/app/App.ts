@@ -102,14 +102,14 @@ export class App {
             this._fixedController,
             this._raffleController,
         ];
-        controllers.forEach((controller: AbstractRoomController): void => {
+        for (const controller of controllers) {
             controller
                 .on('add_to_db', (roomid: number): void => { this._db.add(roomid) })
                 .on('to_fixed', (roomid: number): void => { this._fixedController.add(roomid) });
             for (const category in RaffleCategory) {
                 controller.on(category, handler(category));
             }
-        });
+        }
         for (const category in RaffleCategory) {
             this._emitter.on(category, (g: Raffle): void => {
                 this.printGift(g);
