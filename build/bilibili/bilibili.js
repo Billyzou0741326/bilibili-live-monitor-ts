@@ -762,7 +762,8 @@ var Bilibili = /** @class */ (function (_super) {
         };
         var areas = [1, 2, 3, 4, 5, 6,];
         var promises = [];
-        areas.forEach(function (areaid) {
+        for (var _i = 0, areas_1 = areas; _i < areas_1.length; _i++) {
+            var areaid = areas_1[_i];
             params['parent_area_id'] = areaid;
             var request = (index_2.Request.Builder()
                 .withHost('api.live.bilibili.com')
@@ -772,7 +773,7 @@ var Bilibili = /** @class */ (function (_super) {
                 .withParams(params)
                 .build());
             promises.push(Bilibili.request(request));
-        });
+        }
         return promises; // a list of promises, each element is list of rooms in an area
     };
     Bilibili.sendDanmu = function (webSession, danmu) {

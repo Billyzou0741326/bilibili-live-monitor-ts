@@ -85,7 +85,11 @@ var AbstractRoomController = /** @class */ (function (_super) {
         roomids.filter(function (roomid) {
             return (!_this._connections.has(roomid)
                 && !closed.has(roomid));
-        }).forEach(function (roomid) { _this.setupRoom(roomid); });
+        });
+        for (var _i = 0, roomids_1 = roomids; _i < roomids_1.length; _i++) {
+            var roomid = roomids_1[_i];
+            this.setupRoom(roomid);
+        }
         this.clearClosed();
     };
     AbstractRoomController.prototype.stop = function () {
@@ -106,6 +110,7 @@ var GuardController = /** @class */ (function (_super) {
         return _super.call(this) || this;
     }
     GuardController.prototype.onClose = function (roomid, listener) {
+        listener.destroy();
         this._connections.delete(roomid);
         this._recentlyClosed.push(roomid);
     };
@@ -195,10 +200,10 @@ var RaffleController = /** @class */ (function (_super) {
         return _this;
     }
     RaffleController.prototype.start = function () {
-        var _this = this;
-        this._areas.forEach(function (areaid) {
-            _this.setupArea(areaid);
-        });
+        for (var _i = 0, _a = this._areas; _i < _a.length; _i++) {
+            var areaid = _a[_i];
+            this.setupArea(areaid);
+        }
     };
     RaffleController.prototype.stop = function () {
         _super.prototype.stop.call(this);
@@ -264,22 +269,17 @@ var RaffleController = /** @class */ (function (_super) {
             || typeof areaid === 'undefined') {
             return;
         }
-        var roomInfo = {
-            roomid: roomid,
-            areaid: areaid,
-        };
-        var listener = new index_5.RaffleMonitor(tcpaddr, roomInfo);
-        var msg = ("Setting up monitor @room "
-            + ("" + roomid.toString().padEnd(13))
-            + ("in " + this._nameOfArea[areaid] + "\u533A"));
-        index_1.cprint(msg, chalk.green);
+        var listener = new index_5.RaffleMonitor(tcpaddr, { roomid: roomid, areaid: areaid });
+        index_1.cprint("Setting up monitor @room " + roomid.toString().padEnd(13) + " in " + this._nameOfArea[areaid] + "\u533A", chalk.green);
         this._taskQueue.add(function () { listener.start(); });
         this._connections.set(areaid, listener);
         listener
             .on('close', function () {
+            var listener = _this._connections.get(areaid);
+            listener && listener.destroy();
+            _this._connections.delete(areaid);
             var reason = "@room " + roomid + " in " + _this._nameOfArea[areaid] + "\u533A is closed.";
             index_1.cprint(reason, chalk.yellowBright);
-            _this._connections.delete(areaid);
             _this.setupArea(areaid);
         })
             .on('add_to_db', function () { _this.emit('add_to_db', roomid); })

@@ -901,7 +901,7 @@ export class Bilibili extends BilibiliBase {
 
         let promises: Promise<any>[] = [];
 
-        areas.forEach((areaid: number): void => {
+        for (const areaid of areas) {
 
             params['parent_area_id'] = areaid;
             const request: Request = (Request.Builder()
@@ -915,7 +915,7 @@ export class Bilibili extends BilibiliBase {
 
             promises.push(Bilibili.request(request));
 
-        });
+        }
 
         return promises;    // a list of promises, each element is list of rooms in an area
     }

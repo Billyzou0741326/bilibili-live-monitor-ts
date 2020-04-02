@@ -49,7 +49,10 @@ export abstract class AbstractRoomController extends EventEmitter {
                 !this._connections.has(roomid)
                 && !closed.has(roomid)
             );
-        }).forEach((roomid: number): void => { this.setupRoom(roomid) });
+        });
+        for (const roomid of roomids) {
+            this.setupRoom(roomid);
+        }
         this.clearClosed();
     }
 
@@ -79,6 +82,7 @@ abstract class GuardController extends AbstractRoomController {
     protected abstract roomExists(roomid: number): boolean;
 
     protected onClose(roomid: number, listener: DanmuTCP): void {
+        listener.destroy();
         this._connections.delete(roomid);
         this._recentlyClosed.push(roomid);
     }
@@ -171,9 +175,9 @@ export class RaffleController extends AbstractRoomController {
     }
 
     public start(): void {
-        this._areas.forEach((areaid: number) => {
+        for (const areaid of this._areas) {
             this.setupArea(areaid);
-        });
+        }
     }
 
     public stop(): void {
@@ -227,24 +231,20 @@ export class RaffleController extends AbstractRoomController {
             return;
         }
 
-        const roomInfo: any = {
-            roomid: roomid,
-            areaid: areaid,
-        };
-        const listener = new RaffleMonitor(tcpaddr, roomInfo);
+        const listener = new RaffleMonitor(tcpaddr, { roomid: roomid, areaid: areaid });
 
-        const msg = (`Setting up monitor @room `
-                    + `${roomid.toString().padEnd(13)}`
-                    + `in ${this._nameOfArea[areaid]}区`);
-        cprint(msg, chalk.green);
+        cprint(`Setting up monitor @room ${roomid.toString().padEnd(13)} in ${this._nameOfArea[areaid]}区`, chalk.green);
 
         this._taskQueue.add((): void => { listener.start() });
         this._connections.set(areaid, listener);
         listener
             .on('close', (): void => {
+                const listener = this._connections.get(areaid);
+                listener && listener.destroy();
+                this._connections.delete(areaid);
+
                 const reason = `@room ${roomid} in ${this._nameOfArea[areaid]}区 is closed.`;
                 cprint(reason, chalk.yellowBright);
-                this._connections.delete(areaid);
                 this.setupArea(areaid);
             })
             .on('add_to_db', (): void => { this.emit('add_to_db', roomid) })
