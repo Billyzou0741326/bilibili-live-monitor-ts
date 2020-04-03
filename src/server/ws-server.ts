@@ -167,16 +167,20 @@ export class WsServer extends AbstractWsServer {
     }
 
     public broadcast(data: Raffle): void {
-        const json = data.toJson();
+        if (this._clients.length === 0) {
+            return;
+        }
+
+        const json = data.toJsonStr();
         if (json.length > 0) {
-            this._clients.forEach((clientStatus: ClientStatus): void => {
-                const socket = clientStatus.socket;
+            for (const c of this._clients) {
+                const socket = c.socket;
                 if (socket.readyState === WebSocket.OPEN) {
                     socket.send(json, {
                         'binary': true,
                     });
                 }
-            });
+            }
         }
     }
 
@@ -189,13 +193,17 @@ export class WsServerBilive extends AbstractWsServer {
     }
 
     public broadcast(data: Raffle): void {
+        if (this._clients.length === 0) {
+            return;
+        }
+
         const payload: string = this.parseMessage(data);
-        this._clients.forEach((clientStatus: any): void => {
-            const socket: any = clientStatus.socket;
+        for (const c of this._clients) {
+            const socket: any = c.socket;
             if (socket.readyState === WebSocket.OPEN) {
                 socket.send(payload);
             }
-        });
+        }
     }
 
     private parseMessage(data: any): string {

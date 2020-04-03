@@ -12,12 +12,16 @@ var History = /** @class */ (function () {
         this._CLEAR_ON_EXCEEDS = 200;
     }
     History.prototype.stop = function () {
-        this._tasks.forEach(function (t) { t.stop(); });
+        for (var _i = 0, _a = this._tasks; _i < _a.length; _i++) {
+            var t = _a[_i];
+            t.stop();
+        }
         this._tasks = [];
     };
     History.prototype.retrieveGetter = function (target) {
-        var _this = this;
-        return function () { return Array.from(_this._active.get(target).values()); };
+        // Potential memory leak: Some other resources may hold reference to the Map
+        var gifts = this._active.get(target) || new Map();
+        return function () { return Array.from(gifts.values()); };
     };
     History.prototype.add = function (g) {
         var raffles = this._active.get(g.category);

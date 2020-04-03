@@ -13,10 +13,11 @@ var AppConfig = /** @class */ (function () {
         this._webHeaders = webHeaders;
         this._initialized = false;
         this._danmuAddr = settings['bilibili-danmu'];
-        this._wsAddr = settings['default-ws-server'];
-        this._httpAddr = settings['default-http-server'];
-        this._biliveAddr = settings['bilive-ws-server'];
-        this._bilihelperAddr = settings['bilihelper-tcp-server'];
+        var servers = settings['servers'];
+        this._wsAddr = servers['default-ws-server'];
+        this._httpAddr = servers['default-http-server'];
+        this._biliveAddr = servers['bilive-ws-server'];
+        this._bilihelperAddr = servers['bilihelper-tcp-server'];
         this._loadBalancing = settings['load-balancing'];
         this._roomCollectorStrategy = settings['room-collector-strategy'];
     }

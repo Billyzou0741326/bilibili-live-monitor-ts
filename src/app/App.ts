@@ -120,7 +120,7 @@ export class App {
         }
     }
 
-    private setupServer(): void {
+    private setupHttp(): void {
         for (const category in RaffleCategory) {
             this._httpServer.mountGetter(category, this._history.retrieveGetter(category));
         }
@@ -130,11 +130,8 @@ export class App {
         if (this._running === false) {
             this._running = true;
             this.setupListeners();
-            this.setupServer();
-            this._wsServer.start();
-            this._biliveServer.start();
-            this._bilihelperServer.start();
-            this._httpServer.start();
+            this.setupHttp();
+            this.startServers();
             this._db.start();
             this._raffleController.start();
             const fixedTask = this._roomCollector.getFixedRooms();
@@ -168,6 +165,21 @@ export class App {
             this._wsServer.stop();
             this._dynamicRefreshTask.stop();
             this._running = false;
+        }
+    }
+
+    private startServers(): void {
+        if (this._appConfig.wsAddr.enable === true) {
+            this._wsServer.start();
+        }
+        if (this._appConfig.biliveAddr.enable === true) {
+            this._biliveServer.start();
+        }
+        if (this._appConfig.bilihelperAddr.enable === true) {
+            this._bilihelperServer.start();
+        }
+        if (this._appConfig.httpAddr.enable === true) {
+            this._httpServer.start();
         }
     }
 

@@ -33,7 +33,6 @@ var AbstractDanmuTCP = /** @class */ (function (_super) {
         _this._running = false;
         _this._closedByUs = false;
         _this._socket = null;
-        _this._remoteAddr = '';
         _this._lastRead = new Date();
         _this._healthTask = new index_4.RecurrentTask();
         _this._heartbeatTask = new index_4.RecurrentTask();
@@ -42,16 +41,17 @@ var AbstractDanmuTCP = /** @class */ (function (_super) {
         _this._handshake = _this.prepareData(7, JSON.stringify({
             roomid: _this.roomid,
             platform: 'web',
-            clientver: '1.8.12',
+            clientver: '1.10.6',
         }));
         var sendHeartBeat = function () {
             _this._socket && _this._socket.write(_this._heartbeat);
         };
         var closeAfterInactivity = function () {
-            if (_this._running) {
-                if (new Date().valueOf() - _this._lastRead.valueOf() > 35000) {
-                    _this.close(false);
-                }
+            if (!_this._running) {
+                return;
+            }
+            if (new Date().valueOf() - _this._lastRead.valueOf() > 35000) {
+                _this.close(false);
             }
         };
         _this._heartbeatTask.withTime(30 * 1000).withCallback(sendHeartBeat);
@@ -132,7 +132,6 @@ var AbstractDanmuTCP = /** @class */ (function (_super) {
     };
     AbstractDanmuTCP.prototype.onConnect = function () {
         this._healthTask.start();
-        this._remoteAddr = (this._socket && this._socket.remoteAddress) || '';
         this._socket && this._socket.write(this._handshake);
     };
     AbstractDanmuTCP.prototype.close = function (closedByUs) {
@@ -196,7 +195,8 @@ var AbstractDanmuTCP = /** @class */ (function (_super) {
     AbstractDanmuTCP.prototype.onError = function (error) {
         if (config.tcp_error) {
             var roomid = "" + this.roomid;
-            index_1.cprint("(TCP) @" + roomid.padEnd(13) + " " + this._remoteAddr + " - " + error.message, chalk.red);
+            var remoteAddr = (this._socket && this._socket.remoteAddress) || '';
+            index_1.cprint("(TCP) @" + roomid.padEnd(13) + " " + remoteAddr + " - " + error.message, chalk.red);
         }
     };
     /**

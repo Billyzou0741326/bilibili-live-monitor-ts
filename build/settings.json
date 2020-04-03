@@ -3,21 +3,27 @@
         "host": "broadcastlv.chat.bilibili.com",
         "port": 2243
     },
-    "default-ws-server": {
-        "host": "0.0.0.0",
-        "port": 8999
-    },
-    "default-http-server": {
-        "host": "0.0.0.0",
-        "port": 9001
-    },
-    "bilive-ws-server": {
-        "host": "0.0.0.0",
-        "port": 8998
-    },
-    "bilihelper-tcp-server": {
-        "host": "0.0.0.0",
-        "port": 8997
+    "servers": {
+        "default-ws-server": {
+            "host": "0.0.0.0",
+            "port": 8999,
+            "enable": true
+        },
+        "default-http-server": {
+            "host": "0.0.0.0",
+            "port": 9001,
+            "enable": true
+        },
+        "bilive-ws-server": {
+            "host": "0.0.0.0",
+            "port": 8998,
+            "enable": false
+        },
+        "bilihelper-tcp-server": {
+            "host": "0.0.0.0",
+            "port": 8997,
+            "enable": false
+        }
     },
     "load-balancing": {
         "totalServers": 1,

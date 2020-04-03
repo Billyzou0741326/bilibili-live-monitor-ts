@@ -96,7 +96,7 @@ export abstract class Raffle {
         return this;
     }
 
-    public convert(): any {
+    public toJson(): any {
         // Convert to an object that is backward compatible with old HTTP handler
         return {
             id:         this.id,
@@ -108,16 +108,8 @@ export abstract class Raffle {
         };
     }
 
-    public toJson(): string {
-        // For now, exclude wait in the serialized JSON
-        return JSON.stringify({
-            id:         this.id,
-            roomid:     this.roomid,
-            category:   this.category,
-            type:       this.type,
-            name:       this.name,
-            expireAt:   this.expireAt,
-        });
+    public toJsonStr(): string {
+        return JSON.stringify(this.toJson());
     }
 
 }
@@ -127,19 +119,6 @@ export class Gift extends Raffle {
     public constructor() {
         super();
         this._category = 'gift';
-    }
-
-    public convert(): any {
-        // Convert to an object that is backward compatible with old HTTP handler
-        return {
-            id:         this.id,
-            roomid:     this.roomid,
-            category:   this.category,
-            type:       this.type,
-            name:       this.name,
-            wait:       this.wait,
-            expireAt:   this.expireAt,
-        };
     }
 
 }
@@ -193,7 +172,7 @@ export class Anchor extends Raffle {
         this._require_text = '';
     }
 
-    public convert(): any {
+    public toJson(): any {
         // Convert to an object that is backward compatible with old HTTP handler
         return {
             id:             this.id,
@@ -274,25 +253,8 @@ export class Anchor extends Raffle {
         return this;
     }
 
-    public toJson(): string {
-        // Currently Anchor is not being sent out
-        return '';
-/*
-        return JSON.stringify({
-            id:             this.id,
-            roomid:         this.roomid,
-            type:           this.type,
-            category:       this.category,
-            expireAt:       this.expireAt,
-            name:           this.name,
-            award_num:      this.award_num,
-            gift_name:      this.gift_name,
-            gift_num:       this.gift_num,
-            gift_price:     this.gift_price,
-            requirement:    this.requirement,
-            danmu:          this.danmu,
-        });
-*/
+    public toJsonStr(): string {
+        return JSON.stringify(this.toJson());
     }
 
 }

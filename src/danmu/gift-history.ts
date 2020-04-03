@@ -19,12 +19,16 @@ export class History {
     }
 
     public stop(): void {
-        this._tasks.forEach((t: DelayedTask): void => { t.stop() });
+        for (const t of this._tasks) {
+            t.stop();
+        }
         this._tasks = [];
     }
 
     public retrieveGetter(target: string): (() => Raffle[]) {
-        return () => { return Array.from(this._active.get(target)!.values()); };
+        // Potential memory leak: Some other resources may hold reference to the Map
+        const gifts: Map<number, Raffle> = this._active.get(target) || new Map();
+        return () => { return Array.from(gifts.values()); };
     }
 
     public add(g: Raffle): void {

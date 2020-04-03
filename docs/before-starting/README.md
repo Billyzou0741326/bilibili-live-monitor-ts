@@ -6,20 +6,23 @@
 ## Config file 设置 (src/settings.json)
 > 修改settings后务必[重新编译](#自行编译-optional-windowslinux)
 
+> 修改`build/settings.json`则无需重新编译
+
 ### 服务器版、需公网ip
 ```javascript
 {
-    "bilibili-danmu": {
-        "host": "broadcastlv.chat.bilibili.com",
-        "port": 2243
-    },
-    "default-ws-server": {
-        "host": "0.0.0.0",
-        "port": 8999
-    },
-    "default-http-server": {
-        "host": "0.0.0.0",
-        "port": 9001
+    "servers": {
+        "default-ws-server": {
+            "host": "0.0.0.0",
+            "port": 8999,
+            "enable": true
+        },
+        "default-http-server": {
+            "host": "0.0.0.0",
+            "port": 9001,
+            "enable": true
+        },
+        // 其它servers默认不开启 ("enable": false)
     }
 }
 ```
@@ -27,18 +30,19 @@
 ### 本地版、不连外网
 ```javascript
 {
-    "bilibili-ws": {
-        "host": "broadcastlv.chat.bilibili.com",
-        "port": 2243
+    "servers": {
+        "default-ws-server": {
+            "host": "127.0.0.1",
+            "port": 8999,
+            "enable": true
+        },
+        "default-http-server": {
+            "host": "127.0.0.1",
+            "port": 9001,
+            "enable": true
+        },
+        // 其它servers默认不开启 ("enable": false)
     },
-    "default-ws-server": {
-        "host": "127.0.0.1",
-        "port": 8999
-    },
-    "default-http-server": {
-        "host": "127.0.0.1",
-        "port": 9001
-    }
 }
 ```
 

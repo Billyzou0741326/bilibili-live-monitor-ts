@@ -50,7 +50,7 @@
 }
 ```
 
-## /anchor (天选) --仅http--
+## /anchor (天选) --http/ws--
 ```javascript
 {
     "id": 65248,
