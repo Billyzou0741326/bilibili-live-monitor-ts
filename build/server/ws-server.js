@@ -145,16 +145,20 @@ var WsServer = /** @class */ (function (_super) {
         return _super.call(this, addr) || this;
     }
     WsServer.prototype.broadcast = function (data) {
-        var json = data.toJson();
+        if (this._clients.length === 0) {
+            return;
+        }
+        var json = data.toJsonStr();
         if (json.length > 0) {
-            this._clients.forEach(function (clientStatus) {
-                var socket = clientStatus.socket;
+            for (var _i = 0, _a = this._clients; _i < _a.length; _i++) {
+                var c = _a[_i];
+                var socket = c.socket;
                 if (socket.readyState === WebSocket.OPEN) {
                     socket.send(json, {
                         'binary': true,
                     });
                 }
-            });
+            }
         }
     };
     return WsServer;
@@ -166,13 +170,17 @@ var WsServerBilive = /** @class */ (function (_super) {
         return _super.call(this, addr) || this;
     }
     WsServerBilive.prototype.broadcast = function (data) {
+        if (this._clients.length === 0) {
+            return;
+        }
         var payload = this.parseMessage(data);
-        this._clients.forEach(function (clientStatus) {
-            var socket = clientStatus.socket;
+        for (var _i = 0, _a = this._clients; _i < _a.length; _i++) {
+            var c = _a[_i];
+            var socket = c.socket;
             if (socket.readyState === WebSocket.OPEN) {
                 socket.send(payload);
             }
-        });
+        }
     };
     WsServerBilive.prototype.parseMessage = function (data) {
         var toKey = {

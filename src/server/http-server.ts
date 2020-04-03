@@ -34,7 +34,7 @@ class Router {
 
     public mountGetter(path: string, getter: (() => Raffle[])): Router {
         this._router.use(`/${path}`, (request: express.Request, response: express.Response): void => {
-            response.jsonp(getter().map(g => g.convert()));
+            response.jsonp(getter().map(g => g.toJson()));
         });
         return this;
     }

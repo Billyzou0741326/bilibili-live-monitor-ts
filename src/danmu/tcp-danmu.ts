@@ -41,7 +41,6 @@ export abstract class AbstractDanmuTCP extends EventEmitter implements Startable
     private _running:       boolean;
     private _closedByUs:    boolean;
     private _socket:        net.Socket | null;
-    private _remoteAddr:    string;
     private _healthTask:    RecurrentTask;
     private _heartbeatTask: RecurrentTask;
     private _lastRead:      Date;
@@ -59,7 +58,6 @@ export abstract class AbstractDanmuTCP extends EventEmitter implements Startable
         this._running = false;
         this._closedByUs = false;
         this._socket = null;
-        this._remoteAddr = '';
         this._lastRead = new Date();
         this._healthTask = new RecurrentTask();
         this._heartbeatTask = new RecurrentTask();
@@ -68,17 +66,18 @@ export abstract class AbstractDanmuTCP extends EventEmitter implements Startable
         this._handshake = this.prepareData(7, JSON.stringify({
             roomid: this.roomid,
             platform: 'web',
-            clientver: '1.8.12',
+            clientver: '1.10.6',
         }));
 
         const sendHeartBeat: () => void = (): void => {
             this._socket && this._socket.write(this._heartbeat);
         };
         const closeAfterInactivity: () => void = (): void => {
-            if (this._running) {
-                if (new Date().valueOf() - this._lastRead.valueOf() > 35000) {
-                    this.close(false);
-                }
+            if (!this._running) {
+                return;
+            }
+            if (new Date().valueOf() - this._lastRead.valueOf() > 35000) {
+                this.close(false);
             }
         };
 
@@ -157,7 +156,6 @@ export abstract class AbstractDanmuTCP extends EventEmitter implements Startable
 
     private onConnect(): void {
         this._healthTask.start();
-        this._remoteAddr = (this._socket && this._socket.remoteAddress) || '';
         this._socket && this._socket.write(this._handshake);
     }
 
@@ -229,7 +227,8 @@ export abstract class AbstractDanmuTCP extends EventEmitter implements Startable
     private onError(error: Error): void {
         if (config.tcp_error) {
             const roomid = `${this.roomid}`;
-            cprint(`(TCP) @${roomid.padEnd(13)} ${this._remoteAddr} - ${error.message}`, chalk.red);
+            const remoteAddr = (this._socket && this._socket.remoteAddress) || '';
+            cprint(`(TCP) @${roomid.padEnd(13)} ${remoteAddr} - ${error.message}`, chalk.red);
         }
     }
 

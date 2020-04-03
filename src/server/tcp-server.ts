@@ -243,6 +243,10 @@ export class TCPServerBiliHelper extends AbstractTCPServer {
     }
 
     public broadcast(data: Raffle): void {
+        if (this._clients.length === 0) {
+            return;
+        }
+
         const wrapper: any = {
             code: 0,
             type: 'raffle',
@@ -284,12 +288,12 @@ export class TCPServerBiliHelper extends AbstractTCPServer {
 
         const msg: Buffer = this.parseMessage(JSON.stringify(wrapper));
 
-        this._clients.forEach((c: ClientStatus): void => {
+        for (const c of this._clients) {
             const socket = c.socket;
             if (socket.destroyed === false) {
                 socket.write(msg);
             }
-        });
+        }
     }
 }
 

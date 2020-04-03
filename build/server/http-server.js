@@ -34,7 +34,7 @@ var Router = /** @class */ (function () {
     };
     Router.prototype.mountGetter = function (path, getter) {
         this._router.use("/" + path, function (request, response) {
-            response.jsonp(getter().map(function (g) { return g.convert(); }));
+            response.jsonp(getter().map(function (g) { return g.toJson(); }));
         });
         return this;
     };

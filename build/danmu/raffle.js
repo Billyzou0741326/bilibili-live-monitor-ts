@@ -108,7 +108,7 @@ var Raffle = /** @class */ (function () {
         this._expireAt = e;
         return this;
     };
-    Raffle.prototype.convert = function () {
+    Raffle.prototype.toJson = function () {
         // Convert to an object that is backward compatible with old HTTP handler
         return {
             id: this.id,
@@ -119,16 +119,8 @@ var Raffle = /** @class */ (function () {
             expireAt: this.expireAt,
         };
     };
-    Raffle.prototype.toJson = function () {
-        // For now, exclude wait in the serialized JSON
-        return JSON.stringify({
-            id: this.id,
-            roomid: this.roomid,
-            category: this.category,
-            type: this.type,
-            name: this.name,
-            expireAt: this.expireAt,
-        });
+    Raffle.prototype.toJsonStr = function () {
+        return JSON.stringify(this.toJson());
     };
     return Raffle;
 }());
@@ -140,18 +132,6 @@ var Gift = /** @class */ (function (_super) {
         _this._category = 'gift';
         return _this;
     }
-    Gift.prototype.convert = function () {
-        // Convert to an object that is backward compatible with old HTTP handler
-        return {
-            id: this.id,
-            roomid: this.roomid,
-            category: this.category,
-            type: this.type,
-            name: this.name,
-            wait: this.wait,
-            expireAt: this.expireAt,
-        };
-    };
     return Gift;
 }(Raffle));
 exports.Gift = Gift;
@@ -199,7 +179,7 @@ var Anchor = /** @class */ (function (_super) {
         _this._require_text = '';
         return _this;
     }
-    Anchor.prototype.convert = function () {
+    Anchor.prototype.toJson = function () {
         // Convert to an object that is backward compatible with old HTTP handler
         return {
             id: this.id,
@@ -293,25 +273,8 @@ var Anchor = /** @class */ (function (_super) {
         this._require_text = requirement;
         return this;
     };
-    Anchor.prototype.toJson = function () {
-        // Currently Anchor is not being sent out
-        return '';
-        /*
-                return JSON.stringify({
-                    id:             this.id,
-                    roomid:         this.roomid,
-                    type:           this.type,
-                    category:       this.category,
-                    expireAt:       this.expireAt,
-                    name:           this.name,
-                    award_num:      this.award_num,
-                    gift_name:      this.gift_name,
-                    gift_num:       this.gift_num,
-                    gift_price:     this.gift_price,
-                    requirement:    this.requirement,
-                    danmu:          this.danmu,
-                });
-        */
+    Anchor.prototype.toJsonStr = function () {
+        return JSON.stringify(this.toJson());
     };
     return Anchor;
 }(Raffle));

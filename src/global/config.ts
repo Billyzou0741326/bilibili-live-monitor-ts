@@ -19,6 +19,10 @@ export interface TCPAddress {
     readonly port:          number;
 }
 
+export interface ServerConfig extends TCPAddress {
+    readonly enable:        boolean;
+}
+
 export interface LoadBalancing {
     readonly totalServers:  number;
     readonly serverIndex:   number;
@@ -41,10 +45,10 @@ export class AppConfig implements AppSettings {
     private _webHeaders:                {[key: string]: string};
     private _initialized:               boolean;
     private _danmuAddr:                 TCPAddress;
-    private _wsAddr:                    TCPAddress;
-    private _biliveAddr:                TCPAddress;
-    private _bilihelperAddr:            TCPAddress;
-    private _httpAddr:                  TCPAddress;
+    private _wsAddr:                    ServerConfig;
+    private _biliveAddr:                ServerConfig;
+    private _bilihelperAddr:            ServerConfig;
+    private _httpAddr:                  ServerConfig;
     private _loadBalancing:             LoadBalancing;
     private _roomCollectorStrategy:     RoomCollectorStrategy;
 
@@ -59,10 +63,11 @@ export class AppConfig implements AppSettings {
         this._webHeaders = webHeaders;
         this._initialized = false;
         this._danmuAddr = settings['bilibili-danmu'] as TCPAddress;
-        this._wsAddr = settings['default-ws-server'] as TCPAddress;
-        this._httpAddr = settings['default-http-server'] as TCPAddress;
-        this._biliveAddr = settings['bilive-ws-server'] as TCPAddress;
-        this._bilihelperAddr = settings['bilihelper-tcp-server'] as TCPAddress;
+        const servers = settings['servers'];
+        this._wsAddr = servers['default-ws-server'] as ServerConfig;
+        this._httpAddr = servers['default-http-server'] as ServerConfig;
+        this._biliveAddr = servers['bilive-ws-server'] as ServerConfig;
+        this._bilihelperAddr = servers['bilihelper-tcp-server'] as ServerConfig;
         this._loadBalancing = settings['load-balancing'] as LoadBalancing;
         this._roomCollectorStrategy = settings['room-collector-strategy'] as RoomCollectorStrategy;
     }
@@ -91,19 +96,19 @@ export class AppConfig implements AppSettings {
         return this._danmuAddr;
     }
 
-    public get wsAddr(): TCPAddress {
+    public get wsAddr(): ServerConfig {
         return this._wsAddr;
     }
 
-    public get httpAddr(): TCPAddress {
+    public get httpAddr(): ServerConfig {
         return this._httpAddr;
     }
 
-    public get biliveAddr(): TCPAddress {
+    public get biliveAddr(): ServerConfig {
         return this._biliveAddr;
     }
 
-    public get bilihelperAddr(): TCPAddress {
+    public get bilihelperAddr(): ServerConfig {
         return this._bilihelperAddr;
     }
 

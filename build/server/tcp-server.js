@@ -207,6 +207,9 @@ var TCPServerBiliHelper = /** @class */ (function (_super) {
         }
     };
     TCPServerBiliHelper.prototype.broadcast = function (data) {
+        if (this._clients.length === 0) {
+            return;
+        }
         var wrapper = {
             code: 0,
             type: 'raffle',
@@ -245,12 +248,13 @@ var TCPServerBiliHelper = /** @class */ (function (_super) {
         }
         wrapper.data = intermediateData;
         var msg = this.parseMessage(JSON.stringify(wrapper));
-        this._clients.forEach(function (c) {
+        for (var _i = 0, _a = this._clients; _i < _a.length; _i++) {
+            var c = _a[_i];
             var socket = c.socket;
             if (socket.destroyed === false) {
                 socket.write(msg);
             }
-        });
+        }
     };
     return TCPServerBiliHelper;
 }(AbstractTCPServer));
