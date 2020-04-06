@@ -534,8 +534,15 @@ var FixedGuardMonitor = /** @class */ (function (_super) {
     }
     FixedGuardMonitor.prototype.destroy = function () {
         _super.prototype.destroy.call(this);
-        this._delayedTasks.forEach(function (task) { return task.stop(); });
+        for (var _i = 0, _a = this._delayedTasks; _i < _a.length; _i++) {
+            var t = _a[_i];
+            t.stop();
+        }
         this._delayedTasks = [];
+    };
+    FixedGuardMonitor.prototype.clearTasks = function () {
+        var tasks = this._delayedTasks;
+        this._delayedTasks = tasks.filter(function (t) { return t.running; });
     };
     FixedGuardMonitor.prototype.onAnchorLottery = function (msg) {
         var data = _super.prototype.onAnchorLottery.call(this, msg);
@@ -550,7 +557,10 @@ var FixedGuardMonitor = /** @class */ (function (_super) {
         if (data !== null) {
             this.emit('add_to_db', this.roomid);
             var t = new index_4.DelayedTask();
-            t.withTime(data.wait * 1000).withCallback(function () { _this.emit('gift', data); });
+            t.withTime(data.wait * 1000).withCallback(function () {
+                _this.emit('gift', data);
+                _this.clearTasks(); // free memory
+            });
             t.start();
         }
         return data;
@@ -561,7 +571,10 @@ var FixedGuardMonitor = /** @class */ (function (_super) {
         if (data !== null) {
             this.emit('add_to_db', this.roomid);
             var t = new index_4.DelayedTask();
-            t.withTime(data.wait * 1000).withCallback(function () { _this.emit('gift', data); });
+            t.withTime(data.wait * 1000).withCallback(function () {
+                _this.emit('gift', data);
+                _this.clearTasks(); // free memory
+            });
             t.start();
         }
         return data;
