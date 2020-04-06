@@ -607,8 +607,15 @@ export class FixedGuardMonitor extends DanmuTCP {
 
     public destroy(): void {
         super.destroy();
-        this._delayedTasks.forEach((task: DelayedTask): void => task.stop());
+        for (const t of this._delayedTasks) {
+            t.stop();
+        }
         this._delayedTasks = ([] as DelayedTask[]);
+    }
+
+    private clearTasks(): void {
+        const tasks = this._delayedTasks;
+        this._delayedTasks = tasks.filter((t: DelayedTask): boolean => t.running);
     }
 
     protected onAnchorLottery(msg: any): Raffle | null {
@@ -624,7 +631,10 @@ export class FixedGuardMonitor extends DanmuTCP {
         if (data !== null) {
             this.emit('add_to_db', this.roomid);
             const t = new DelayedTask();
-            t.withTime(data.wait * 1000).withCallback((): void => { this.emit('gift', data) });
+            t.withTime(data.wait * 1000).withCallback((): void => {
+                this.emit('gift', data);
+                this.clearTasks();      // free memory
+            });
             t.start();
         }
         return data;
@@ -635,7 +645,10 @@ export class FixedGuardMonitor extends DanmuTCP {
         if (data !== null) {
             this.emit('add_to_db', this.roomid);
             const t = new DelayedTask();
-            t.withTime(data.wait * 1000).withCallback((): void => { this.emit('gift', data) });
+            t.withTime(data.wait * 1000).withCallback((): void => {
+                this.emit('gift', data);
+                this.clearTasks();      // free memory
+            });
             t.start();
         }
         return data;

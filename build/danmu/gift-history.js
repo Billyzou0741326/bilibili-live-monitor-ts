@@ -16,6 +16,9 @@ var History = /** @class */ (function () {
             var t = _a[_i];
             t.stop();
         }
+        for (var category in index_2.RaffleCategory) {
+            this._active.set(category, new Map());
+        }
         this._tasks = [];
     };
     History.prototype.retrieveGetter = function (target) {
@@ -36,7 +39,8 @@ var History = /** @class */ (function () {
         }
     };
     History.prototype.has = function (g) {
-        return this._active.get(g.category).has(g.id);
+        var category = this._active.get(g.category);
+        return typeof category !== 'undefined' && category.has(g.id);
     };
     return History;
 }());

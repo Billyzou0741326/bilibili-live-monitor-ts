@@ -44,13 +44,10 @@ export abstract class AbstractRoomController extends EventEmitter {
         const roomids: number[] = ([] as number[]).concat(rooms);
         const closed: Set<number> = new Set<number>(this._recentlyClosed);
 
-        roomids.filter((roomid: number): boolean => {
-            return (
-                !this._connections.has(roomid)
-                && !closed.has(roomid)
-            );
+        const filtered = roomids.filter((roomid: number): boolean => {
+            return !this._connections.has(roomid) && !closed.has(roomid);
         });
-        for (const roomid of roomids) {
+        for (const roomid of filtered) {
             this.setupRoom(roomid);
         }
         this.clearClosed();
@@ -226,8 +223,7 @@ export class RaffleController extends AbstractRoomController {
     }
 
     protected setupRoom(roomid: number, areaid?: number): void {
-        if (this._recentlyClosed.includes(roomid)
-            || typeof areaid === 'undefined') {
+        if (this._recentlyClosed.includes(roomid) || typeof areaid === 'undefined') {
             return;
         }
 
@@ -239,8 +235,7 @@ export class RaffleController extends AbstractRoomController {
         this._connections.set(areaid, listener);
         listener
             .on('close', (): void => {
-                const listener = this._connections.get(areaid);
-                listener && listener.destroy();
+                listener.destroy();
                 this._connections.delete(areaid);
 
                 const reason = `@room ${roomid} in ${this._nameOfArea[areaid]}区 is closed.`;

@@ -82,12 +82,11 @@ var AbstractRoomController = /** @class */ (function (_super) {
         var _this = this;
         var roomids = [].concat(rooms);
         var closed = new Set(this._recentlyClosed);
-        roomids.filter(function (roomid) {
-            return (!_this._connections.has(roomid)
-                && !closed.has(roomid));
+        var filtered = roomids.filter(function (roomid) {
+            return !_this._connections.has(roomid) && !closed.has(roomid);
         });
-        for (var _i = 0, roomids_1 = roomids; _i < roomids_1.length; _i++) {
-            var roomid = roomids_1[_i];
+        for (var _i = 0, filtered_1 = filtered; _i < filtered_1.length; _i++) {
+            var roomid = filtered_1[_i];
             this.setupRoom(roomid);
         }
         this.clearClosed();
@@ -265,8 +264,7 @@ var RaffleController = /** @class */ (function (_super) {
     };
     RaffleController.prototype.setupRoom = function (roomid, areaid) {
         var _this = this;
-        if (this._recentlyClosed.includes(roomid)
-            || typeof areaid === 'undefined') {
+        if (this._recentlyClosed.includes(roomid) || typeof areaid === 'undefined') {
             return;
         }
         var listener = new index_5.RaffleMonitor(tcpaddr, { roomid: roomid, areaid: areaid });
@@ -275,8 +273,7 @@ var RaffleController = /** @class */ (function (_super) {
         this._connections.set(areaid, listener);
         listener
             .on('close', function () {
-            var listener = _this._connections.get(areaid);
-            listener && listener.destroy();
+            listener.destroy();
             _this._connections.delete(areaid);
             var reason = "@room " + roomid + " in " + _this._nameOfArea[areaid] + "\u533A is closed.";
             index_1.cprint(reason, chalk.yellowBright);

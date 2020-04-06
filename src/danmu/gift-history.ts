@@ -22,6 +22,9 @@ export class History {
         for (const t of this._tasks) {
             t.stop();
         }
+        for (const category in RaffleCategory) {
+            this._active.set(category, new Map<number, Raffle>());
+        }
         this._tasks = [];
     }
 
@@ -47,7 +50,8 @@ export class History {
     }
 
     public has(g: Raffle): boolean {
-        return this._active.get(g.category)!.has(g.id);
+        const category = this._active.get(g.category);
+        return typeof category !== 'undefined' && category.has(g.id);
     }
 
 }

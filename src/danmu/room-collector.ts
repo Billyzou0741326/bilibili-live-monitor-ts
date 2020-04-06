@@ -17,18 +17,24 @@ export class RoomCollector {
 
     public getFixedRooms(): Promise<Set<number>> {
         const dbTask = this._db.getRooms();
-        const sailsTask = (Bilibili.getAllSailboatRooms()
-            .catch((error: Error): Promise<number[]> => {
-                cprint(`(Collector) - ${error.message}`, chalk.red);
-                return Promise.resolve([] as number[]);
-            })
-        );
-        const genkiTask = (Bilibili.getAllGenkiRooms()
-            .catch((error: Error): Promise<number[]> => {
-                cprint(`(Collector) - ${error.message}`, chalk.red);
-                return Promise.resolve([] as number[]);
-            })
-        );
+        const sailsTask = (async(): Promise<number[]> => {
+            try {
+                return await Bilibili.getAllSailboatRooms();
+            }
+            catch (error) {
+                cprint(`(Collector) [SailboatRank] - ${error.message}`, chalk.red);
+            }
+            return [];
+        })();
+        const genkiTask = (async(): Promise<number[]> => {
+            try {
+                return await Bilibili.getAllGenkiRooms();
+            }
+            catch (error) {
+                cprint(`(Collector) [GenkiRank] - ${error.message}`, chalk.red);
+            }
+            return [];
+        })();
         const tasks = [ dbTask, sailsTask, genkiTask ];
         return Promise.all(tasks).then((results: Array<number[]>): Set<number> => {
             return new Set(this.filterRooms(([] as number[]).concat(...results)));
@@ -36,20 +42,20 @@ export class RoomCollector {
     }
 
     public getDynamicRooms(numDynamicRooms: number = 0): Promise<number[]> {
-        if (numDynamicRooms === 0) {
+        if (numDynamicRooms <= 0) {
             numDynamicRooms = Infinity;
         }
 
-        const task = (Bilibili.getRoomsInArea(0, 99, numDynamicRooms)
-            .then((resp: any): number[] => {
-                return this.filterRooms(resp.map((entry: any) => entry['roomid']));
-            })
-            .catch((error: Error): Promise<number[]> => {
+        return (async(): Promise<number[]> => {
+            try {
+                const resp = await Bilibili.getRoomsInArea(0, 99, numDynamicRooms);
+                return resp.map((entry: any): number => entry['roomid']);
+            }
+            catch (error) {
                 cprint(`(Collector) - ${error.message}`, chalk.red);
-                return Promise.resolve([] as number[]);
-            })
-        );
-        return task;
+            }
+            return [];
+        })();
     }
 
     public getRaffleRoomsInArea(areaid: number, numRooms: number): Promise<number[]> {
