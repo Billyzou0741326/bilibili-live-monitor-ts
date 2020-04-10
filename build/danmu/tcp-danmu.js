@@ -15,6 +15,7 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var net = require("net");
 var chalk = require("chalk");
+var zlib = require("zlib");
 var events_1 = require("events");
 var index_1 = require("../fmt/index");
 var index_2 = require("../bilibili/index");
@@ -39,9 +40,11 @@ var AbstractDanmuTCP = /** @class */ (function (_super) {
         _this._reader = new DanmuTCPReader();
         _this._heartbeat = _this.prepareData(2);
         _this._handshake = _this.prepareData(7, JSON.stringify({
+            uid: 1000000000000000 + Math.round(Math.random() * 1000000000000000),
             roomid: _this.roomid,
             platform: 'web',
             clientver: '1.10.6',
+            protover: 2,
         }));
         var sendHeartBeat = function () {
             _this._socket && _this._socket.write(_this._heartbeat);
@@ -213,7 +216,7 @@ var AbstractDanmuTCP = /** @class */ (function (_super) {
         var header = Buffer.alloc(16);
         header.writeUInt32BE(totalLen, 0);
         header.writeUInt16BE(headerLen, 4);
-        header.writeUInt16BE(1, 6);
+        header.writeUInt16BE(2, 6);
         header.writeUInt32BE(cmd, 8);
         header.writeUInt32BE(1, 12);
         var buffer = Buffer.concat([header, body]);
@@ -770,7 +773,16 @@ var DanmuTCPReader = /** @class */ (function () {
             this._nextMsgLen = this._data.readUInt32BE(0);
         }
         while (this._nextMsgLen > 0 && this._data.length >= this._nextMsgLen) {
-            result.push(this._data.slice(0, this._nextMsgLen));
+            if (this._data.readUInt16BE(6) === 2 && this._data.readUInt32BE(8) === 5) {
+                var m = this.getMessagesCompressed(this.unzip(this._data.slice(16, this._nextMsgLen)));
+                for (var _i = 0, m_1 = m; _i < m_1.length; _i++) {
+                    var d = m_1[_i];
+                    result.push(d);
+                }
+            }
+            else {
+                result.push(this._data.slice(0, this._nextMsgLen));
+            }
             this._data = this._data.slice(this._nextMsgLen, this._data.length);
             var len = this._data.length;
             if (len === 0) {
@@ -785,6 +797,28 @@ var DanmuTCPReader = /** @class */ (function () {
             }
         }
         return result;
+    };
+    DanmuTCPReader.prototype.getMessagesCompressed = function (d) {
+        var len = d.readUInt32BE(0);
+        var result = [];
+        while (len > 0 && d.length >= len) {
+            result.push(d.slice(0, len));
+            d = d.slice(len, d.length);
+            var l = d.length;
+            if (l === 0) {
+                len = 0;
+            }
+            else if (l >= 4) {
+                len = d.readUInt32BE(0);
+            }
+            else {
+                len = -1;
+            }
+        }
+        return result;
+    };
+    DanmuTCPReader.prototype.unzip = function (d) {
+        return zlib.inflateSync(d);
     };
     return DanmuTCPReader;
 }());
