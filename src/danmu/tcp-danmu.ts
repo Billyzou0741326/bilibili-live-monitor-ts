@@ -1,5 +1,6 @@
 import * as net from 'net';
 import * as chalk from 'chalk';
+import * as zlib from 'zlib';
 import { EventEmitter } from 'events';
 import { cprint } from '../fmt/index';
 import { Bilibili } from '../bilibili/index';
@@ -64,9 +65,11 @@ export abstract class AbstractDanmuTCP extends EventEmitter implements Startable
         this._reader = new DanmuTCPReader();
         this._heartbeat = this.prepareData(2);
         this._handshake = this.prepareData(7, JSON.stringify({
+            uid: 1000000000000000 + Math.round(Math.random() * 1000000000000000),
             roomid: this.roomid,
             platform: 'web',
             clientver: '1.10.6',
+            protover: 2,
         }));
 
         const sendHeartBeat: () => void = (): void => {
@@ -247,7 +250,7 @@ export abstract class AbstractDanmuTCP extends EventEmitter implements Startable
         const header: Buffer = Buffer.alloc(16);
         header.writeUInt32BE(totalLen, 0);
         header.writeUInt16BE(headerLen, 4);
-        header.writeUInt16BE(1, 6);
+        header.writeUInt16BE(2, 6);
         header.writeUInt32BE(cmd, 8);
         header.writeUInt32BE(1, 12);
 
@@ -875,7 +878,14 @@ class DanmuTCPReader {
         }
 
         while (this._nextMsgLen > 0 && this._data.length >= this._nextMsgLen) {
-            result.push(this._data.slice(0, this._nextMsgLen));
+            if (this._data.readUInt16BE(6) === 2 && this._data.readUInt32BE(8) === 5) {
+                const m = this.getMessagesCompressed(this.unzip(this._data.slice(16, this._nextMsgLen)));
+                for (const d of m) {
+                    result.push(d);
+                }
+            } else {
+                result.push(this._data.slice(0, this._nextMsgLen));
+            }
             this._data = this._data.slice(this._nextMsgLen, this._data.length);
 
             const len = this._data.length;
@@ -892,6 +902,33 @@ class DanmuTCPReader {
         }
 
         return result;
+    }
+
+    private getMessagesCompressed(d: Buffer): Buffer[] {
+        let len = d.readUInt32BE(0);
+        const result: Buffer[] = [];
+
+        while (len > 0 && d.length >= len) {
+            result.push(d.slice(0, len));
+            d = d.slice(len, d.length);
+
+            const l = d.length;
+            if (l === 0) {
+                len = 0;
+            }
+            else if (l >= 4) {
+                len = d.readUInt32BE(0);
+            }
+            else {
+                len = -1;
+            }
+        }
+
+        return result;
+    }
+
+    private unzip(d: Buffer): Buffer {
+        return zlib.inflateSync(d);
     }
 
 }
