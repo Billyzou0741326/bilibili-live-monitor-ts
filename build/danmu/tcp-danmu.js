@@ -40,7 +40,6 @@ var AbstractDanmuTCP = /** @class */ (function (_super) {
         _this._reader = new DanmuTCPReader();
         _this._heartbeat = _this.prepareData(2);
         _this._handshake = _this.prepareData(7, JSON.stringify({
-            uid: 1000000000000000 + Math.round(Math.random() * 1000000000000000),
             roomid: _this.roomid,
             platform: 'web',
             clientver: '1.10.6',
@@ -216,7 +215,7 @@ var AbstractDanmuTCP = /** @class */ (function (_super) {
         var header = Buffer.alloc(16);
         header.writeUInt32BE(totalLen, 0);
         header.writeUInt16BE(headerLen, 4);
-        header.writeUInt16BE(2, 6);
+        header.writeUInt16BE(1, 6);
         header.writeUInt32BE(cmd, 8);
         header.writeUInt32BE(1, 12);
         var buffer = Buffer.concat([header, body]);

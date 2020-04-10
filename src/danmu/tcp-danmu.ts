@@ -65,7 +65,6 @@ export abstract class AbstractDanmuTCP extends EventEmitter implements Startable
         this._reader = new DanmuTCPReader();
         this._heartbeat = this.prepareData(2);
         this._handshake = this.prepareData(7, JSON.stringify({
-            uid: 1000000000000000 + Math.round(Math.random() * 1000000000000000),
             roomid: this.roomid,
             platform: 'web',
             clientver: '1.10.6',
@@ -250,7 +249,7 @@ export abstract class AbstractDanmuTCP extends EventEmitter implements Startable
         const header: Buffer = Buffer.alloc(16);
         header.writeUInt32BE(totalLen, 0);
         header.writeUInt16BE(headerLen, 4);
-        header.writeUInt16BE(2, 6);
+        header.writeUInt16BE(1, 6);
         header.writeUInt32BE(cmd, 8);
         header.writeUInt32BE(1, 12);
 
