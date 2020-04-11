@@ -41,20 +41,80 @@ export class RoomCollector {
         });
     }
 
-    public getDynamicRooms(numDynamicRooms: number = 0): Promise<number[]> {
+    public getDynamicRooms(numDynamicRooms: number = 0): Promise<Set<number> > {
         if (numDynamicRooms <= 0) {
             numDynamicRooms = Infinity;
         }
 
-        return (async(): Promise<number[]> => {
+        return (async(): Promise<Set<number> > => {
             try {
-                const resp = await Bilibili.getRoomsInArea(0, 99, numDynamicRooms);
-                return resp.map((entry: any): number => entry['roomid']);
+                const sets = await Promise.all([
+                    RoomCollector.getDynamicRoomsFromAreas(),    // noexcept
+                    RoomCollector.getDynamicRoomsFromAll(),      // noexcept
+                ]);
+
+                const result: Set<number> = sets[0];
+                sets[1].forEach((roomid: number): void => {
+                    result.add(roomid);
+                });
+                return result;
             }
             catch (error) {
                 cprint(`(Collector) - ${error.message}`, chalk.red);
             }
-            return [];
+            return new Set();
+        })();
+    }
+
+    // noexcept
+    private static getDynamicRoomsFromAreas(): Promise<Set<number> > {
+        return (async(): Promise<Set<number> > => {
+            const Adder = ((s: Set<number>) => {
+                return ((roomInfo: any): void => {
+                    s.add(roomInfo['roomid']);
+                });
+            });
+            const areas = [ 1, 2, 3, 4, 5, 6 ];
+            const areasRooms: Set<number> = new Set();
+            const addToSet = Adder(areasRooms);
+            const areasTasks = areas.map((areaid: number): Promise<any> => Bilibili.getRoomsInArea(areaid));
+            try {
+                const areasRoomInfo = await Promise.all(areasTasks);
+                for (const roomInfoList of areasRoomInfo) {
+                    for (const roomInfo of roomInfoList) {
+                        addToSet(roomInfo);
+                    }
+                }
+                return areasRooms;
+            }
+            catch (error) {
+                cprint(`(Collector) - ${error.message}`, chalk.red);
+            }
+            return areasRooms;
+        })();
+    }
+
+    // noexcept
+    private static getDynamicRoomsFromAll(): Promise<Set<number> > {
+        return (async(): Promise<Set<number> > => {
+            const Adder = ((s: Set<number>) => {
+                return ((roomInfo: any): void => {
+                    s.add(roomInfo['roomid']);
+                });
+            });
+            const allRooms: Set<number> = new Set();
+            const addToSet = Adder(allRooms);
+            const allRoomsTask: Promise<any> = Bilibili.getRoomsInArea(0);
+            try {
+                const allRoomInfo = await allRoomsTask;
+                for (const roomInfo of allRoomInfo) {
+                    addToSet(roomInfo);
+                }
+            }
+            catch (error) {
+                cprint(`(Collector) - ${error.message}`, chalk.red);
+            }
+            return allRooms;
         })();
     }
 

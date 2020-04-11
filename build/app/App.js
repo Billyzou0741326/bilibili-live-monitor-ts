@@ -69,22 +69,21 @@ var App = /** @class */ (function () {
         this._dynamicRefreshTask.withTime(dynRefreshInterval).withCallback(function () {
             var dynamicTask = _this._roomCollector.getDynamicRooms();
             (function () { return __awaiter(_this, void 0, void 0, function () {
-                var roomids, establishedFix_1, establishedDyn_1, newIds, error_1;
+                var roomidSet, establishedFix_1, establishedDyn, roomids, error_1;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
                             _a.trys.push([0, 2, , 3]);
                             return [4 /*yield*/, dynamicTask];
                         case 1:
-                            roomids = _a.sent();
+                            roomidSet = _a.sent();
                             establishedFix_1 = this._fixedController.connections;
-                            establishedDyn_1 = this._dynamicController.connections;
-                            newIds = roomids.filter(function (roomid) {
-                                return (!establishedFix_1.has(roomid)
-                                    && !establishedDyn_1.has(roomid));
+                            establishedDyn = this._dynamicController.connections;
+                            index_1.cprint("Monitoring (\u9759\u6001) " + establishedFix_1.size + " + (\u52A8\u6001) " + establishedDyn.size, chalk.green);
+                            roomids = Array.from(roomidSet).filter(function (roomid) {
+                                return !establishedFix_1.has(roomid);
                             });
-                            index_1.cprint("Monitoring (\u9759\u6001) " + establishedFix_1.size + " + (\u52A8\u6001) " + establishedDyn_1.size, chalk.green);
-                            this._dynamicController.add(newIds);
+                            this._dynamicController.add(roomids);
                             this._dynamicRefreshTask.start();
                             return [3 /*break*/, 3];
                         case 2:
@@ -150,16 +149,17 @@ var App = /** @class */ (function () {
             var fixedTask_1 = this._roomCollector.getFixedRooms();
             var dynamicTask_1 = this._roomCollector.getDynamicRooms();
             (function () { return __awaiter(_this, void 0, void 0, function () {
-                var fixedRooms, dynamicRooms, filtered;
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
+                var fixedRooms, dynamicRooms, _a, _b, filtered;
+                return __generator(this, function (_c) {
+                    switch (_c.label) {
                         case 0: return [4 /*yield*/, fixedTask_1];
                         case 1:
-                            fixedRooms = _a.sent();
+                            fixedRooms = _c.sent();
                             this._fixedController.add(Array.from(fixedRooms));
+                            _b = (_a = Array).from;
                             return [4 /*yield*/, dynamicTask_1];
                         case 2:
-                            dynamicRooms = _a.sent();
+                            dynamicRooms = _b.apply(_a, [_c.sent()]);
                             filtered = dynamicRooms.filter(function (roomid) { return !fixedRooms.has(roomid); });
                             this._dynamicController.add(filtered);
                             this._dynamicRefreshTask.start();

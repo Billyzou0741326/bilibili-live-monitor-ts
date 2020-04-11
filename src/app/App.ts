@@ -65,17 +65,15 @@ export class App {
             const dynamicTask = this._roomCollector.getDynamicRooms();
             (async () => {
                 try {
-                    const roomids: number[] = await dynamicTask;
+                    const roomidSet: Set<number> = await dynamicTask;
                     const establishedFix: Map<number, DanmuTCP> = this._fixedController.connections;
                     const establishedDyn: Map<number, DanmuTCP> = this._dynamicController.connections;
-                    const newIds: number[] = roomids.filter((roomid: number): boolean => {
-                        return (
-                            !establishedFix.has(roomid)
-                            && !establishedDyn.has(roomid)
-                        );
-                    });
                     cprint(`Monitoring (静态) ${establishedFix.size} + (动态) ${establishedDyn.size}`, chalk.green);
-                    this._dynamicController.add(newIds);
+
+                    const roomids: number[] = Array.from(roomidSet).filter((roomid: number): boolean => {
+                        return !establishedFix.has(roomid);
+                    });
+                    this._dynamicController.add(roomids);
                     this._dynamicRefreshTask.start();
                 }
                 catch (error) {
@@ -139,7 +137,7 @@ export class App {
             (async () => {
                 const fixedRooms: Set<number> = await fixedTask;
                 this._fixedController.add(Array.from(fixedRooms));
-                const dynamicRooms: number[] = await dynamicTask;
+                const dynamicRooms: number[] = Array.from(await dynamicTask);
                 const filtered: number[] = dynamicRooms.filter((roomid: number): boolean => !fixedRooms.has(roomid));
                 this._dynamicController.add(filtered);
                 this._dynamicRefreshTask.start();

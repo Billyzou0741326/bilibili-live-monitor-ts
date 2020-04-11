@@ -15,34 +15,27 @@ export class BilibiliBase {
     static request(request: Request): Promise<any> {
         const noRetryCode: Array<number> = [ 412 ];
         const requestUntilDone = async(): Promise<any> => {
-            let success = false;
             let tries = 3;
-            let result: any = null;
             let err: any = null;
 
-            while (success === false && tries > 0) {
+            while (tries > 0) {
                 try {
                     const response: Response = await xhr.request(request);
-                    result = response.json();
-                    err = null;
-                    success = true;
+                    return response.json();
                 }
                 catch (error) {
-                    err = error;
                     --tries;
+                    err = error;
                     if (error instanceof HttpError) {
                         const code = error.status;
                         if (noRetryCode.includes(code)) {
-                            tries = 0;
+                            break;
                         }
                     }
                 }
             }
 
-            if (err) {
-                throw err;
-            }
-            return result;
+            throw err;
         }
 
         return requestUntilDone();

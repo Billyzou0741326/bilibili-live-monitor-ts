@@ -878,7 +878,7 @@ class DanmuTCPReader {
 
         while (this._nextMsgLen > 0 && this._data.length >= this._nextMsgLen) {
             if (this._data.readUInt16BE(6) === 2 && this._data.readUInt32BE(8) === 5) {
-                const m = this.getMessagesCompressed(this.unzip(this._data.slice(16, this._nextMsgLen)));
+                const m = this.getMessagesCompressed(this._data.slice(16, this._nextMsgLen));
                 for (const d of m) {
                     result.push(d);
                 }
@@ -904,6 +904,8 @@ class DanmuTCPReader {
     }
 
     private getMessagesCompressed(d: Buffer): Buffer[] {
+        d = this.unzip(d);
+
         let len = d.readUInt32BE(0);
         const result: Buffer[] = [];
 
