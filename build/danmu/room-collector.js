@@ -105,20 +105,103 @@ var RoomCollector = /** @class */ (function () {
             numDynamicRooms = Infinity;
         }
         return (function () { return __awaiter(_this, void 0, void 0, function () {
-            var resp, error_3;
+            var sets, result_1, error_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, index_2.Bilibili.getRoomsInArea(0, 99, numDynamicRooms)];
+                        return [4 /*yield*/, Promise.all([
+                                RoomCollector.getDynamicRoomsFromAreas(),
+                                RoomCollector.getDynamicRoomsFromAll(),
+                            ])];
                     case 1:
-                        resp = _a.sent();
-                        return [2 /*return*/, resp.map(function (entry) { return entry['roomid']; })];
+                        sets = _a.sent();
+                        result_1 = sets[0];
+                        sets[1].forEach(function (roomid) {
+                            result_1.add(roomid);
+                        });
+                        return [2 /*return*/, result_1];
                     case 2:
                         error_3 = _a.sent();
                         index_3.cprint("(Collector) - " + error_3.message, chalk.red);
                         return [3 /*break*/, 3];
-                    case 3: return [2 /*return*/, []];
+                    case 3: return [2 /*return*/, new Set()];
+                }
+            });
+        }); })();
+    };
+    // noexcept
+    RoomCollector.getDynamicRoomsFromAreas = function () {
+        var _this = this;
+        return (function () { return __awaiter(_this, void 0, void 0, function () {
+            var Adder, areas, areasRooms, addToSet, areasTasks, areasRoomInfo, _i, areasRoomInfo_1, roomInfoList, _a, roomInfoList_1, roomInfo, error_4;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        Adder = (function (s) {
+                            return (function (roomInfo) {
+                                s.add(roomInfo['roomid']);
+                            });
+                        });
+                        areas = [1, 2, 3, 4, 5, 6];
+                        areasRooms = new Set();
+                        addToSet = Adder(areasRooms);
+                        areasTasks = areas.map(function (areaid) { return index_2.Bilibili.getRoomsInArea(areaid); });
+                        _b.label = 1;
+                    case 1:
+                        _b.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, Promise.all(areasTasks)];
+                    case 2:
+                        areasRoomInfo = _b.sent();
+                        for (_i = 0, areasRoomInfo_1 = areasRoomInfo; _i < areasRoomInfo_1.length; _i++) {
+                            roomInfoList = areasRoomInfo_1[_i];
+                            for (_a = 0, roomInfoList_1 = roomInfoList; _a < roomInfoList_1.length; _a++) {
+                                roomInfo = roomInfoList_1[_a];
+                                addToSet(roomInfo);
+                            }
+                        }
+                        return [2 /*return*/, areasRooms];
+                    case 3:
+                        error_4 = _b.sent();
+                        index_3.cprint("(Collector) - " + error_4.message, chalk.red);
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/, areasRooms];
+                }
+            });
+        }); })();
+    };
+    // noexcept
+    RoomCollector.getDynamicRoomsFromAll = function () {
+        var _this = this;
+        return (function () { return __awaiter(_this, void 0, void 0, function () {
+            var Adder, allRooms, addToSet, allRoomsTask, allRoomInfo, _i, allRoomInfo_1, roomInfo, error_5;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        Adder = (function (s) {
+                            return (function (roomInfo) {
+                                s.add(roomInfo['roomid']);
+                            });
+                        });
+                        allRooms = new Set();
+                        addToSet = Adder(allRooms);
+                        allRoomsTask = index_2.Bilibili.getRoomsInArea(0);
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, allRoomsTask];
+                    case 2:
+                        allRoomInfo = _a.sent();
+                        for (_i = 0, allRoomInfo_1 = allRoomInfo; _i < allRoomInfo_1.length; _i++) {
+                            roomInfo = allRoomInfo_1[_i];
+                            addToSet(roomInfo);
+                        }
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_5 = _a.sent();
+                        index_3.cprint("(Collector) - " + error_5.message, chalk.red);
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/, allRooms];
                 }
             });
         }); })();

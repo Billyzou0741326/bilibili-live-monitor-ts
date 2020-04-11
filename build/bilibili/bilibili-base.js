@@ -46,44 +46,35 @@ var BilibiliBase = /** @class */ (function () {
         var _this = this;
         var noRetryCode = [412];
         var requestUntilDone = function () { return __awaiter(_this, void 0, void 0, function () {
-            var success, tries, result, err, response, error_1, code;
+            var tries, err, response, error_1, code;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        success = false;
                         tries = 3;
-                        result = null;
                         err = null;
                         _a.label = 1;
                     case 1:
-                        if (!(success === false && tries > 0)) return [3 /*break*/, 6];
+                        if (!(tries > 0)) return [3 /*break*/, 6];
                         _a.label = 2;
                     case 2:
                         _a.trys.push([2, 4, , 5]);
                         return [4 /*yield*/, xhr.request(request)];
                     case 3:
                         response = _a.sent();
-                        result = response.json();
-                        err = null;
-                        success = true;
-                        return [3 /*break*/, 5];
+                        return [2 /*return*/, response.json()];
                     case 4:
                         error_1 = _a.sent();
-                        err = error_1;
                         --tries;
+                        err = error_1;
                         if (error_1 instanceof index_1.HttpError) {
                             code = error_1.status;
                             if (noRetryCode.includes(code)) {
-                                tries = 0;
+                                return [3 /*break*/, 6];
                             }
                         }
                         return [3 /*break*/, 5];
                     case 5: return [3 /*break*/, 1];
-                    case 6:
-                        if (err) {
-                            throw err;
-                        }
-                        return [2 /*return*/, result];
+                    case 6: throw err;
                 }
             });
         }); };

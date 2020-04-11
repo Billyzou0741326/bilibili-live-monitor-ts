@@ -173,11 +173,11 @@ const appCommon: {[key:string]:string|number} = {
     'statistics': JSON.stringify(statistics),
 };
 const appHeaders: {[key:string]:string} = {
-    'Connection': 'close',
+    'Connection': 'keep-alive',
     'User-Agent': 'Mozilla/5.0 BiliDroid/5.55.1 (bbcallen@gmail.com)',
 };
 
 const webHeaders: {[key:string]:string} = {
-    'Connection': 'close',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36',
+    'Connection': 'keep-alive',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:75.0) Gecko/20100101 Firefox/75.0',
 };

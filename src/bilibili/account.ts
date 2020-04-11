@@ -36,9 +36,11 @@ export class Account {
     private _loginInfo:     LoginInfo;
     private _webSession:    WebSession;
     private _appSession:    AppSession;
+    private _fsWriteTask:   Promise<void>;  // noexcept
 
     constructor(info?: LoginInfo) {
-        this._filename = 'user.json';
+        this._filename = path.resolve(__dirname, 'user.json');
+        this._fsWriteTask = (async() => {})();
         this._loginInfo = info || {
             username:           '',
             password:           '',
@@ -147,9 +149,6 @@ export class Account {
                 this._webSession = webSession;
                 return resp;
             })
-            .then((): void => {
-                this.saveToFile();
-            })
         );
     }
 
@@ -158,7 +157,7 @@ export class Account {
             return;
         }
 
-        let filename = path.resolve(__dirname, this._filename);
+        let filename = this._filename;
         if (fs.existsSync(filename) === false) {
             return;
         }
@@ -177,16 +176,21 @@ export class Account {
     }
 
     saveToFile(): void {
-        const filename = (
-            (this._filename && path.resolve(__dirname, this._filename))
-            || path.resolve(__dirname, 'user.json'));
-
+        const filename = this._filename;
         cprint(`Storing login info into ${filename}`, chalk.green);
-        fs.writeFile(filename, this.toFileFormat(), (err: any) => {
-            if (err) {
-                cprint(`(Account) SaveError - ${err.message}`, chalk.red);
-            }
-        });
+
+        const previousTask = this._fsWriteTask;
+        this._fsWriteTask = (async(): Promise<void> => {
+            await previousTask;     // noexcept
+            return new Promise((resolve): void => {
+                fs.writeFile(filename, this.toFileFormat(), (err: any) => {
+                    if (err) {
+                        cprint(`(Account) SaveError - ${err.message}`, chalk.red);
+                    }
+                    resolve();
+                });
+            });
+        })();
     }
 
     toFileFormat(): string {
@@ -196,15 +200,6 @@ export class Account {
             'app':      this.tokens,
         };
         return JSON.stringify(data, null, 4);
-    }
-
-}
-
-
-export class User extends Account {
-
-    constructor(info?: LoginInfo) {
-        super(info);
     }
 
 }

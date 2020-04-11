@@ -773,7 +773,7 @@ var DanmuTCPReader = /** @class */ (function () {
         }
         while (this._nextMsgLen > 0 && this._data.length >= this._nextMsgLen) {
             if (this._data.readUInt16BE(6) === 2 && this._data.readUInt32BE(8) === 5) {
-                var m = this.getMessagesCompressed(this.unzip(this._data.slice(16, this._nextMsgLen)));
+                var m = this.getMessagesCompressed(this._data.slice(16, this._nextMsgLen));
                 for (var _i = 0, m_1 = m; _i < m_1.length; _i++) {
                     var d = m_1[_i];
                     result.push(d);
@@ -798,6 +798,7 @@ var DanmuTCPReader = /** @class */ (function () {
         return result;
     };
     DanmuTCPReader.prototype.getMessagesCompressed = function (d) {
+        d = this.unzip(d);
         var len = d.readUInt32BE(0);
         var result = [];
         while (len > 0 && d.length >= len) {
