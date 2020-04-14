@@ -36,7 +36,7 @@ export class Bilibili extends BilibiliBase {
     }
 
     // ------------------------------App------------------------------
-    static login(username: string, password: string): Promise<any> {
+    public static login(username: string, password: string): Promise<any> {
         return Bilibili.obtainLoginKey().then((resp: any): Promise<Response> => {
             const code: number = resp.code;
             if (code !== 0) {
@@ -76,7 +76,7 @@ export class Bilibili extends BilibiliBase {
         });
     }
 
-    static obtainLoginKey(): Promise<any> {
+    public static obtainLoginKey(): Promise<any> {
         const data: any = {};
         Object.assign(data, config.appCommon);
         data['appkey'] = config.appkey;
@@ -102,7 +102,7 @@ export class Bilibili extends BilibiliBase {
      * @param   {Integer}   roomid
      * @returns {Promise}   resolve(json)   reject(String)
      */
-    static appGetLottery(roomid: number): Promise<any> {
+    public static appGetLottery(roomid: number): Promise<any> {
         const data: any = {};
         Object.assign(data, config.appCommon);
         // data['appkey'] = config.appkey;
@@ -130,7 +130,7 @@ export class Bilibili extends BilibiliBase {
      * @param   {Integer}   giftData.roomid
      * @param   {String}    giftData.type
      */
-    static appJoinGift(appSession: AppSession, giftData: Gift): Promise<any> {
+    public static appJoinGift(appSession: AppSession, giftData: Gift): Promise<any> {
         const { id, roomid, type } = giftData;
         const access_key = appSession.access_token;
         const data: any = Object.assign(new Object(), config.appCommon);
@@ -163,7 +163,7 @@ export class Bilibili extends BilibiliBase {
      * @param   {Integer}   pkData.id
      * @param   {Integer}   pkData.roomid
      */
-    static appJoinPK(appSession: AppSession, pkData: PK): Promise<any> {
+    public static appJoinPK(appSession: AppSession, pkData: PK): Promise<any> {
         const { id, roomid } = pkData;
         const access_key = appSession.access_token;
         const data: any = Object.assign(new Object(), config.appCommon);
@@ -196,7 +196,7 @@ export class Bilibili extends BilibiliBase {
      * @param   {Integer}   guardData.roomid
      * @param   {String}    guardData.type
      */
-    static appJoinGuard(appSession: AppSession, guardData: Guard): Promise<any> {
+    public static appJoinGuard(appSession: AppSession, guardData: Guard): Promise<any> {
         const { id, roomid, type } = guardData;
         const access_key = appSession.access_token;
         const data: any = Object.assign(new Object(), config.appCommon);
@@ -228,7 +228,7 @@ export class Bilibili extends BilibiliBase {
      * @param   {Object}    stormData
      * @param   {Integer}   stormData.id
      */
-    static appJoinStorm(appSession: AppSession, stormData: Storm): Promise<any> {
+    public static appJoinStorm(appSession: AppSession, stormData: Storm): Promise<any> {
         const access_key = appSession.access_token;
         const { id } = stormData;
         const data: any = Object.assign(new Object(), config.appCommon);
@@ -254,7 +254,7 @@ export class Bilibili extends BilibiliBase {
     // */
 
     /** 直播间历史模仿 */
-    static appRoomEntry(appSession: AppSession, roomid: number): Promise<any> {
+    public static appRoomEntry(appSession: AppSession, roomid: number): Promise<any> {
         const access_key = appSession.access_token;
         const data: any = Object.assign(new Object(), config.appCommon);
         data['access_key'] = access_key;
@@ -285,7 +285,7 @@ export class Bilibili extends BilibiliBase {
      * @param   info        Object
      *          roomid      Int     房间号
      */
-    static appGetInfoByUser(appSession: AppSession, info: { roomid: number }): Promise<any> {
+    public static appGetInfoByUser(appSession: AppSession, info: { roomid: number }): Promise<any> {
         const { roomid } = info;
         const data: any = Object.assign(new Object(), config.appCommon);
         data['actionKey'] = 'appkey';
@@ -314,7 +314,7 @@ export class Bilibili extends BilibiliBase {
      * @param   info        Object
      *          info.roomid Int     房间号
      */
-    static appLiveOnlineHeart(appSession: AppSession, info: { roomid: number }) {
+    public static appLiveOnlineHeart(appSession: AppSession, info: { roomid: number }) {
         const { roomid } = info;
         const data: any = {
             'room_id': roomid,
@@ -346,7 +346,7 @@ export class Bilibili extends BilibiliBase {
      * @param   info        Object
      *   info.  aid         Int     视频id
      */
-    static shareVideo(appSession: AppSession, info: { aid: number }): Promise<any> {
+    public static shareVideo(appSession: AppSession, info: { aid: number }): Promise<any> {
         const { aid } = info;
         const access_key = appSession.access_token;
         const data: any = Object.assign(new Object(), config.appCommon);
@@ -377,7 +377,7 @@ export class Bilibili extends BilibiliBase {
      *   info.  group_id    Int     应援团id
      *   info.  owner_id    Int     应援对象id
      */
-    static loveClubSign(appSession: AppSession, info: { group_id: number, owner_id: number }): Promise<any> {
+    public static loveClubSign(appSession: AppSession, info: { group_id: number, owner_id: number }): Promise<any> {
         const { group_id, owner_id } = info;
         const params: any = Object.assign(new Object(), config.appCommon);
         params['access_key'] = appSession.access_token;
@@ -398,7 +398,7 @@ export class Bilibili extends BilibiliBase {
         return Bilibili.request(request);
     }
 
-    static checkSilverBox(appSession: AppSession): Promise<any> {
+    public static checkSilverBox(appSession: AppSession): Promise<any> {
         const params: any = Object.assign(new Object(), config.appCommon);
         params['access_key'] = appSession.access_token;
         params['ts'] = Math.floor(0.001 * new Date().valueOf());
@@ -422,7 +422,7 @@ export class Bilibili extends BilibiliBase {
      *          time_start  Int     银瓜子时段起始
      *          time_end    Int     银瓜子时段终末
      */
-    static getSilverBox(appSession: AppSession, info: { time_start: number, time_end: number }): Promise<any> {
+    public static getSilverBox(appSession: AppSession, info: { time_start: number, time_end: number }): Promise<any> {
         const { time_start, time_end } = info;
         const params: any = Object.assign(new Object(), config.appCommon);
         params['access_key'] = appSession.access_token;
@@ -445,7 +445,7 @@ export class Bilibili extends BilibiliBase {
 
     /** --------------------------WEB----------------------------- */
 
-    static mainTaskInfo(webSession: WebSession): Promise<any> {
+    public static mainTaskInfo(webSession: WebSession): Promise<any> {
         const request = (Request.Builder()
             .withHost('account.bilibili.com')
             .withPath('/home/reward')
@@ -458,7 +458,7 @@ export class Bilibili extends BilibiliBase {
         return Bilibili.request(request);
     }
 
-    static liveTaskInfo(webSession: WebSession): Promise<any> {
+    public static liveTaskInfo(webSession: WebSession): Promise<any> {
         const request = (Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/i/api/taskInfo')
@@ -471,7 +471,7 @@ export class Bilibili extends BilibiliBase {
         return Bilibili.request(request);
     }
 
-    static liveSignInfo(webSession: WebSession): Promise<any> {
+    public static liveSignInfo(webSession: WebSession): Promise<any> {
         const request = (Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/sign/GetSignInfo')
@@ -484,7 +484,7 @@ export class Bilibili extends BilibiliBase {
         return Bilibili.request(request);
     }
 
-    static liveSign(webSession: WebSession): Promise<any> {
+    public static liveSign(webSession: WebSession): Promise<any> {
         const request = (Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/sign/doSign')
@@ -497,7 +497,7 @@ export class Bilibili extends BilibiliBase {
         return Bilibili.request(request);
     }
 
-    static webGetInfoByUser(webSession: WebSession, info: { roomid: number }): Promise<any> {
+    public static webGetInfoByUser(webSession: WebSession, info: { roomid: number }): Promise<any> {
         const { roomid } = info;
         const params: any = {};
         params['room_id'] = roomid;
@@ -515,7 +515,7 @@ export class Bilibili extends BilibiliBase {
         return Bilibili.request(request);
     }
 
-    static webLiveOnlineHeart(webSession: WebSession): Promise<any> {
+    public static webLiveOnlineHeart(webSession: WebSession): Promise<any> {
         const data: any = {
             'csrf': webSession.bili_jct,
             'csrf_token': webSession.bili_jct,
@@ -537,7 +537,7 @@ export class Bilibili extends BilibiliBase {
         return Bilibili.request(request);
     }
 
-    static liveDoubleWatch(webSession: WebSession): Promise<any> {
+    public static liveDoubleWatch(webSession: WebSession): Promise<any> {
         const csrf = webSession.bili_jct;
         const data: any = {
             'task_id': 'double_watch_task',
@@ -560,7 +560,7 @@ export class Bilibili extends BilibiliBase {
         return Bilibili.request(request);
     }
 
-    static loveClubList(webSession: WebSession): Promise<any> {
+    public static loveClubList(webSession: WebSession): Promise<any> {
         const params: any = {
             'build': 0,
             'mobi_app': 'web',
@@ -584,7 +584,7 @@ export class Bilibili extends BilibiliBase {
      *
      * @returns     {Promise<any>}      { "code": 0, "message": "0", "ttl": 1 }
      * */
-    static watchVideo(webSession: WebSession | null, info: { cid: number, aid: number }, time: number = 0): Promise<any> {
+    public static watchVideo(webSession: WebSession | null, info: { cid: number, aid: number }, time: number = 0): Promise<any> {
         const { aid, cid } = info;
         const data: any = {};
         data['cid'] = cid;
@@ -621,7 +621,7 @@ export class Bilibili extends BilibiliBase {
      * @static
      * @returns {Promise}   resolve(json)   reject(String)
      */
-    static getAllSailboatRooms(): Promise<any> {
+    public static getAllSailboatRooms(): Promise<any> {
         const MAX_PAGES = 3;
         const promises: Promise<any>[] = [];
 
@@ -655,7 +655,7 @@ export class Bilibili extends BilibiliBase {
      * @param   {Integer}   page    - page of the API, valid values: [1,2,3]
      * @returns {Promise}   resolve(json)   reject(Error)
      */
-    static getSailboatRooms(page: number): Promise<any> {
+    public static getSailboatRooms(page: number): Promise<any> {
         // Page 1-3 (Rank 0-50)
         const PAGE_SIZE = 20;   // 必须是20
         const params: any = {
@@ -683,7 +683,7 @@ export class Bilibili extends BilibiliBase {
      * @static
      * @returns     {Promise}   resolve(json)   reject(String)
      */
-    static getAllGenkiRooms(): Promise<any> {
+    public static getAllGenkiRooms(): Promise<any> {
         const MAX_PAGES = 3;
         const promises: Promise<any>[] = [];
 
@@ -717,7 +717,7 @@ export class Bilibili extends BilibiliBase {
      * @param   {Integer}   page    - page of API
      * @returns {Promise}   resolve(json)  reject(Error)
      */
-    static getGenkiRooms(page: number): Promise<any> {
+    public static getGenkiRooms(page: number): Promise<any> {
         const PAGE_SIZE = 20;
         const params: any = {
             'date': 'month',
@@ -746,7 +746,7 @@ export class Bilibili extends BilibiliBase {
      * @static
      * @returns {Promise}   resolve(Integer)    reject(String)
      */
-    static getLiveCount(): Promise<number> {
+    public static getLiveCount(): Promise<number> {
         const params: any = {
             'parent_area_id': 0,
             'page': 1,
@@ -775,7 +775,7 @@ export class Bilibili extends BilibiliBase {
      * @param       {Integer}   roomid
      * @returns     {Promise}   resolve(json)   reject(Error)
      */
-    static getRoomInfo(roomid: number): Promise<any> {
+    public static getRoomInfo(roomid: number): Promise<any> {
         const params: any = {
             'room_id': roomid,
         };
@@ -798,7 +798,7 @@ export class Bilibili extends BilibiliBase {
      * @param   {Integer}   roomid
      * @returns {Promise}   resolve(boolean)    reject(String)
      */
-    static isLive(roomid: number): Promise<boolean> {
+    public static isLive(roomid: number): Promise<boolean> {
         return Bilibili.getRoomInfo(roomid).then((jsonObj: any): boolean => {
             const isLive: boolean = jsonObj['data']['room_info']['live_status'] === 1 ? true : false;
             return isLive;
@@ -814,7 +814,7 @@ export class Bilibili extends BilibiliBase {
      * @param   {Integer}   count
      * @returns {Promise}   resolve([ { 'roomid': roomid, 'online': online }, ... ])
      */
-    static getRoomsInArea(areaid: number, size: number=99, count: number=Infinity, sortType: string='live_time'): Promise<any> {
+    public static getRoomsInArea(areaid: number, size: number = 99, count: number = Infinity, sortType: string = 'live_time'): Promise<any> {
         const page_size = size > 99 || size < 0 ? 99 : size;
         const ok_sort_types = [ 'live_time', 'online', 'sort_type_169' ];
         if (!ok_sort_types.includes(sortType)) {
@@ -890,7 +890,7 @@ export class Bilibili extends BilibiliBase {
      * @static
      * @returns     {Promise}   resolve([ Array(Integer), Array(Integer), ... ])    reject(String)
      */
-    static getRoomsInEachArea(): Promise<any>[] {
+    public static getRoomsInEachArea(): Promise<any>[] {
         const params: any = {
             'parent_area_id': 0, 
             'page': 1, 
@@ -920,7 +920,7 @@ export class Bilibili extends BilibiliBase {
         return promises;    // a list of promises, each element is list of rooms in an area
     }
 
-    static sendDanmu(webSession: WebSession, danmu: DanmuSettings): Promise<any> {
+    public static sendDanmu(webSession: WebSession, danmu: DanmuSettings): Promise<any> {
         const data: any = {
             'color':        0xFFFFFF,
             'fontsize':     25,
@@ -948,7 +948,7 @@ export class Bilibili extends BilibiliBase {
         return Bilibili.request(request);
     }
 
-    static sessionInfo(appSession: AppSession): Promise<any> {
+    public static sessionInfo(appSession: AppSession): Promise<any> {
         const params: any = Object.assign(new Object(), config.appCommon);
         params['access_token'] = appSession.access_token;
         const paramstr = Bilibili.parseAppParams(sort(params));
@@ -964,7 +964,7 @@ export class Bilibili extends BilibiliBase {
         return Bilibili.request(request);
     }
 
-    static isLoggedIn(webSession: WebSession): Promise<any> {
+    public static isLoggedIn(webSession: WebSession): Promise<any> {
         const request = (Request.Builder()
             .withHost('account.bilibili.com')
             .withPath('/home/userInfo')
@@ -976,7 +976,7 @@ export class Bilibili extends BilibiliBase {
         return Bilibili.request(request);
     }
 
-    static startLive(webSession: WebSession, info: { roomid: number, areaid: number }): Promise<any> {
+    public static startLive(webSession: WebSession, info: { roomid: number, areaid: number }): Promise<any> {
         const data: any = {};
         data['room_id'] = info.roomid;
         data['area_v2'] = info.areaid;
@@ -1003,7 +1003,7 @@ export class Bilibili extends BilibiliBase {
      *
      * @returns     {Promise<any>}      { "code": 0, "message": "0", "data": { aid: 0, cid: 0, title: "", pubdate: 0, ... } }
      * */
-    static videoInfo(aid: number): Promise<any> {
+    public static videoInfo(aid: number): Promise<any> {
         const data: any = {};
         data['aid'] = aid;
 
@@ -1022,7 +1022,7 @@ export class Bilibili extends BilibiliBase {
      *
      * @returns     {Promise<any>}      { "code": 0, "message": "0", "ttl": 1 }
      * */
-    static clickVideo(info: { cid: number, aid: number }): Promise<any> {
+    public static clickVideo(info: { cid: number, aid: number }): Promise<any> {
         const { aid, cid } = info;
         const data: any = {};
         data['cid'] = cid;
@@ -1050,11 +1050,11 @@ export class Bilibili extends BilibiliBase {
         return Bilibili.request(request);
     }
 
-    static appSign(str: string): string {
+    private static appSign(str: string): string {
         return crypto.createHash('md5').update(str + config.appSecret).digest('hex');
     }
 
-    static parseAppParams(params: {[key: string]: string}): string {
+    private static parseAppParams(params: {[key: string]: string}): string {
         const presigned: string = Params.stringify(params);
         const signature: string = Bilibili.appSign(presigned);
         return `${presigned}&sign=${signature}`;

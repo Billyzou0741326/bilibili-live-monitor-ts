@@ -32,15 +32,16 @@ var Xhr = /** @class */ (function () {
                     .on('close', function () { return reject(new index_1.HttpError('Http request closed')); })
                     .on('response', function (response) {
                     var code = response.statusCode || 0;
-                    var dataSequence = [];
-                    response.on('aborted', function () { return reject(new index_1.HttpError('Http request aborted')); });
-                    response.on('error', function (error) { return reject(new index_1.HttpError(error.message)); });
-                    response.on('data', function (data) { return dataSequence.push(data); });
                     if (code >= 200 && code < 300) {
-                        response.on('end', function () {
+                        var dataSequence_1 = [];
+                        response
+                            .on('aborted', function () { return reject(new index_1.HttpError('Http request aborted')); })
+                            .on('error', function (error) { return reject(new index_1.HttpError(error.message)); })
+                            .on('data', function (data) { return dataSequence_1.push(data); })
+                            .on('end', function () {
                             var url = "" + request.host + request.path;
                             var method = request.method;
-                            var data = Buffer.concat(dataSequence);
+                            var data = Buffer.concat(dataSequence_1);
                             var res = (index_1.ResponseBuilder.start()
                                 .withHttpResponse(response)
                                 .withUrl(url)

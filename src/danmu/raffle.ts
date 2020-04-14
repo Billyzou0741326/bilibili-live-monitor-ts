@@ -253,8 +253,4 @@ export class Anchor extends Raffle {
         return this;
     }
 
-    public toJsonStr(): string {
-        return JSON.stringify(this.toJson());
-    }
-
 }

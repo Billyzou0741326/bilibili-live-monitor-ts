@@ -103,7 +103,16 @@ export class App {
         for (const controller of controllers) {
             controller
                 .on('add_to_db', (roomid: number): void => { this._db.add(roomid) })
-                .on('to_fixed', (roomid: number): void => { this._fixedController.add(roomid) });
+                .on('to_fixed', (roomid: number): void => {
+                    cprint(`Adding ${roomid} to fixed`, chalk.green);
+                    this._fixedController.add(roomid);
+                })
+                .on('to_dynamic', (roomid: number): void => {
+                    if (!this._fixedController.connections.has(roomid) && !this._dynamicController.connections.has(roomid)) {
+                        cprint(`Adding ${roomid} to dynamic`, chalk.green);
+                        this._dynamicController.add(roomid);
+                    }
+                });
             for (const category in RaffleCategory) {
                 controller.on(category, handler(category));
             }
@@ -182,7 +191,7 @@ export class App {
     }
 
     private printGift(g: Raffle): void {
-        let msg = '';
+        let msg: string = '';
         const id = `${g.id}`;
         const roomid = `${g.roomid}`;
         const t = `${g.type}`;
@@ -191,17 +200,13 @@ export class App {
 
         switch (category) {
             case 'gift':
-                msg = `${id.padEnd(13)}@${roomid.padEnd(13)}${t.padEnd(13)}${name}`;
-                break;
             case 'guard':
+            case 'pk':
                 msg = `${id.padEnd(13)}@${roomid.padEnd(13)}${t.padEnd(13)}${name}`;
                 break;
             case 'storm':
                 let sid = `${id.slice(0,7)}`;
                 msg = `${sid.padEnd(13)}@${roomid.padEnd(13)}${t.padEnd(13)}${name.padEnd(13)}${id}`;
-                break;
-            case 'pk':
-                msg = `${id.padEnd(13)}@${roomid.padEnd(13)}${t.padEnd(13)}${name}`;
                 break;
             case 'anchor':
                 const anchor: Anchor = (g as Anchor);
@@ -221,8 +226,6 @@ export class App {
                 msg = (`${id.padEnd(13)}@${roomid.padEnd(13)}${t.padEnd(13)}`
                     + `\n${table(dataTable)}`);
                 break;
-            case '':
-                return;
             default:
                 return;
         }

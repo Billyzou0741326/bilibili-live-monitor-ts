@@ -118,7 +118,16 @@ var App = /** @class */ (function () {
             var controller = controllers_1[_i];
             controller
                 .on('add_to_db', function (roomid) { _this._db.add(roomid); })
-                .on('to_fixed', function (roomid) { _this._fixedController.add(roomid); });
+                .on('to_fixed', function (roomid) {
+                index_1.cprint("Adding " + roomid + " to fixed", chalk.green);
+                _this._fixedController.add(roomid);
+            })
+                .on('to_dynamic', function (roomid) {
+                if (!_this._fixedController.connections.has(roomid) && !_this._dynamicController.connections.has(roomid)) {
+                    index_1.cprint("Adding " + roomid + " to dynamic", chalk.green);
+                    _this._dynamicController.add(roomid);
+                }
+            });
             for (var category in index_6.RaffleCategory) {
                 controller.on(category, handler(category));
             }
@@ -212,17 +221,13 @@ var App = /** @class */ (function () {
         var name = "" + g.name;
         switch (category) {
             case 'gift':
-                msg = id.padEnd(13) + "@" + roomid.padEnd(13) + t.padEnd(13) + name;
-                break;
             case 'guard':
+            case 'pk':
                 msg = id.padEnd(13) + "@" + roomid.padEnd(13) + t.padEnd(13) + name;
                 break;
             case 'storm':
                 var sid = "" + id.slice(0, 7);
                 msg = sid.padEnd(13) + "@" + roomid.padEnd(13) + t.padEnd(13) + name.padEnd(13) + id;
-                break;
-            case 'pk':
-                msg = id.padEnd(13) + "@" + roomid.padEnd(13) + t.padEnd(13) + name;
                 break;
             case 'anchor':
                 var anchor = g;
@@ -242,8 +247,6 @@ var App = /** @class */ (function () {
                 msg = (id.padEnd(13) + "@" + roomid.padEnd(13) + t.padEnd(13)
                     + ("\n" + table_1.table(dataTable)));
                 break;
-            case '':
-                return;
             default:
                 return;
         }

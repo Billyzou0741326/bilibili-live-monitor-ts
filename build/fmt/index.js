@@ -5,4 +5,3 @@ function __export(m) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./query"));
 __export(require("./printer"));
-__export(require("./index"));

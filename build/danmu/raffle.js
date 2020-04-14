@@ -273,9 +273,6 @@ var Anchor = /** @class */ (function (_super) {
         this._require_text = requirement;
         return this;
     };
-    Anchor.prototype.toJsonStr = function () {
-        return JSON.stringify(this.toJson());
-    };
     return Anchor;
 }(Raffle));
 exports.Anchor = Anchor;

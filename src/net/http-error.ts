@@ -11,16 +11,16 @@ export class HttpError extends Error {
         Object.setPrototypeOf(this, HttpError.prototype);
     }
 
-    withStatus(status: number): this {
+    public withStatus(status: number): this {
         this._status = status;
         return this;
     }
 
-    get code(): string {
+    public get code(): string {
         return this._code;
     }
 
-    get status(): number {
+    public get status(): number {
         return this._status;
     }
 

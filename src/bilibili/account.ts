@@ -38,7 +38,7 @@ export class Account {
     private _appSession:    AppSession;
     private _fsWriteTask:   Promise<void>;  // noexcept
 
-    constructor(info?: LoginInfo) {
+    public constructor(info?: LoginInfo) {
         this._filename = path.resolve(__dirname, 'user.json');
         this._fsWriteTask = (async() => {})();
         this._loginInfo = info || {
@@ -60,28 +60,28 @@ export class Account {
         } as AppSession;
     }
 
-    withLoginInfo(loginInfo: LoginInfo): Account | any {
+    public withLoginInfo(loginInfo: LoginInfo): this {
         this._loginInfo = loginInfo;
         return this;
     }
 
-    get cookies(): WebSession {
+    public get cookies(): WebSession {
         return this._webSession;
     }
 
-    get tokens(): AppSession {
+    public get tokens(): AppSession {
         return this._appSession;
     }
 
-    get username(): string {
+    public get username(): string {
         return this._loginInfo.username;
     }
 
-    get password(): string {
+    public get password(): string {
         return this._loginInfo.password;
     }
 
-    isUsable(): boolean {
+    public isUsable(): boolean {
         return !!(
             this._webSession.bili_jct
             && this._webSession.DedeUserID
@@ -92,7 +92,7 @@ export class Account {
         );
     }
 
-    needsLogin(): Promise<boolean> {
+    public needsLogin(): Promise<boolean> {
         return Bilibili.sessionInfo(this.tokens).then((resp: any): boolean => {
             const code: number = resp['code'];
             let expiresIn = -1;
@@ -108,7 +108,7 @@ export class Account {
         });
     }
 
-    login(): Promise<any> {
+    public login(): Promise<any> {
         if (!(this._loginInfo.username && this._loginInfo.password)) {
             return Promise.reject(new Error('(Login) - 用户名/密码未提供'));
         }
@@ -152,7 +152,7 @@ export class Account {
         );
     }
 
-    loadFromFile(): void {
+    private loadFromFile(): void {
         if (!this._filename === true) {
             return;
         }
@@ -175,7 +175,7 @@ export class Account {
         }
     }
 
-    saveToFile(): void {
+    private saveToFile(): void {
         const filename = this._filename;
         cprint(`Storing login info into ${filename}`, chalk.green);
 
@@ -193,7 +193,7 @@ export class Account {
         })();
     }
 
-    toFileFormat(): string {
+    private toFileFormat(): string {
         const data: any = {
             'user':     this._loginInfo,
             'web':      this.cookies,

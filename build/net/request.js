@@ -26,8 +26,7 @@ var RequestMethods;
     RequestMethods["POST"] = "POST";
     RequestMethods["HEAD"] = "HEAD";
     RequestMethods["DELETE"] = "DELETE";
-})(RequestMethods || (RequestMethods = {}));
-exports.RequestMethods = RequestMethods;
+})(RequestMethods = exports.RequestMethods || (exports.RequestMethods = {}));
 var Request = /** @class */ (function () {
     function Request() {
         this._host = '';

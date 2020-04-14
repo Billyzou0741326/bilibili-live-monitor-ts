@@ -684,14 +684,11 @@ var DynamicGuardMonitor = /** @class */ (function (_super) {
         var result = _super.prototype.onPopularity.call(this, popularity);
         if (popularity <= 1) {
             ++this._offTimes;
-            if (this._offTimes > 50) {
-                this._canClose = true;
-            }
             if (this._offTimes > 10) {
                 if (this._peak_popularity > 50000) {
                     this._toFixed = true;
                 }
-                if (this._canClose === true) {
+                if (this._offTimes > 50 || this._canClose) {
                     this.close(true);
                 }
             }
