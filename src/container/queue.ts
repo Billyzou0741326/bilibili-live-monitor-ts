@@ -3,24 +3,24 @@ class LLNode {
     private _item:  any;
     private _next:  LLNode | null;
 
-    constructor(item: any) {
+    public constructor(item: any) {
         this._next = null;
         this._item = item;
     }
 
-    get next(): LLNode | null {
+    public get next(): LLNode | null {
         return this._next;
     }
 
-    get value(): any {
+    public get value(): any {
         return this._item;
     }
 
-    set next(n: LLNode | null) {
+    public set next(n: LLNode | null) {
         this._next = n;
     }
 
-    set value(v: any) {
+    public set value(v: any) {
         this._item = v;
     }
 
@@ -32,12 +32,12 @@ export class Queue {
     private _size:  number;
     private _rear:  LLNode | null;
 
-    constructor() {
+    public constructor() {
         this._size = 0;
         this._rear = null;
     }
 
-    push(item: any): Queue {
+    public push(item: any): this {
         const node = new LLNode(item);
         node.next = node;
         if (this._rear !== null) {
@@ -49,7 +49,7 @@ export class Queue {
         return this;
     }
 
-    pop(): any {
+    public pop(): any {
         let result: any = null;
         if (this._rear !== null && this._rear.next !== null) {
             result = this._rear.next.value;
@@ -64,7 +64,7 @@ export class Queue {
         return result;
     }
 
-    front(): any {
+    public front(): any {
         let result: any = null;
         if (this._rear !== null && this._rear.next !== null) {
             result = this._rear.next.value;
@@ -72,7 +72,7 @@ export class Queue {
         return result;
     }
 
-    get length(): number {
+    public get length(): number {
         return this._size;
     }
 }

@@ -1,2 +1,2 @@
 export * from './task';
-export * from './ratelimiter';
+export * from './rate-limiter';

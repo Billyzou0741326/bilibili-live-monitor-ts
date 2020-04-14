@@ -167,7 +167,6 @@ var DynamicGuardController = /** @class */ (function (_super) {
     };
     DynamicGuardController.prototype.checkAddToFixed = function (roomid, listener) {
         if (listener.toFixed) {
-            index_1.cprint("Adding " + roomid + " to fixed", chalk.green);
             this.emit('to_fixed', roomid);
         }
     };
@@ -280,7 +279,10 @@ var RaffleController = /** @class */ (function (_super) {
             _this.setupArea(areaid);
         })
             .on('add_to_db', function () { _this.emit('add_to_db', roomid); })
-            .on('roomid', function (roomid) { _this._roomidHandler.add(roomid); });
+            .on('roomid', function (roomid) {
+            _this._roomidHandler.add(roomid);
+            _this.emit('to_dynamic', roomid);
+        });
         var _loop_3 = function (category) {
             listener.on(category, function (g) { _this.emit(category, g); });
         };

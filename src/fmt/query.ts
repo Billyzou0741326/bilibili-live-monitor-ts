@@ -2,7 +2,7 @@ import * as querystring from 'querystring';
 
 export class Cookies {
 
-    static stringify(cookies: {[key: string]: string}): string {
+    private static stringify(cookies: {[key: string]: string}): string {
         const options = {
             'encodeURIComponent': querystring.unescape,
         };
@@ -14,7 +14,7 @@ export class Cookies {
 
 export class Params {
 
-    static stringify(params: {[key: string]: string}): string {
+    public static stringify(params: {[key: string]: string}): string {
         const formattedParams = querystring.stringify(params, '&', '=');
         return formattedParams;
     }

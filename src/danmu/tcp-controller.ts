@@ -140,7 +140,6 @@ export class DynamicGuardController extends GuardController {
 
     protected checkAddToFixed(roomid: number, listener: DynamicGuardMonitor): void {
         if (listener.toFixed) {
-            cprint(`Adding ${roomid} to fixed`, chalk.green);
             this.emit('to_fixed', roomid);
         }
     }
@@ -243,7 +242,10 @@ export class RaffleController extends AbstractRoomController {
                 this.setupArea(areaid);
             })
             .on('add_to_db', (): void => { this.emit('add_to_db', roomid) })
-            .on('roomid', (roomid: number): void => { this._roomidHandler.add(roomid) });
+            .on('roomid', (roomid: number): void => {
+                this._roomidHandler.add(roomid);
+                this.emit('to_dynamic', roomid);
+            });
         for (const category in RaffleCategory) {
             listener.on(category, (g: Raffle): void => { this.emit(category, g) });
         }

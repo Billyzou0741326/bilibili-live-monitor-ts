@@ -12,7 +12,7 @@ let xhr: Sender = new Xhr().withRateLimiter(new RateLimiter(50, 1000));
 
 export class BilibiliBase {
 
-    static request(request: Request): Promise<any> {
+    public static request(request: Request): Promise<any> {
         const noRetryCode: Array<number> = [ 412 ];
         const requestUntilDone = async(): Promise<any> => {
             let tries = 3;

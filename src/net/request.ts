@@ -7,7 +7,7 @@ let httpsAgent: any = null;
 
 initializeAgents();
 
-enum RequestMethods {
+export enum RequestMethods {
     GET = 'GET',
     PUT = 'PUT',
     POST = 'POST',
@@ -15,7 +15,7 @@ enum RequestMethods {
     DELETE = 'DELETE',
 }
 
-interface RequestOptions {
+export interface RequestOptions {
     readonly host:      string;
     readonly path?:     string;
     readonly port?:     number;
@@ -26,7 +26,7 @@ interface RequestOptions {
     [propName: string]: any;
 }
 
-class Request {
+export class Request {
 
     protected _host:        string;
     protected _path:        string;
@@ -41,7 +41,7 @@ class Request {
     protected _agent:       http.Agent;
     protected _timeout:     number;
 
-    constructor() {
+    public constructor() {
         this._host = '';
         this._path = '';
         this._port = 80;
@@ -56,7 +56,7 @@ class Request {
         this._timeout = 4000;
     }
 
-    toHttpOptions(): RequestOptions {
+    public toHttpOptions(): RequestOptions {
         let path:       string = this.path;
         let paramstr:   string = '';
         let cookiestr:  string = '';
@@ -92,102 +92,102 @@ class Request {
         };
     }
 
-    static Builder(): RequestBuilder {
+    public static Builder(): RequestBuilder {
         return new RequestBuilder();
     }
 
-    static get GET(): RequestMethods {
+    public static get GET(): RequestMethods {
         return RequestMethods.GET;
     }
 
-    static get PUT(): RequestMethods {
+    public static get PUT(): RequestMethods {
         return RequestMethods.PUT;
     }
 
-    static get POST(): RequestMethods {
+    public static get POST(): RequestMethods {
         return RequestMethods.POST;
     }
 
-    static get HEAD(): RequestMethods {
+    public static get HEAD(): RequestMethods {
         return RequestMethods.HEAD;
     }
 
-    static get DELETE(): RequestMethods {
+    public static get DELETE(): RequestMethods {
         return RequestMethods.DELETE;
     }
 
-    get host(): string {
+    public get host(): string {
         return this._host;
     }
 
-    get path(): string {
+    public get path(): string {
         return this._path;
     }
 
-    get port(): number {
+    public get port(): number {
         return this._port;
     }
 
-    get https(): boolean {
+    public get https(): boolean {
         return this._https;
     }
 
-    get method(): RequestMethods {
+    public get method(): RequestMethods {
         return this._method;
     }
 
-    get params(): object | string {
+    public get params(): object | string {
         return this._params;
     }
 
-    get data(): any {
+    public get data(): any {
         return this._data;
     }
 
-    get headers(): object {
+    public get headers(): object {
         return this._headers;
     }
 
-    get agent(): http.Agent {
+    public get agent(): http.Agent {
         return this._agent;
     }
 
-    get contentType(): string {
+    public get contentType(): string {
         return this._contentType;
     }
 
-    get timeout(): number {
+    public get timeout(): number {
         return this._timeout;
     }
 
 }
 
-class RequestBuilder extends Request {
+export class RequestBuilder extends Request {
 
-    static start() {
+    public static start() {
         return new RequestBuilder();
     }
 
-    constructor() {
+    public constructor() {
         super();
     }
 
-    withHost(host: string): RequestBuilder {
+    public withHost(host: string): this {
         this._host = host;
         return this;
     }
 
-    withPath(path: string): RequestBuilder {
+    public withPath(path: string): this {
         this._path = path;
         return this;
     }
 
-    withPort(port: number): RequestBuilder {
+    public withPort(port: number): this {
         this._port = port;
         return this;
     }
 
-    withHttps(): RequestBuilder {
+    public withHttps(): this {
         this._https = true;
         if ([ 80, 443 ].includes(this._port)) {
             this._port = 443;
@@ -196,47 +196,47 @@ class RequestBuilder extends Request {
         return this;
     }
 
-    withMethod(method: RequestMethods): RequestBuilder {
+    public withMethod(method: RequestMethods): this {
         this._method = method;
         return this;
     }
 
-    withParams(params: object | string): RequestBuilder {
+    public withParams(params: object | string): this {
         this._params = params;
         return this;
     }
 
-    withData(data: any): RequestBuilder {
+    public withData(data: any): this {
         this._data = data;
         return this;
     }
 
-    withHeaders(headers: object): RequestBuilder {
+    public withHeaders(headers: object): this {
         this._headers = headers;
         return this;
     }
 
-    withCookies(cookies: object | string): RequestBuilder {
+    public withCookies(cookies: object | string): this {
         this._cookies = cookies;
         return this;
     }
 
-    withContentType(contentType: string): RequestBuilder {
+    public withContentType(contentType: string): this {
         this._contentType = contentType;
         return this;
     }
 
-    withAgent(agent: http.Agent): RequestBuilder {
+    public withAgent(agent: http.Agent): this {
         this._agent = agent;
         return this;
     }
 
-    withTimeout(timeout: number): RequestBuilder {
+    public withTimeout(timeout: number): this {
         this._timeout = timeout;
         return this;
     }
 
-    build(): Request {
+    public build(): Request {
         return this as Request;
     }
 
@@ -270,10 +270,3 @@ function formatCookies(cookies: {[key:string]:any}): string {
     const formattedCookies = querystring.stringify(cookies, '; ', '=', options);
     return formattedCookies;
 }
-
-export {
-    Request,
-    RequestOptions,
-    RequestMethods,
-    RequestBuilder,
-};

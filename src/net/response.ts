@@ -1,7 +1,7 @@
 import * as http from 'http';
 import { RequestMethods } from './index';
 
-class Response {
+export class Response {
 
     protected _url:             string;
     protected _statusCode:      number;
@@ -13,7 +13,7 @@ class Response {
     protected _data:            Buffer;
     protected _text:            string;
 
-    constructor() {
+    public constructor() {
         this._url = '';
         this._statusCode = 0;
         this._statusMessage = '';
@@ -25,57 +25,57 @@ class Response {
         this._text = '';
     }
 
-    get url(): string {
+    public get url(): string {
         return this._url;
     }
 
-    get statusCode(): number {
+    public get statusCode(): number {
         return this._statusCode;
     }
 
-    get statusMessage(): string {
+    public get statusMessage(): string {
         return this._statusMessage;
     }
 
-    get method(): RequestMethods | string {
+    public get method(): RequestMethods | string {
         return this._method;
     }
 
-    get contentType(): string {
+    public get contentType(): string {
         return this._contentType;
     }
 
-    get headers(): http.IncomingHttpHeaders {
+    public get headers(): http.IncomingHttpHeaders {
         return this._headers;
     }
 
-    get data(): Buffer {
+    public get data(): Buffer {
         return this._data;
     }
 
-    get text(): string {
+    public get text(): string {
         if (this._text === '') {
             this._text = this.data.toString();
         }
         return this._text;
     }
 
-    json(): {[key:string]:any} {
+    public json(): {[key:string]:any} {
         return JSON.parse(this.text);
     }
 }
 
-class ResponseBuilder extends Response {
+export class ResponseBuilder extends Response {
 
-    static start() {
+    public static start() {
         return new ResponseBuilder();
     }
 
-    constructor() {
+    public constructor() {
         super();
     }
 
-    withHttpResponse(inMessage: http.IncomingMessage): ResponseBuilder {
+    public withHttpResponse(inMessage: http.IncomingMessage): this {
         (this
             .withHeaders(inMessage.headers || {})
             .withStatusCode(inMessage.statusCode || 0)
@@ -84,49 +84,43 @@ class ResponseBuilder extends Response {
         return this;
     }
 
-    withUrl(url: string): ResponseBuilder {
+    public withUrl(url: string): this {
         this._url = url;
         return this;
     }
 
-    withStatusCode(statusCode: number): ResponseBuilder {
+    public withStatusCode(statusCode: number): this {
         this._statusCode = statusCode;
         return this;
     }
 
-    withStatusMessage(statusMessage: string): ResponseBuilder {
+    public withStatusMessage(statusMessage: string): this {
         this._statusMessage = statusMessage;
         return this;
     }
 
-    withMethod(method: RequestMethods | string): ResponseBuilder {
+    public withMethod(method: RequestMethods | string): this {
         this._method = method;
         return this;
     }
 
-    withContentType(contentType: string): ResponseBuilder {
+    public withContentType(contentType: string): this {
         this._contentType = contentType;
         return this;
     }
 
-    withHeaders(headers: http.IncomingHttpHeaders): ResponseBuilder {
+    public withHeaders(headers: http.IncomingHttpHeaders): this {
         this._headers = headers;
         return this;
     }
 
-    withData(data: Buffer): ResponseBuilder {
+    public withData(data: Buffer): this {
         this._text = '';
         this._data = data;
         return this;
     }
 
-    build(): Response {
+    public build(): Response {
         return this as Response;
     }
 }
-
-
-export {
-    Response,
-    ResponseBuilder,
-};

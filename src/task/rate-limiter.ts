@@ -12,7 +12,7 @@ export class RateLimiter {
     private _running:       boolean;
     private _queue:         Queue;
 
-    constructor(count: number, milliseconds?: number) {
+    public constructor(count: number, milliseconds?: number) {
         milliseconds = milliseconds || 0;
         this._interval = 1000;
         this._limit = Infinity;
@@ -39,13 +39,13 @@ export class RateLimiter {
         }
     }
 
-    add(task: () => void):void {
+    public add(task: () => void): void {
         this._queue.push(task);
         this._refreshTask.start();
         this.dispatch();
     }
 
-    dispatch(): void {
+    public dispatch(): void {
         while (this._dispatched < this._limit && this._queue.length > 0) {
             const task: any = this._queue.pop();
             try {
@@ -59,7 +59,7 @@ export class RateLimiter {
         }
     }
 
-    start(): void {
+    public start(): void {
         if (this._running === false) {
             this._running = true;
             this._refreshTask.start();
@@ -67,7 +67,7 @@ export class RateLimiter {
         }
     }
 
-    stop(): void {
+    public stop(): void {
         if (this._running === true) {
             this._refreshTask.stop();
             this._running = false;

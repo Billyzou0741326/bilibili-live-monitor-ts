@@ -20,16 +20,16 @@ export class Xhr implements Sender {
 
     private _rateLimiter:       RateLimiter | null;
 
-    constructor() {
+    public constructor() {
         this._rateLimiter = null;
     }
 
-    withRateLimiter(limiter: RateLimiter | null): Xhr {
+    public withRateLimiter(limiter: RateLimiter | null): this {
         this._rateLimiter = limiter;
         return this;
     }
 
-    request(request: Request): Promise<Response> {
+    public request(request: Request): Promise<Response> {
         let xhr: any = null;
         const options = request.toHttpOptions();
         if (request.https === true) {
@@ -52,25 +52,25 @@ export class Xhr implements Sender {
                     .on('close', () => reject(new HttpError('Http request closed')))
                     .on('response', (response: HttpType.IncomingMessage) => {
                         const code: number = response.statusCode || 0;
-                        const dataSequence: Array<Buffer> = [];
-                        response.on('aborted', () => reject(new HttpError('Http request aborted')));
-                        response.on('error', (error: Error) => reject(new HttpError(error.message)));
-                        response.on('data', (data: Buffer) => dataSequence.push(data));
-
                         if (code >= 200 && code < 300) {
-                            response.on('end', () => {
-                                let url = `${request.host}${request.path}`;
-                                let method = request.method;
-                                const data = Buffer.concat(dataSequence);
-                                const res = (ResponseBuilder.start()
-                                    .withHttpResponse(response)
-                                    .withUrl(url)
-                                    .withMethod(method)
-                                    .withData(data)
-                                    .build()
-                                );
-                                resolve(res);
-                            });
+                            const dataSequence: Array<Buffer> = [];
+                            response
+                                .on('aborted', () => reject(new HttpError('Http request aborted')))
+                                .on('error', (error: Error) => reject(new HttpError(error.message)))
+                                .on('data', (data: Buffer) => dataSequence.push(data))
+                                .on('end', () => {
+                                    let url = `${request.host}${request.path}`;
+                                    let method = request.method;
+                                    const data = Buffer.concat(dataSequence);
+                                    const res = (ResponseBuilder.start()
+                                        .withHttpResponse(response)
+                                        .withUrl(url)
+                                        .withMethod(method)
+                                        .withData(data)
+                                        .build()
+                                    );
+                                    resolve(res);
+                                });
                         }
                         else {
                             reject((new HttpError(`Http status ${code}`)).withStatus(code));

@@ -19,7 +19,7 @@ interface Time {
 
 class Notifier extends EventEmitter {
 
-    constructor() {
+    public constructor() {
         super();
     }
 
