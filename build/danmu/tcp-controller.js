@@ -67,7 +67,6 @@ var AbstractRoomController = /** @class */ (function (_super) {
     function AbstractRoomController() {
         var _this = _super.call(this) || this;
         _this._connections = new Map();
-        _this._recentlyClosed = [];
         _this._taskQueue = new index_4.RateLimiter(50, 1000);
         return _this;
     }
@@ -78,27 +77,10 @@ var AbstractRoomController = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
-    AbstractRoomController.prototype.add = function (rooms) {
-        var _this = this;
-        var roomids = [].concat(rooms);
-        var closed = new Set(this._recentlyClosed);
-        var filtered = roomids.filter(function (roomid) {
-            return !_this._connections.has(roomid) && !closed.has(roomid);
-        });
-        for (var _i = 0, filtered_1 = filtered; _i < filtered_1.length; _i++) {
-            var roomid = filtered_1[_i];
-            this.setupRoom(roomid);
-        }
-        this.clearClosed();
+    AbstractRoomController.prototype.start = function () {
     };
     AbstractRoomController.prototype.stop = function () {
         this._connections.forEach(function (listener) { return listener.destroy(); });
-    };
-    AbstractRoomController.prototype.clearClosed = function () {
-        var len = this._recentlyClosed.length;
-        if (len > 50) {
-            this._recentlyClosed.splice(0, len - 25);
-        }
     };
     return AbstractRoomController;
 }(events_1.EventEmitter));
@@ -108,12 +90,23 @@ var GuardController = /** @class */ (function (_super) {
     function GuardController() {
         return _super.call(this) || this;
     }
+    GuardController.prototype.add = function (rooms) {
+        var _this = this;
+        var roomids = [].concat(rooms);
+        var filtered = roomids.filter(function (roomid) { return !_this.roomExists(roomid); });
+        for (var _i = 0, filtered_1 = filtered; _i < filtered_1.length; _i++) {
+            var roomid = filtered_1[_i];
+            this.setupRoom(roomid);
+        }
+    };
+    GuardController.prototype.roomExists = function (roomid) {
+        return this._connections.has(roomid);
+    };
     GuardController.prototype.onClose = function (roomid, listener) {
         listener.destroy();
         this._connections.delete(roomid);
-        this._recentlyClosed.push(roomid);
     };
-    GuardController.prototype.setupRoom = function (roomid, areaid) {
+    GuardController.prototype.setupRoom = function (roomid) {
         var _this = this;
         if (this.roomExists(roomid)) {
             return;
@@ -144,9 +137,6 @@ var FixedGuardController = /** @class */ (function (_super) {
     FixedGuardController.prototype.createListener = function (addr, info) {
         return new index_5.FixedGuardMonitor(addr, info);
     };
-    FixedGuardController.prototype.roomExists = function (roomid) {
-        return this._connections.has(roomid);
-    };
     return FixedGuardController;
 }(GuardController));
 exports.FixedGuardController = FixedGuardController;
@@ -157,9 +147,6 @@ var DynamicGuardController = /** @class */ (function (_super) {
     }
     DynamicGuardController.prototype.createListener = function (addr, info) {
         return new index_5.DynamicGuardMonitor(addr, info);
-    };
-    DynamicGuardController.prototype.roomExists = function (roomid) {
-        return this._recentlyClosed.includes(roomid) || this._connections.has(roomid);
     };
     DynamicGuardController.prototype.onClose = function (roomid, listener) {
         _super.prototype.onClose.call(this, roomid, listener);
@@ -198,6 +185,7 @@ var RaffleController = /** @class */ (function (_super) {
         return _this;
     }
     RaffleController.prototype.start = function () {
+        _super.prototype.start.call(this);
         for (var _i = 0, _a = this._areas; _i < _a.length; _i++) {
             var areaid = _a[_i];
             this.setupArea(areaid);
@@ -235,7 +223,7 @@ var RaffleController = /** @class */ (function (_super) {
                     case 3:
                         if (_a.sent()) {
                             done = true;
-                            this.setupRoom(roomid, areaid);
+                            this.setupRoomInArea(roomid, areaid);
                         }
                         return [3 /*break*/, 5];
                     case 4:
@@ -261,9 +249,9 @@ var RaffleController = /** @class */ (function (_super) {
         }); };
         task();
     };
-    RaffleController.prototype.setupRoom = function (roomid, areaid) {
+    RaffleController.prototype.setupRoomInArea = function (roomid, areaid) {
         var _this = this;
-        if (this._recentlyClosed.includes(roomid) || typeof areaid === 'undefined') {
+        if (this._connections.has(areaid)) {
             return;
         }
         var listener = new index_5.RaffleMonitor(tcpaddr, { roomid: roomid, areaid: areaid });

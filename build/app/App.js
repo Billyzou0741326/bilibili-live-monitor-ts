@@ -154,6 +154,8 @@ var App = /** @class */ (function () {
             this.setupHttp();
             this.startServers();
             this._db.start();
+            this._fixedController.start();
+            this._dynamicController.start();
             this._raffleController.start();
             var fixedTask_1 = this._roomCollector.getFixedRooms();
             var dynamicTask_1 = this._roomCollector.getDynamicRooms();

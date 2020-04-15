@@ -140,6 +140,8 @@ export class App {
             this.setupHttp();
             this.startServers();
             this._db.start();
+            this._fixedController.start();
+            this._dynamicController.start();
             this._raffleController.start();
             const fixedTask = this._roomCollector.getFixedRooms();
             const dynamicTask = this._roomCollector.getDynamicRooms();
