@@ -26,13 +26,11 @@ const tcpaddr: any = new AppConfig().danmuAddr;
 export abstract class AbstractRoomController extends EventEmitter {
 
     protected _connections:     Map<number, DanmuTCP>;
-    protected _recentlyClosed:  number[];
     protected _taskQueue:       RateLimiter;
 
     protected constructor() {
         super();
         this._connections = new Map();
-        this._recentlyClosed = [] as number[];
         this._taskQueue = new RateLimiter(50, 1000);
     }
 
@@ -40,30 +38,11 @@ export abstract class AbstractRoomController extends EventEmitter {
         return this._connections;
     }
 
-    public add(rooms: number | number[]): void {
-        const roomids: number[] = ([] as number[]).concat(rooms);
-        const closed: Set<number> = new Set<number>(this._recentlyClosed);
-
-        const filtered = roomids.filter((roomid: number): boolean => {
-            return !this._connections.has(roomid) && !closed.has(roomid);
-        });
-        for (const roomid of filtered) {
-            this.setupRoom(roomid);
-        }
-        this.clearClosed();
+    public start(): void {
     }
 
     public stop(): void {
         this._connections.forEach((listener: DanmuTCP): void => listener.destroy());
-    }
-
-    protected abstract setupRoom(roomid: number, areaid?: number): void;
-
-    protected clearClosed(): void {
-        const len = this._recentlyClosed.length;
-        if (len > 50) {
-            this._recentlyClosed.splice(0, len - 25);
-        }
     }
 
 }
@@ -74,17 +53,26 @@ abstract class GuardController extends AbstractRoomController {
         super();
     }
 
+    public add(rooms: number | number[]): void {
+        const roomids: number[] = ([] as number[]).concat(rooms);
+        const filtered = roomids.filter((roomid: number): boolean => !this.roomExists(roomid));
+        for (const roomid of filtered) {
+            this.setupRoom(roomid);
+        }
+    }
+
     protected abstract createListener(addr: TCPAddress, info: RoomInfo): DanmuTCP;
 
-    protected abstract roomExists(roomid: number): boolean;
+    protected roomExists(roomid: number): boolean {
+        return this._connections.has(roomid);
+    }
 
     protected onClose(roomid: number, listener: DanmuTCP): void {
         listener.destroy();
         this._connections.delete(roomid);
-        this._recentlyClosed.push(roomid);
     }
 
-    protected setupRoom(roomid: number, areaid?: number): void {
+    protected setupRoom(roomid: number): void {
         if (this.roomExists(roomid)) {
             return;
         }
@@ -113,10 +101,6 @@ export class FixedGuardController extends GuardController {
     protected createListener(addr: TCPAddress, info: RoomInfo): DanmuTCP {
         return new FixedGuardMonitor(addr, info);
     }
-
-    protected roomExists(roomid: number): boolean {
-        return this._connections.has(roomid);
-    }
 }
 
 export class DynamicGuardController extends GuardController {
@@ -127,10 +111,6 @@ export class DynamicGuardController extends GuardController {
 
     protected createListener(addr: TCPAddress, info: RoomInfo): DanmuTCP {
         return new DynamicGuardMonitor(addr, info);
-    }
-
-    protected roomExists(roomid: number): boolean {
-        return this._recentlyClosed.includes(roomid) || this._connections.has(roomid);
     }
 
     protected onClose(roomid: number, listener: DanmuTCP): void {
@@ -171,6 +151,7 @@ export class RaffleController extends AbstractRoomController {
     }
 
     public start(): void {
+        super.start();
         for (const areaid of this._areas) {
             this.setupArea(areaid);
         }
@@ -200,7 +181,7 @@ export class RaffleController extends AbstractRoomController {
                         if (await Bilibili.isLive(roomid)) {
 
                             done = true;
-                            this.setupRoom(roomid, areaid);
+                            this.setupRoomInArea(roomid, areaid);
                         }
                     }
                     catch (error) {
@@ -221,8 +202,8 @@ export class RaffleController extends AbstractRoomController {
         task();
     }
 
-    protected setupRoom(roomid: number, areaid?: number): void {
-        if (this._recentlyClosed.includes(roomid) || typeof areaid === 'undefined') {
+    private setupRoomInArea(roomid: number, areaid: number): void {
+        if (this._connections.has(areaid)) {
             return;
         }
 
