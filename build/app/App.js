@@ -121,13 +121,15 @@ var App = /** @class */ (function () {
                 .on('to_fixed', function (roomid) {
                 index_1.cprint("Adding " + roomid + " to fixed", chalk.green);
                 _this._fixedController.add(roomid);
-            })
-                .on('to_dynamic', function (roomid) {
-                if (!_this._fixedController.connections.has(roomid) && !_this._dynamicController.connections.has(roomid)) {
-                    index_1.cprint("Adding " + roomid + " to dynamic", chalk.green);
-                    _this._dynamicController.add(roomid);
+            });
+            /**
+            .on('to_dynamic', (roomid: number): void => {
+                if (!this._fixedController.connections.has(roomid) && !this._dynamicController.connections.has(roomid)) {
+                    cprint(`Adding ${roomid} to dynamic`, chalk.green);
+                    this._dynamicController.add(roomid);
                 }
             });
+            // */
             for (var category in index_6.RaffleCategory) {
                 controller.on(category, handler(category));
             }
@@ -147,7 +149,6 @@ var App = /** @class */ (function () {
         }
     };
     App.prototype.start = function () {
-        var _this = this;
         if (this._running === false) {
             this._running = true;
             this.setupListeners();
@@ -157,27 +158,16 @@ var App = /** @class */ (function () {
             this._fixedController.start();
             this._dynamicController.start();
             this._raffleController.start();
-            var fixedTask_1 = this._roomCollector.getFixedRooms();
-            var dynamicTask_1 = this._roomCollector.getDynamicRooms();
-            (function () { return __awaiter(_this, void 0, void 0, function () {
-                var fixedRooms, dynamicRooms, _a, _b, filtered;
-                return __generator(this, function (_c) {
-                    switch (_c.label) {
-                        case 0: return [4 /*yield*/, fixedTask_1];
-                        case 1:
-                            fixedRooms = _c.sent();
-                            this._fixedController.add(Array.from(fixedRooms));
-                            _b = (_a = Array).from;
-                            return [4 /*yield*/, dynamicTask_1];
-                        case 2:
-                            dynamicRooms = _b.apply(_a, [_c.sent()]);
-                            filtered = dynamicRooms.filter(function (roomid) { return !fixedRooms.has(roomid); });
-                            this._dynamicController.add(filtered);
-                            this._dynamicRefreshTask.start();
-                            return [2 /*return*/];
-                    }
-                });
-            }); })();
+            // const fixedTask = this._roomCollector.getFixedRooms();
+            // const dynamicTask = this._roomCollector.getDynamicRooms();
+            // (async () => {
+            //     const fixedRooms: Set<number> = await fixedTask;
+            //     this._fixedController.add(Array.from(fixedRooms));
+            //     const dynamicRooms: number[] = Array.from(await dynamicTask);
+            //     const filtered: number[] = dynamicRooms.filter((roomid: number): boolean => !fixedRooms.has(roomid));
+            //     this._dynamicController.add(filtered);
+            //     this._dynamicRefreshTask.start();
+            // })();
         }
     };
     App.prototype.stop = function () {

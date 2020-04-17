@@ -106,13 +106,15 @@ export class App {
                 .on('to_fixed', (roomid: number): void => {
                     cprint(`Adding ${roomid} to fixed`, chalk.green);
                     this._fixedController.add(roomid);
-                })
+                });
+                /**
                 .on('to_dynamic', (roomid: number): void => {
                     if (!this._fixedController.connections.has(roomid) && !this._dynamicController.connections.has(roomid)) {
                         cprint(`Adding ${roomid} to dynamic`, chalk.green);
                         this._dynamicController.add(roomid);
                     }
                 });
+                // */
             for (const category in RaffleCategory) {
                 controller.on(category, handler(category));
             }
@@ -143,16 +145,16 @@ export class App {
             this._fixedController.start();
             this._dynamicController.start();
             this._raffleController.start();
-            const fixedTask = this._roomCollector.getFixedRooms();
-            const dynamicTask = this._roomCollector.getDynamicRooms();
-            (async () => {
-                const fixedRooms: Set<number> = await fixedTask;
-                this._fixedController.add(Array.from(fixedRooms));
-                const dynamicRooms: number[] = Array.from(await dynamicTask);
-                const filtered: number[] = dynamicRooms.filter((roomid: number): boolean => !fixedRooms.has(roomid));
-                this._dynamicController.add(filtered);
-                this._dynamicRefreshTask.start();
-            })();
+            // const fixedTask = this._roomCollector.getFixedRooms();
+            // const dynamicTask = this._roomCollector.getDynamicRooms();
+            // (async () => {
+            //     const fixedRooms: Set<number> = await fixedTask;
+            //     this._fixedController.add(Array.from(fixedRooms));
+            //     const dynamicRooms: number[] = Array.from(await dynamicTask);
+            //     const filtered: number[] = dynamicRooms.filter((roomid: number): boolean => !fixedRooms.has(roomid));
+            //     this._dynamicController.add(filtered);
+            //     this._dynamicRefreshTask.start();
+            // })();
         }
     }
 
