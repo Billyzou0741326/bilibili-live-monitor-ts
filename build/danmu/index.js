@@ -7,5 +7,6 @@ __export(require("./tcp-danmu"));
 __export(require("./tcp-controller"));
 __export(require("./roomid-handler"));
 __export(require("./room-collector"));
+__export(require("./room-crawler"));
 __export(require("./gift-history"));
 __export(require("./raffle"));

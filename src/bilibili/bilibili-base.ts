@@ -8,7 +8,7 @@ import {
     RateLimiter, } from '../task/index';
 
 
-let xhr: Sender = new Xhr().withRateLimiter(new RateLimiter(50, 1000));
+let xhr: Sender = new Xhr().withRateLimiter(new RateLimiter(40, 1000));
 
 export class BilibiliBase {
 

@@ -60,6 +60,7 @@ var App = /** @class */ (function () {
         this._roomCollector = (this._appConfig.loadBalancing.totalServers > 1
             ? new index_6.SimpleLoadBalancingRoomDistributor(this._appConfig.loadBalancing)
             : new index_6.RoomCollector());
+        this._roomCrawler = new index_6.RoomCrawler(this._roomCollector);
         this._fixedController = new index_6.FixedGuardController();
         this._raffleController = new index_6.RaffleController(this._roomCollector);
         this._dynamicController = new index_6.DynamicGuardController();
@@ -109,14 +110,20 @@ var App = /** @class */ (function () {
                 }
             };
         };
-        var controllers = [
+        this._roomCrawler.on('done', function () {
+            if (_this._running) {
+                _this._roomCrawler.query();
+            }
+        });
+        var emitters = [
             this._dynamicController,
             this._fixedController,
             this._raffleController,
+            this._roomCrawler,
         ];
-        for (var _i = 0, controllers_1 = controllers; _i < controllers_1.length; _i++) {
-            var controller = controllers_1[_i];
-            controller
+        for (var _i = 0, emitters_1 = emitters; _i < emitters_1.length; _i++) {
+            var emt = emitters_1[_i];
+            emt
                 .on('add_to_db', function (roomid) { _this._db.add(roomid); })
                 .on('to_fixed', function (roomid) {
                 index_1.cprint("Adding " + roomid + " to fixed", chalk.green);
@@ -131,16 +138,31 @@ var App = /** @class */ (function () {
             });
             // */
             for (var category in index_6.RaffleCategory) {
-                controller.on(category, handler(category));
+                emt.on(category, handler(category));
             }
         }
         for (var category in index_6.RaffleCategory) {
-            this._emitter.on(category, function (g) {
-                _this.printGift(g);
-                _this._wsServer.broadcast(g);
-                _this._biliveServer.broadcast(g);
-                _this._bilihelperServer.broadcast(g);
-            });
+            if (category === index_6.RaffleCategory.gift) {
+                this._emitter.on(category, function (g) {
+                    var t = new index_4.DelayedTask();
+                    t.withTime(g.wait * 1000);
+                    t.withCallback(function () {
+                        _this.printGift(g);
+                        _this._wsServer.broadcast(g);
+                        _this._biliveServer.broadcast(g);
+                        _this._bilihelperServer.broadcast(g);
+                    });
+                    t.start();
+                });
+            }
+            else {
+                this._emitter.on(category, function (g) {
+                    _this.printGift(g);
+                    _this._wsServer.broadcast(g);
+                    _this._biliveServer.broadcast(g);
+                    _this._bilihelperServer.broadcast(g);
+                });
+            }
         }
     };
     App.prototype.setupHttp = function () {
@@ -155,9 +177,10 @@ var App = /** @class */ (function () {
             this.setupHttp();
             this.startServers();
             this._db.start();
-            this._fixedController.start();
-            this._dynamicController.start();
             this._raffleController.start();
+            this._roomCrawler.query();
+            // this._fixedController.start();
+            // this._dynamicController.start();
             // const fixedTask = this._roomCollector.getFixedRooms();
             // const dynamicTask = this._roomCollector.getDynamicRooms();
             // (async () => {

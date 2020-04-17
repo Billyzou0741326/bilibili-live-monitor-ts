@@ -626,9 +626,13 @@ var Bilibili = /** @class */ (function (_super) {
      * @static
      * @returns {Promise}   resolve(Integer)    reject(String)
      */
-    Bilibili.getLiveCount = function () {
+    Bilibili.getLiveCount = function (areaid) {
+        if (areaid === void 0) { areaid = 0; }
+        if (![0, 1, 2, 3, 4, 5, 6, 7].includes(areaid)) {
+            areaid = 0;
+        }
         var params = {
-            'parent_area_id': 0,
+            'parent_area_id': areaid,
             'page': 1,
             'page_size': 1,
             'sort_type': 'live_time',
@@ -690,14 +694,14 @@ var Bilibili = /** @class */ (function (_super) {
     Bilibili.getRoomsInArea = function (areaid, size, count, sortType) {
         if (size === void 0) { size = 99; }
         if (count === void 0) { count = Infinity; }
-        if (sortType === void 0) { sortType = 'live_time'; }
+        if (sortType === void 0) { sortType = 'online'; }
         var page_size = size > 99 || size < 0 ? 99 : size;
         var ok_sort_types = ['live_time', 'online', 'sort_type_169'];
         if (!ok_sort_types.includes(sortType)) {
             sortType = ok_sort_types[0];
         }
         var promises = [];
-        var promise = Bilibili.getLiveCount().catch(function (error) {
+        var promise = Bilibili.getLiveCount(areaid).catch(function (error) {
             index_3.cprint("Bilibili.getLiveCount - " + error.message, chalk.red);
             return Promise.resolve(5000); // on error return 5000
         }).then(function (room_count) {

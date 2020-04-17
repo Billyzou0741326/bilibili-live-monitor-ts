@@ -122,6 +122,9 @@ var Raffle = /** @class */ (function () {
     Raffle.prototype.toJsonStr = function () {
         return JSON.stringify(this.toJson());
     };
+    Raffle.parse = function (giftInfo) {
+        return null;
+    };
     return Raffle;
 }());
 exports.Raffle = Raffle;
@@ -132,6 +135,22 @@ var Gift = /** @class */ (function (_super) {
         _this._category = 'gift';
         return _this;
     }
+    Gift.parse = function (giftInfo) {
+        var data = giftInfo;
+        var gift = null;
+        var t = data['type'];
+        var id = data['raffleId'];
+        var name = data['title'] || '未知';
+        var wait = data['time_wait'] > 0 ? data['time_wait'] : 0;
+        var expireAt = data['time'] + Math.floor(0.001 * new Date().valueOf());
+        gift = new Gift()
+            .withId(id)
+            .withType(t)
+            .withName(name)
+            .withWait(wait)
+            .withExpireAt(expireAt);
+        return gift;
+    };
     return Gift;
 }(Raffle));
 exports.Gift = Gift;
@@ -142,6 +161,25 @@ var Guard = /** @class */ (function (_super) {
         _this._category = 'guard';
         return _this;
     }
+    Guard.parse = function (giftInfo) {
+        var nameOfType = {
+            1: '总督',
+            2: '提督',
+            3: '舰长',
+        };
+        var data = giftInfo;
+        var guard = null;
+        var t = data['keyword'];
+        var id = data['id'];
+        var name = nameOfType[data['privilege_type']];
+        var expireAt = (data['time'] || 0) + Math.floor(0.001 * new Date().valueOf());
+        guard = new Guard()
+            .withId(id)
+            .withType(t)
+            .withName(name)
+            .withExpireAt(expireAt);
+        return guard;
+    };
     return Guard;
 }(Raffle));
 exports.Guard = Guard;
@@ -152,6 +190,20 @@ var PK = /** @class */ (function (_super) {
         _this._category = 'pk';
         return _this;
     }
+    PK.parse = function (giftInfo) {
+        var data = giftInfo;
+        var pk = null;
+        var id = data['id'];
+        var roomid = data['room_id'];
+        var expireAt = data['time'] + Math.floor(0.001 * new Date().valueOf());
+        pk = new PK()
+            .withId(id)
+            .withRoomid(roomid)
+            .withType('pk')
+            .withName('大乱斗')
+            .withExpireAt(expireAt);
+        return pk;
+    };
     return PK;
 }(Raffle));
 exports.PK = PK;
@@ -162,6 +214,20 @@ var Storm = /** @class */ (function (_super) {
         _this._category = 'storm';
         return _this;
     }
+    Storm.parse = function (giftInfo) {
+        var info = giftInfo;
+        var details = null;
+        if (info) {
+            var id = info['id'];
+            var expireAt = info['time'] + Math.floor(0.001 * new Date().valueOf());
+            details = new Storm()
+                .withId(id)
+                .withType('storm')
+                .withName('节奏风暴')
+                .withExpireAt(expireAt);
+        }
+        return details;
+    };
     return Storm;
 }(Raffle));
 exports.Storm = Storm;
@@ -272,6 +338,33 @@ var Anchor = /** @class */ (function (_super) {
     Anchor.prototype.withRequirement = function (requirement) {
         this._require_text = requirement;
         return this;
+    };
+    Anchor.parse = function (giftInfo) {
+        var data = giftInfo;
+        var g = null;
+        var id = data['id'];
+        var roomid = data['room_id'];
+        var name = data['award_name'];
+        var award_num = data['award_num'];
+        var gift_name = data['gift_name'];
+        var gift_num = data['gift_num'];
+        var gift_price = data['gift_price'];
+        var require_text = data['require_text'];
+        var danmu = data['danmu'];
+        var expireAt = data['time'] + Math.floor(0.001 * new Date().valueOf());
+        g = new Anchor()
+            .withId(id)
+            .withRoomid(roomid)
+            .withGiftPrice(gift_price)
+            .withGiftName(gift_name)
+            .withGiftNum(gift_num)
+            .withDanmu(danmu)
+            .withRequirement(require_text)
+            .withName(name)
+            .withAwardNum(award_num)
+            .withType('anchor')
+            .withExpireAt(expireAt);
+        return g;
     };
     return Anchor;
 }(Raffle));
