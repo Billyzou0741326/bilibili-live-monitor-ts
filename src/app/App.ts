@@ -1,4 +1,5 @@
 import * as chalk from 'chalk';
+import * as settings from '../settings.json';
 import { table } from 'table';
 import { EventEmitter } from 'events';
 import { cprint } from '../fmt/index';
@@ -6,19 +7,21 @@ import { Database } from '../db/index';
 import { Bilibili } from '../bilibili/index';
 import { AppConfig } from '../global/index';
 import { DelayedTask } from '../task/index';
+import { TCPClientLK } from '../client/index';
 import {
     WsServer,
     WsServerBilive,
     TCPServerBiliHelper,
     HttpServer, } from '../server/index';
 import {
+    RaffleCategory,
     Raffle,
     Anchor,
-    RaffleCategory,
     History,
     DanmuTCP,
     RoomCrawler,
     RoomCollector,
+    RoomidHandler,
     SimpleLoadBalancingRoomDistributor,
     AbstractRoomController,
     DynamicGuardController,
@@ -32,11 +35,13 @@ export class App {
     private _emitter:               EventEmitter;
     private _running:               boolean;
 
+    private _roomidHandler:         RoomidHandler;
     private _roomCrawler:           RoomCrawler;
     private _roomCollector:         RoomCollector;
     private _raffleController:      RaffleController;
     private _fixedController:       FixedGuardController;
     private _dynamicController:     DynamicGuardController;
+    private _lkclient:              TCPClientLK;
 
     private _wsServer:              WsServer;
     private _biliveServer:          WsServerBilive;
@@ -62,10 +67,12 @@ export class App {
         this._roomCollector = (this._appConfig.loadBalancing.totalServers > 1
             ? new SimpleLoadBalancingRoomDistributor(this._appConfig.loadBalancing)
             : new RoomCollector());
+        this._roomidHandler = new RoomidHandler();
         this._roomCrawler = new RoomCrawler(this._roomCollector);
         this._fixedController = new FixedGuardController();
         this._raffleController = new RaffleController(this._roomCollector);
         this._dynamicController = new DynamicGuardController();
+        this._lkclient = new TCPClientLK();
 
         this._dynamicRefreshTask = new DelayedTask();
         this._running = false;
@@ -114,17 +121,26 @@ export class App {
             this._dynamicController,
             this._fixedController,
             this._raffleController,
+            this._roomidHandler,
             this._roomCrawler,
+            this._lkclient,
         ];
+        this._lkclient.on('close', (): void => {
+            const info = settings['clients']['lk-tcp-client'];
+            this._lkclient.connect({ host: info['host'], port: info['port'] });
+        });
         for (const emt of emitters) {
-            emt
-                .on('add_to_db', (roomid: number): void => { this._db.add(roomid) })
-                .on('to_fixed', (roomid: number): void => {
+            emt.
+                on('add_to_db', (roomid: number): void => { this._db.add(roomid) }).
+                on('to_fixed', (roomid: number): void => {
                     cprint(`Adding ${roomid} to fixed`, chalk.green);
                     this._fixedController.add(roomid);
+                }).
+                on('roomid', (roomid: number): void => {
+                    this._roomidHandler.add(roomid);
                 });
                 /**
-                .on('to_dynamic', (roomid: number): void => {
+                on('to_dynamic', (roomid: number): void => {
                     if (!this._fixedController.connections.has(roomid) && !this._dynamicController.connections.has(roomid)) {
                         cprint(`Adding ${roomid} to dynamic`, chalk.green);
                         this._dynamicController.add(roomid);
@@ -135,25 +151,32 @@ export class App {
                 emt.on(category, handler(category));
             }
         }
+
+        const processGift = (g: Raffle): void => {
+            this.printGift(g);
+            this._wsServer.broadcast(g);
+            this._biliveServer.broadcast(g);
+            this._bilihelperServer.broadcast(g);
+        };
+
         for (const category in RaffleCategory) {
             if (category === RaffleCategory.gift) {
                 this._emitter.on(category, (g: Raffle): void => {
-                    const t = new DelayedTask();
-                    t.withTime(g.wait * 1000);
-                    t.withCallback((): void => {
-                        this.printGift(g);
-                        this._wsServer.broadcast(g);
-                        this._biliveServer.broadcast(g);
-                        this._bilihelperServer.broadcast(g);
-                    });
-                    t.start();
+                    if (g.wait <= 0) {
+                        processGift(g);
+                        return;
+                    } else {
+                        const t = new DelayedTask();
+                        t.withTime(g.wait * 1000);
+                        t.withCallback((): void => {
+                            processGift(g);
+                        });
+                        t.start();
+                    }
                 });
             } else {
                 this._emitter.on(category, (g: Raffle): void => {
-                    this.printGift(g);
-                    this._wsServer.broadcast(g);
-                    this._biliveServer.broadcast(g);
-                    this._bilihelperServer.broadcast(g);
+                    processGift(g);
                 });
             }
         }
@@ -173,19 +196,30 @@ export class App {
             this.startServers();
             this._db.start();
             this._raffleController.start();
-            this._roomCrawler.query();
-            // this._fixedController.start();
-            // this._dynamicController.start();
-            // const fixedTask = this._roomCollector.getFixedRooms();
-            // const dynamicTask = this._roomCollector.getDynamicRooms();
-            // (async () => {
-            //     const fixedRooms: Set<number> = await fixedTask;
-            //     this._fixedController.add(Array.from(fixedRooms));
-            //     const dynamicRooms: number[] = Array.from(await dynamicTask);
-            //     const filtered: number[] = dynamicRooms.filter((roomid: number): boolean => !fixedRooms.has(roomid));
-            //     this._dynamicController.add(filtered);
-            //     this._dynamicRefreshTask.start();
-            // })();
+
+            if (settings['clients']['bilibili-http']['enable'] === true) {
+                this._roomCrawler.query();
+            }
+
+            if (settings['clients']['lk-tcp-client']['enable'] === true) {
+                const info = settings['clients']['lk-tcp-client'];
+                this._lkclient.connect({ host: info['host'], port: info['port'] });
+            }
+
+            if (settings['clients']['bilibili-tcp']['enable'] === true) {
+                this._fixedController.start();
+                this._dynamicController.start();
+                const fixedTask = this._roomCollector.getFixedRooms();
+                const dynamicTask = this._roomCollector.getDynamicRooms();
+                (async () => {
+                    const fixedRooms: Set<number> = await fixedTask;
+                    this._fixedController.add(Array.from(fixedRooms));
+                    const dynamicRooms: number[] = Array.from(await dynamicTask);
+                    const filtered: number[] = dynamicRooms.filter((roomid: number): boolean => !fixedRooms.has(roomid));
+                    this._dynamicController.add(filtered);
+                    this._dynamicRefreshTask.start();
+                })();
+            }
         }
     }
 

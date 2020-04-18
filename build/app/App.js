@@ -37,33 +37,37 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var chalk = require("chalk");
+var settings = require("../settings.json");
 var table_1 = require("table");
 var events_1 = require("events");
 var index_1 = require("../fmt/index");
 var index_2 = require("../db/index");
 var index_3 = require("../global/index");
 var index_4 = require("../task/index");
-var index_5 = require("../server/index");
-var index_6 = require("../danmu/index");
+var index_5 = require("../client/index");
+var index_6 = require("../server/index");
+var index_7 = require("../danmu/index");
 var App = /** @class */ (function () {
     function App() {
         var _this = this;
         this._appConfig = new index_3.AppConfig();
         this._appConfig.init();
         this._db = new index_2.Database({ expiry: this._appConfig.roomCollectorStrategy.fixedRoomExpiry });
-        this._history = new index_6.History();
+        this._history = new index_7.History();
         this._emitter = new events_1.EventEmitter();
-        this._wsServer = new index_5.WsServer(this._appConfig.wsAddr);
-        this._biliveServer = new index_5.WsServerBilive(this._appConfig.biliveAddr);
-        this._bilihelperServer = new index_5.TCPServerBiliHelper(this._appConfig.bilihelperAddr);
-        this._httpServer = new index_5.HttpServer(this._appConfig.httpAddr);
+        this._wsServer = new index_6.WsServer(this._appConfig.wsAddr);
+        this._biliveServer = new index_6.WsServerBilive(this._appConfig.biliveAddr);
+        this._bilihelperServer = new index_6.TCPServerBiliHelper(this._appConfig.bilihelperAddr);
+        this._httpServer = new index_6.HttpServer(this._appConfig.httpAddr);
         this._roomCollector = (this._appConfig.loadBalancing.totalServers > 1
-            ? new index_6.SimpleLoadBalancingRoomDistributor(this._appConfig.loadBalancing)
-            : new index_6.RoomCollector());
-        this._roomCrawler = new index_6.RoomCrawler(this._roomCollector);
-        this._fixedController = new index_6.FixedGuardController();
-        this._raffleController = new index_6.RaffleController(this._roomCollector);
-        this._dynamicController = new index_6.DynamicGuardController();
+            ? new index_7.SimpleLoadBalancingRoomDistributor(this._appConfig.loadBalancing)
+            : new index_7.RoomCollector());
+        this._roomidHandler = new index_7.RoomidHandler();
+        this._roomCrawler = new index_7.RoomCrawler(this._roomCollector);
+        this._fixedController = new index_7.FixedGuardController();
+        this._raffleController = new index_7.RaffleController(this._roomCollector);
+        this._dynamicController = new index_7.DynamicGuardController();
+        this._lkclient = new index_5.TCPClientLK();
         this._dynamicRefreshTask = new index_4.DelayedTask();
         this._running = false;
         var dynRefreshInterval = this._appConfig.roomCollectorStrategy.dynamicRoomsQueryInterval * 1000;
@@ -119,58 +123,74 @@ var App = /** @class */ (function () {
             this._dynamicController,
             this._fixedController,
             this._raffleController,
+            this._roomidHandler,
             this._roomCrawler,
+            this._lkclient,
         ];
+        this._lkclient.on('close', function () {
+            var info = settings['clients']['lk-tcp-client'];
+            _this._lkclient.connect({ host: info['host'], port: info['port'] });
+        });
         for (var _i = 0, emitters_1 = emitters; _i < emitters_1.length; _i++) {
             var emt = emitters_1[_i];
-            emt
-                .on('add_to_db', function (roomid) { _this._db.add(roomid); })
-                .on('to_fixed', function (roomid) {
+            emt.
+                on('add_to_db', function (roomid) { _this._db.add(roomid); }).
+                on('to_fixed', function (roomid) {
                 index_1.cprint("Adding " + roomid + " to fixed", chalk.green);
                 _this._fixedController.add(roomid);
+            }).
+                on('roomid', function (roomid) {
+                _this._roomidHandler.add(roomid);
             });
             /**
-            .on('to_dynamic', (roomid: number): void => {
+            on('to_dynamic', (roomid: number): void => {
                 if (!this._fixedController.connections.has(roomid) && !this._dynamicController.connections.has(roomid)) {
                     cprint(`Adding ${roomid} to dynamic`, chalk.green);
                     this._dynamicController.add(roomid);
                 }
             });
             // */
-            for (var category in index_6.RaffleCategory) {
+            for (var category in index_7.RaffleCategory) {
                 emt.on(category, handler(category));
             }
         }
-        for (var category in index_6.RaffleCategory) {
-            if (category === index_6.RaffleCategory.gift) {
+        var processGift = function (g) {
+            _this.printGift(g);
+            _this._wsServer.broadcast(g);
+            _this._biliveServer.broadcast(g);
+            _this._bilihelperServer.broadcast(g);
+        };
+        for (var category in index_7.RaffleCategory) {
+            if (category === index_7.RaffleCategory.gift) {
                 this._emitter.on(category, function (g) {
-                    var t = new index_4.DelayedTask();
-                    t.withTime(g.wait * 1000);
-                    t.withCallback(function () {
-                        _this.printGift(g);
-                        _this._wsServer.broadcast(g);
-                        _this._biliveServer.broadcast(g);
-                        _this._bilihelperServer.broadcast(g);
-                    });
-                    t.start();
+                    if (g.wait <= 0) {
+                        processGift(g);
+                        return;
+                    }
+                    else {
+                        var t = new index_4.DelayedTask();
+                        t.withTime(g.wait * 1000);
+                        t.withCallback(function () {
+                            processGift(g);
+                        });
+                        t.start();
+                    }
                 });
             }
             else {
                 this._emitter.on(category, function (g) {
-                    _this.printGift(g);
-                    _this._wsServer.broadcast(g);
-                    _this._biliveServer.broadcast(g);
-                    _this._bilihelperServer.broadcast(g);
+                    processGift(g);
                 });
             }
         }
     };
     App.prototype.setupHttp = function () {
-        for (var category in index_6.RaffleCategory) {
+        for (var category in index_7.RaffleCategory) {
             this._httpServer.mountGetter(category, this._history.retrieveGetter(category));
         }
     };
     App.prototype.start = function () {
+        var _this = this;
         if (this._running === false) {
             this._running = true;
             this.setupListeners();
@@ -178,19 +198,38 @@ var App = /** @class */ (function () {
             this.startServers();
             this._db.start();
             this._raffleController.start();
-            this._roomCrawler.query();
-            // this._fixedController.start();
-            // this._dynamicController.start();
-            // const fixedTask = this._roomCollector.getFixedRooms();
-            // const dynamicTask = this._roomCollector.getDynamicRooms();
-            // (async () => {
-            //     const fixedRooms: Set<number> = await fixedTask;
-            //     this._fixedController.add(Array.from(fixedRooms));
-            //     const dynamicRooms: number[] = Array.from(await dynamicTask);
-            //     const filtered: number[] = dynamicRooms.filter((roomid: number): boolean => !fixedRooms.has(roomid));
-            //     this._dynamicController.add(filtered);
-            //     this._dynamicRefreshTask.start();
-            // })();
+            if (settings['clients']['bilibili-http']['enable'] === true) {
+                this._roomCrawler.query();
+            }
+            if (settings['clients']['lk-tcp-client']['enable'] === true) {
+                var info = settings['clients']['lk-tcp-client'];
+                this._lkclient.connect({ host: info['host'], port: info['port'] });
+            }
+            if (settings['clients']['bilibili-tcp']['enable'] === true) {
+                this._fixedController.start();
+                this._dynamicController.start();
+                var fixedTask_1 = this._roomCollector.getFixedRooms();
+                var dynamicTask_1 = this._roomCollector.getDynamicRooms();
+                (function () { return __awaiter(_this, void 0, void 0, function () {
+                    var fixedRooms, dynamicRooms, _a, _b, filtered;
+                    return __generator(this, function (_c) {
+                        switch (_c.label) {
+                            case 0: return [4 /*yield*/, fixedTask_1];
+                            case 1:
+                                fixedRooms = _c.sent();
+                                this._fixedController.add(Array.from(fixedRooms));
+                                _b = (_a = Array).from;
+                                return [4 /*yield*/, dynamicTask_1];
+                            case 2:
+                                dynamicRooms = _b.apply(_a, [_c.sent()]);
+                                filtered = dynamicRooms.filter(function (roomid) { return !fixedRooms.has(roomid); });
+                                this._dynamicController.add(filtered);
+                                this._dynamicRefreshTask.start();
+                                return [2 /*return*/];
+                        }
+                    });
+                }); })();
+            }
         }
     };
     App.prototype.stop = function () {

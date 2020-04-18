@@ -987,7 +987,6 @@ export class Bilibili extends BilibiliBase {
         data['csrf'] = webSession.bili_jct;
         data['csrf_token'] = webSession.bili_jct;
         const payload = Params.stringify(data)
-        console.log(payload);
 
         const request = (Request.Builder()
             .withHost('api.live.bilibili.com')

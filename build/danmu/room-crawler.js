@@ -82,7 +82,9 @@ var RoomCrawler = /** @class */ (function (_super) {
                         return [4 /*yield*/, index_2.Bilibili.getRoomsInArea(0, 99, Infinity, 'online')];
                     case 1:
                         roomInfoList = _a.sent();
-                        rooms = roomInfoList.map(function (entry) { return entry['roomid']; });
+                        rooms = roomInfoList.
+                            filter(function (entry) { return entry['online'] > 100; }).
+                            map(function (entry) { return entry['roomid']; });
                         return [2 /*return*/, new Set(rooms)];
                     case 2:
                         error_1 = _a.sent();
@@ -93,7 +95,7 @@ var RoomCrawler = /** @class */ (function (_super) {
             });
         }); })();
         return (function () { return __awaiter(_this, void 0, void 0, function () {
-            var roomSets, _i, roomSets_1, roomSet;
+            var roomSets, done, _i, roomSets_1, roomSet;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -103,16 +105,16 @@ var RoomCrawler = /** @class */ (function (_super) {
                         ])];
                     case 1:
                         roomSets = _a.sent();
+                        done = false;
                         for (_i = 0, roomSets_1 = roomSets; _i < roomSets_1.length; _i++) {
                             roomSet = roomSets_1[_i];
-                            roomSet.forEach(function (roomid) {
-                                _this.roomidHandler_.add(roomid);
+                            this.roomidHandler_.add(Array.from(roomSet), function () {
+                                if (done)
+                                    return;
+                                done = true;
+                                _this.emit('done');
                             });
                         }
-                        return [4 /*yield*/, this.roomidHandler_.wait()];
-                    case 2:
-                        _a.sent();
-                        this.emit('done');
                         return [2 /*return*/];
                 }
             });
