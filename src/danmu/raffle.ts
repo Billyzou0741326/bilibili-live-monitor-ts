@@ -112,6 +112,9 @@ export abstract class Raffle {
         return JSON.stringify(this.toJson());
     }
 
+    public static parse(giftInfo: any): any {
+        return null;
+    }
 }
 
 export class Gift extends Raffle {
@@ -119,6 +122,24 @@ export class Gift extends Raffle {
     public constructor() {
         super();
         this._category = 'gift';
+    }
+
+    public static parse(giftInfo: any): Gift | null{
+        let data: any = giftInfo;
+        let gift: Gift | null = null;
+        const t: string = data['type'];
+        const id: number = data['raffleId'];
+        const name: string = data['title'] || '未知';
+        const wait: number = data['time_wait'] > 0 ? data['time_wait'] : 0;
+        const expireAt: number = data['time'] + Math.floor(0.001 * new Date().valueOf());
+        gift = new Gift()
+            .withId(id)
+            .withType(t)
+            .withName(name)
+            .withWait(wait)
+            .withExpireAt(expireAt);
+
+        return gift;
     }
 
 }
@@ -130,6 +151,27 @@ export class Guard extends Raffle {
         this._category = 'guard';
     }
 
+    public static parse(giftInfo: any): Guard | null {
+        const nameOfType: any = {
+            1: '总督',
+            2: '提督',
+            3: '舰长',
+        };
+
+        let data: any = giftInfo;
+        let guard: Guard | null = null;
+        const t: string = data['keyword'];
+        const id: number = data['id'];
+        const name: string = nameOfType[data['privilege_type']];
+        const expireAt: number = (data['time'] || 0) + Math.floor(0.001 * new Date().valueOf());
+        guard = new Guard()
+            .withId(id)
+            .withType(t)
+            .withName(name)
+            .withExpireAt(expireAt);
+
+        return guard;
+    }
 }
 
 export class PK extends Raffle {
@@ -139,6 +181,21 @@ export class PK extends Raffle {
         this._category = 'pk';
     }
 
+    public static parse(giftInfo: any): PK | null {
+        let data: any = giftInfo;
+        let pk: PK | null = null;
+        const id: number = data['id'];
+        const roomid: number = data['room_id'];
+        const expireAt: number = data['time'] + Math.floor(0.001 * new Date().valueOf());
+        pk = new PK()
+            .withId(id)
+            .withRoomid(roomid)
+            .withType('pk')
+            .withName('大乱斗')
+            .withExpireAt(expireAt);
+
+        return pk;
+    }
 }
 
 export class Storm extends Raffle {
@@ -148,6 +205,21 @@ export class Storm extends Raffle {
         this._category = 'storm';
     }
 
+    public static parse(giftInfo: any): Storm | null {
+        const info = giftInfo;
+        let details: Storm | null = null;
+        if (info) {
+            const id: number = info['id'];
+            const expireAt: number = info['time'] + Math.floor(0.001 * new Date().valueOf());
+            details = new Storm()
+                .withId(id)
+                .withType('storm')
+                .withName('节奏风暴')
+                .withExpireAt(expireAt);
+        }
+
+        return details;
+    }
 }
 
 export class Anchor extends Raffle {
@@ -253,4 +325,32 @@ export class Anchor extends Raffle {
         return this;
     }
 
+    public static parse(giftInfo: any): Anchor | null {
+        let data: any = giftInfo;
+        let g: Anchor | null = null;
+        const id: number = data['id'];
+        const roomid: number = data['room_id'];
+        const name: string = data['award_name'];
+        const award_num: number = data['award_num'];
+        const gift_name: string = data['gift_name'];
+        const gift_num: number = data['gift_num'];
+        const gift_price: number = data['gift_price'];
+        const require_text: string = data['require_text'];
+        const danmu: string = data['danmu'];
+        const expireAt: number = data['time'] + Math.floor(0.001 * new Date().valueOf());
+        g = new Anchor()
+            .withId(id)
+            .withRoomid(roomid)
+            .withGiftPrice(gift_price)
+            .withGiftName(gift_name)
+            .withGiftNum(gift_num)
+            .withDanmu(danmu)
+            .withRequirement(require_text)
+            .withName(name)
+            .withAwardNum(award_num)
+            .withType('anchor')
+            .withExpireAt(expireAt);
+
+        return g;
+    }
 }

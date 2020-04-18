@@ -17,6 +17,7 @@ import {
     RaffleCategory,
     History,
     DanmuTCP,
+    RoomCrawler,
     RoomCollector,
     SimpleLoadBalancingRoomDistributor,
     AbstractRoomController,
@@ -28,18 +29,23 @@ export class App {
 
     private _db:                    Database;
     private _history:               History;
+    private _emitter:               EventEmitter;
+    private _running:               boolean;
+
+    private _roomCrawler:           RoomCrawler;
     private _roomCollector:         RoomCollector;
     private _raffleController:      RaffleController;
     private _fixedController:       FixedGuardController;
     private _dynamicController:     DynamicGuardController;
-    private _emitter:               EventEmitter;
+
     private _wsServer:              WsServer;
     private _biliveServer:          WsServerBilive;
     private _bilihelperServer:      TCPServerBiliHelper;
     private _httpServer:            HttpServer;
+
     private _appConfig:             AppConfig;
+
     private _dynamicRefreshTask:    DelayedTask;
-    private _running:               boolean;
 
     public constructor() {
         this._appConfig = new AppConfig();
@@ -47,16 +53,20 @@ export class App {
         this._db = new Database({ expiry: this._appConfig.roomCollectorStrategy.fixedRoomExpiry });
         this._history = new History();
         this._emitter = new EventEmitter();
+
         this._wsServer = new WsServer(this._appConfig.wsAddr);
         this._biliveServer = new WsServerBilive(this._appConfig.biliveAddr);
         this._bilihelperServer = new TCPServerBiliHelper(this._appConfig.bilihelperAddr);
         this._httpServer = new HttpServer(this._appConfig.httpAddr);
+
         this._roomCollector = (this._appConfig.loadBalancing.totalServers > 1
             ? new SimpleLoadBalancingRoomDistributor(this._appConfig.loadBalancing)
             : new RoomCollector());
+        this._roomCrawler = new RoomCrawler(this._roomCollector);
         this._fixedController = new FixedGuardController();
         this._raffleController = new RaffleController(this._roomCollector);
         this._dynamicController = new DynamicGuardController();
+
         this._dynamicRefreshTask = new DelayedTask();
         this._running = false;
 
@@ -95,13 +105,19 @@ export class App {
                 }
             };
         };
-        const controllers = [
+        this._roomCrawler.on('done', (): void => {
+            if (this._running) {
+                this._roomCrawler.query();
+            }
+        });
+        const emitters = [
             this._dynamicController,
             this._fixedController,
             this._raffleController,
+            this._roomCrawler,
         ];
-        for (const controller of controllers) {
-            controller
+        for (const emt of emitters) {
+            emt
                 .on('add_to_db', (roomid: number): void => { this._db.add(roomid) })
                 .on('to_fixed', (roomid: number): void => {
                     cprint(`Adding ${roomid} to fixed`, chalk.green);
@@ -116,16 +132,30 @@ export class App {
                 });
                 // */
             for (const category in RaffleCategory) {
-                controller.on(category, handler(category));
+                emt.on(category, handler(category));
             }
         }
         for (const category in RaffleCategory) {
-            this._emitter.on(category, (g: Raffle): void => {
-                this.printGift(g);
-                this._wsServer.broadcast(g);
-                this._biliveServer.broadcast(g);
-                this._bilihelperServer.broadcast(g);
-            });
+            if (category === RaffleCategory.gift) {
+                this._emitter.on(category, (g: Raffle): void => {
+                    const t = new DelayedTask();
+                    t.withTime(g.wait * 1000);
+                    t.withCallback((): void => {
+                        this.printGift(g);
+                        this._wsServer.broadcast(g);
+                        this._biliveServer.broadcast(g);
+                        this._bilihelperServer.broadcast(g);
+                    });
+                    t.start();
+                });
+            } else {
+                this._emitter.on(category, (g: Raffle): void => {
+                    this.printGift(g);
+                    this._wsServer.broadcast(g);
+                    this._biliveServer.broadcast(g);
+                    this._bilihelperServer.broadcast(g);
+                });
+            }
         }
     }
 
@@ -142,9 +172,10 @@ export class App {
             this.setupHttp();
             this.startServers();
             this._db.start();
-            this._fixedController.start();
-            this._dynamicController.start();
             this._raffleController.start();
+            this._roomCrawler.query();
+            // this._fixedController.start();
+            // this._dynamicController.start();
             // const fixedTask = this._roomCollector.getFixedRooms();
             // const dynamicTask = this._roomCollector.getDynamicRooms();
             // (async () => {

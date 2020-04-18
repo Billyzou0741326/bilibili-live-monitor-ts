@@ -372,22 +372,12 @@ export abstract class DanmuTCP extends AbstractDanmuTCP {
      */
     protected onRaffle(msg: any): Raffle | null {
         const data: any = msg['data'];
-        const dataOk: boolean = typeof data !== 'undefined';
+        const dataOk: boolean = typeof data !== 'undefined' && data !== null;
 
         let gift: Raffle | null = null;
         if (dataOk) {
-            const t: string = data['type'];
-            const id: number = data['raffleId'];
-            const name: string = data['title'] || '未知';
-            const wait: number = data['time_wait'] > 0 ? data['time_wait'] : 0;
-            const expireAt: number = data['time'] + Math.floor(0.001 * new Date().valueOf());
-            gift = new Gift()
-                .withId(id)
-                .withRoomid(this.roomid)
-                .withType(t)
-                .withName(name)
-                .withWait(wait)
-                .withExpireAt(expireAt);
+            gift = Gift.parse(data);
+            gift && gift.withRoomid(this.roomid);
         }
 
         return gift;
@@ -406,22 +396,12 @@ export abstract class DanmuTCP extends AbstractDanmuTCP {
      */
     protected onTV(msg: any): Raffle | null {
         const data: any = msg['data'];
-        const dataOk: boolean = typeof data !== 'undefined';
+        const dataOk: boolean = typeof data !== 'undefined' && data !== null;
 
         let gift: Raffle | null = null;
         if (dataOk) {
-            const t: string = data['type'];
-            const id: number = data['raffleId'];
-            const name: string = data['title'] || '未知';
-            const wait: number = data['time_wait'] > 0 ? data['time_wait'] : 0;
-            const expireAt: number = data['time'] + Math.floor(0.001 * new Date().valueOf());
-            gift = new Gift()
-                .withId(id)
-                .withRoomid(this.roomid)
-                .withType(t)
-                .withName(name)
-                .withWait(wait)
-                .withExpireAt(expireAt);
+            gift = Gift.parse(data);
+            gift && gift.withRoomid(this.roomid);
         }
 
         return gift;
@@ -450,19 +430,13 @@ export abstract class DanmuTCP extends AbstractDanmuTCP {
 
         let guard: Raffle | null = null;
         if (dataOk) {
-            const lottery: any = data['lottery'] || {};
-            const lotteryOk: boolean = typeof lottery !== 'undefined';
+            const lottery: any = data['lottery'];
+            const lotteryOk: boolean = typeof lottery !== 'undefined' && lottery !== null;
 
-            const t: string = data['type'];
-            const id: number = data['id'];
-            const name: string = nameOfType[data['privilege_type']];
-            const expireAt: number = (lottery['time'] || 0) + Math.floor(0.001 * new Date().valueOf());
-            guard = new Guard()
-                .withId(id)
-                .withRoomid(this.roomid)
-                .withType(t)
-                .withName(name)
-                .withExpireAt(expireAt);
+            if (lotteryOk) {
+                guard = Guard.parse(lottery);
+                guard && guard.withRoomid(this.roomid);
+            }
         }
 
         return guard;
@@ -505,15 +479,7 @@ export abstract class DanmuTCP extends AbstractDanmuTCP {
 
         let pk: Raffle | null = null;
         if (dataOk) {
-            const id: number = data['id'];
-            const roomid: number = data['room_id'];
-            const expireAt: number = data['time'] + Math.floor(0.001 * new Date().valueOf());
-            pk = new PK()
-                .withId(id)
-                .withRoomid(roomid)
-                .withType('pk')
-                .withName('大乱斗')
-                .withExpireAt(expireAt);
+            pk = PK.parse(data);
         }
 
         return pk;
@@ -528,28 +494,7 @@ export abstract class DanmuTCP extends AbstractDanmuTCP {
 
         let details: Raffle | null = null;
         if (dataOk) {
-            const id: number = data['id'];
-            const roomid: number = data['room_id'];
-            const name: string = data['award_name'];
-            const award_num: number = data['award_num'];
-            const gift_name: string = data['gift_name'];
-            const gift_num: number = data['gift_num'];
-            const gift_price: number = data['gift_price'];
-            const require_text: string = data['require_text'];
-            const danmu: string = data['danmu'];
-            const expireAt: number = data['time'] + Math.floor(0.001 * new Date().valueOf());
-            details = new Anchor()
-                .withId(id)
-                .withRoomid(roomid)
-                .withGiftPrice(gift_price)
-                .withGiftName(gift_name)
-                .withGiftNum(gift_num)
-                .withDanmu(danmu)
-                .withRequirement(require_text)
-                .withName(name)
-                .withAwardNum(award_num)
-                .withType('anchor')
-                .withExpireAt(expireAt);
+            details = Anchor.parse(data);
         }
 
         return details;
@@ -632,12 +577,7 @@ export class FixedGuardMonitor extends DanmuTCP {
         const data: Raffle | null = super.onTV(msg);
         if (data !== null) {
             this.emit('add_to_db', this.roomid);
-            const t = new DelayedTask();
-            t.withTime(data.wait * 1000).withCallback((): void => {
-                this.emit('gift', data);
-                this.clearTasks();      // free memory
-            });
-            t.start();
+            this.emit('gift', data);
         }
         return data;
     }
@@ -646,12 +586,7 @@ export class FixedGuardMonitor extends DanmuTCP {
         const data: Raffle | null = super.onRaffle(msg);
         if (data !== null) {
             this.emit('add_to_db', this.roomid);
-            const t = new DelayedTask();
-            t.withTime(data.wait * 1000).withCallback((): void => {
-                this.emit('gift', data);
-                this.clearTasks();      // free memory
-            });
-            t.start();
+            this.emit('gift', data);
         }
         return data;
     }

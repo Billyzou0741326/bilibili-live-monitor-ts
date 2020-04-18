@@ -327,21 +327,11 @@ var DanmuTCP = /** @class */ (function (_super) {
      */
     DanmuTCP.prototype.onRaffle = function (msg) {
         var data = msg['data'];
-        var dataOk = typeof data !== 'undefined';
+        var dataOk = typeof data !== 'undefined' && data !== null;
         var gift = null;
         if (dataOk) {
-            var t = data['type'];
-            var id = data['raffleId'];
-            var name_1 = data['title'] || '未知';
-            var wait = data['time_wait'] > 0 ? data['time_wait'] : 0;
-            var expireAt = data['time'] + Math.floor(0.001 * new Date().valueOf());
-            gift = new index_5.Gift()
-                .withId(id)
-                .withRoomid(this.roomid)
-                .withType(t)
-                .withName(name_1)
-                .withWait(wait)
-                .withExpireAt(expireAt);
+            gift = index_5.Gift.parse(data);
+            gift && gift.withRoomid(this.roomid);
         }
         return gift;
     };
@@ -358,21 +348,11 @@ var DanmuTCP = /** @class */ (function (_super) {
      */
     DanmuTCP.prototype.onTV = function (msg) {
         var data = msg['data'];
-        var dataOk = typeof data !== 'undefined';
+        var dataOk = typeof data !== 'undefined' && data !== null;
         var gift = null;
         if (dataOk) {
-            var t = data['type'];
-            var id = data['raffleId'];
-            var name_2 = data['title'] || '未知';
-            var wait = data['time_wait'] > 0 ? data['time_wait'] : 0;
-            var expireAt = data['time'] + Math.floor(0.001 * new Date().valueOf());
-            gift = new index_5.Gift()
-                .withId(id)
-                .withRoomid(this.roomid)
-                .withType(t)
-                .withName(name_2)
-                .withWait(wait)
-                .withExpireAt(expireAt);
+            gift = index_5.Gift.parse(data);
+            gift && gift.withRoomid(this.roomid);
         }
         return gift;
     };
@@ -397,18 +377,12 @@ var DanmuTCP = /** @class */ (function (_super) {
         };
         var guard = null;
         if (dataOk) {
-            var lottery = data['lottery'] || {};
-            var lotteryOk = typeof lottery !== 'undefined';
-            var t = data['type'];
-            var id = data['id'];
-            var name_3 = nameOfType[data['privilege_type']];
-            var expireAt = (lottery['time'] || 0) + Math.floor(0.001 * new Date().valueOf());
-            guard = new index_5.Guard()
-                .withId(id)
-                .withRoomid(this.roomid)
-                .withType(t)
-                .withName(name_3)
-                .withExpireAt(expireAt);
+            var lottery = data['lottery'];
+            var lotteryOk = typeof lottery !== 'undefined' && lottery !== null;
+            if (lotteryOk) {
+                guard = index_5.Guard.parse(lottery);
+                guard && guard.withRoomid(this.roomid);
+            }
         }
         return guard;
     };
@@ -445,15 +419,7 @@ var DanmuTCP = /** @class */ (function (_super) {
         var dataOk = typeof data !== 'undefined';
         var pk = null;
         if (dataOk) {
-            var id = data['id'];
-            var roomid = data['room_id'];
-            var expireAt = data['time'] + Math.floor(0.001 * new Date().valueOf());
-            pk = new index_5.PK()
-                .withId(id)
-                .withRoomid(roomid)
-                .withType('pk')
-                .withName('大乱斗')
-                .withExpireAt(expireAt);
+            pk = index_5.PK.parse(data);
         }
         return pk;
     };
@@ -465,28 +431,7 @@ var DanmuTCP = /** @class */ (function (_super) {
         var dataOk = typeof data !== 'undefined';
         var details = null;
         if (dataOk) {
-            var id = data['id'];
-            var roomid = data['room_id'];
-            var name_4 = data['award_name'];
-            var award_num = data['award_num'];
-            var gift_name = data['gift_name'];
-            var gift_num = data['gift_num'];
-            var gift_price = data['gift_price'];
-            var require_text = data['require_text'];
-            var danmu = data['danmu'];
-            var expireAt = data['time'] + Math.floor(0.001 * new Date().valueOf());
-            details = new index_5.Anchor()
-                .withId(id)
-                .withRoomid(roomid)
-                .withGiftPrice(gift_price)
-                .withGiftName(gift_name)
-                .withGiftNum(gift_num)
-                .withDanmu(danmu)
-                .withRequirement(require_text)
-                .withName(name_4)
-                .withAwardNum(award_num)
-                .withType('anchor')
-                .withExpireAt(expireAt);
+            details = index_5.Anchor.parse(data);
         }
         return details;
     };
@@ -554,30 +499,18 @@ var FixedGuardMonitor = /** @class */ (function (_super) {
         return data;
     };
     FixedGuardMonitor.prototype.onTV = function (msg) {
-        var _this = this;
         var data = _super.prototype.onTV.call(this, msg);
         if (data !== null) {
             this.emit('add_to_db', this.roomid);
-            var t = new index_4.DelayedTask();
-            t.withTime(data.wait * 1000).withCallback(function () {
-                _this.emit('gift', data);
-                _this.clearTasks(); // free memory
-            });
-            t.start();
+            this.emit('gift', data);
         }
         return data;
     };
     FixedGuardMonitor.prototype.onRaffle = function (msg) {
-        var _this = this;
         var data = _super.prototype.onRaffle.call(this, msg);
         if (data !== null) {
             this.emit('add_to_db', this.roomid);
-            var t = new index_4.DelayedTask();
-            t.withTime(data.wait * 1000).withCallback(function () {
-                _this.emit('gift', data);
-                _this.clearTasks(); // free memory
-            });
-            t.start();
+            this.emit('gift', data);
         }
         return data;
     };

@@ -746,9 +746,12 @@ export class Bilibili extends BilibiliBase {
      * @static
      * @returns {Promise}   resolve(Integer)    reject(String)
      */
-    public static getLiveCount(): Promise<number> {
+    public static getLiveCount(areaid: number = 0): Promise<number> {
+        if (![0, 1, 2, 3, 4, 5, 6, 7].includes(areaid)) {
+            areaid = 0;
+        }
         const params: any = {
-            'parent_area_id': 0,
+            'parent_area_id': areaid,
             'page': 1,
             'page_size': 1,
             'sort_type': 'live_time',
@@ -814,7 +817,7 @@ export class Bilibili extends BilibiliBase {
      * @param   {Integer}   count
      * @returns {Promise}   resolve([ { 'roomid': roomid, 'online': online }, ... ])
      */
-    public static getRoomsInArea(areaid: number, size: number = 99, count: number = Infinity, sortType: string = 'live_time'): Promise<any> {
+    public static getRoomsInArea(areaid: number, size: number = 99, count: number = Infinity, sortType: string = 'online'): Promise<any> {
         const page_size = size > 99 || size < 0 ? 99 : size;
         const ok_sort_types = [ 'live_time', 'online', 'sort_type_169' ];
         if (!ok_sort_types.includes(sortType)) {
@@ -823,7 +826,7 @@ export class Bilibili extends BilibiliBase {
 
         let promises: Promise<any>[] = [];
 
-        const promise = Bilibili.getLiveCount().catch((error: any): Promise<number> => {
+        const promise = Bilibili.getLiveCount(areaid).catch((error: any): Promise<number> => {
 
             cprint(`Bilibili.getLiveCount - ${error.message}`, chalk.red);
             return Promise.resolve(5000);    // on error return 5000

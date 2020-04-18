@@ -265,13 +265,13 @@ function initializeAgents() {
     if (httpAgent === null) {
         httpAgent = new http.Agent({
             keepAlive: true,
-            maxFreeSockets: 128,
+            maxFreeSockets: 1024,
         });
     }
     if (httpsAgent === null) {
         httpsAgent = new https.Agent({
             keepAlive: true,
-            maxFreeSockets: 32,
+            maxFreeSockets: 64,
         });
     }
     return { httpAgent: httpAgent, httpsAgent: httpsAgent };
