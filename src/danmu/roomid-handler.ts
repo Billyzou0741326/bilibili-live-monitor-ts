@@ -12,62 +12,46 @@ import {
 
 export class RoomidHandler extends EventEmitter {
 
-    private _task:          DelayedTask;
-    private _roomids:       Set<number>;
-    private _queryTasks:    Promise<void>[];
+    private _task:              DelayedTask;
+    private _roomids:           Set<number>;
+    private _onDoneCallbacks:   (Array<()=>void>);
 
     public constructor() {
         super();
         this._roomids = new Set();
-        let pending = false;
         this._task = new DelayedTask();
         this._task.withTime(5 * 1000);          // ensures at least a 5 seconds interval between queries
         this._task.withCallback((): void => {
-            if (pending === true) {
-                return;                         // only one should be waiting
+            if (this._roomids.size === 0) {
+                return;                         // nothing to do
             }
-            pending = true;
-            (async(): Promise<void> => {
-                if (this._queryTasks.length > 0) {
-                    await this.wait();          // wait for queries to finish
-                    this._queryTasks = [];      // all queries finished, reset
-                }
-                pending = false;
-                if (this._roomids.size === 0) {
-                    return;                     // nothing to do
-                }
-                this.query();
-                this._task.start();
-            })();
+            this.query();
+            this._task.start();
         });
-        this._queryTasks = [];
+        this._onDoneCallbacks = [];
     }
 
     public stop(): void {
         this._task.stop();
     }
 
-    public wait(): Promise<void[]> {
-        const waiter = Promise.all(this._queryTasks);
-        return waiter;
-    }
-
     /**
      *  Before calling `add`, recommend to `wait` for the current queries to complete
      * 
      */
-    public add(roomid: number): boolean {
-        this._roomids.add(roomid);
+    public add(roomids: number | number[], onDone?: () => void): void {
+        roomids = Array.isArray(roomids) ? roomids : [ roomids ];
+        for (const roomid of roomids) {
+            this._roomids.add(roomid);
+        }
 
         if (!this._task.running) {
             this._task.start();
-
-            if (this._queryTasks.length === 0) {
-                this.query();                   // if no tasks are running, start so that caller has something to wait
-            }
         }
 
-        return true;
+        if (onDone) {
+            this._onDoneCallbacks.push(onDone);
+        }
     }
 
     /**
@@ -75,8 +59,13 @@ export class RoomidHandler extends EventEmitter {
      * 
      */
     private query(): void {
-        const roomids: number[] = Array.from(this._roomids);
+        const roomids: Set<number> = this._roomids;
         this._roomids = new Set();
+
+        const callbacks = this._onDoneCallbacks;
+        this._onDoneCallbacks = [];
+
+        const promises: Promise<void>[] = [];
 
         roomids.forEach((roomid: number): void => {
             const t = Bilibili.appGetLottery(roomid).then((resp: any): void => {
@@ -87,7 +76,13 @@ export class RoomidHandler extends EventEmitter {
             }).catch((error: Error) => {
                 cprint(`RoomidHandler - ${error.message}`, chalk.red);
             });
-            this._queryTasks.push(t);
+            promises.push(t);
+        });
+
+        Promise.all(promises).then(([]): void => {
+            for (const cb of callbacks) {
+                cb();
+            }
         });
     }
 

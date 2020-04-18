@@ -32,7 +32,9 @@ export class RoomCrawler extends EventEmitter {
             try {
                 let roomInfoList = await Bilibili.getRoomsInArea(0, 99, Infinity, 'online');
 
-                const rooms: number[] = roomInfoList.map((entry: any): number => entry['roomid']);
+                const rooms: number[] = roomInfoList.
+                    filter((entry: any): boolean => entry['online'] > 100).
+                    map((entry: any): number => entry['roomid']);
                 return new Set(rooms);
             }
             catch (error) {
@@ -47,14 +49,14 @@ export class RoomCrawler extends EventEmitter {
                 fixedRooms,
             ]);
 
+            let done = false;
             for (const roomSet of roomSets) {
-                roomSet.forEach((roomid: number): void => {
-                    this.roomidHandler_.add(roomid);
+                this.roomidHandler_.add(Array.from(roomSet), (): void => {
+                    if (done) return;
+                    done = true;
+                    this.emit('done');
                 });
             }
-
-            await this.roomidHandler_.wait();
-            this.emit('done');
         })();
     }
 }

@@ -835,7 +835,6 @@ var Bilibili = /** @class */ (function (_super) {
         data['csrf'] = webSession.bili_jct;
         data['csrf_token'] = webSession.bili_jct;
         var payload = index_3.Params.stringify(data);
-        console.log(payload);
         var request = (index_2.Request.Builder()
             .withHost('api.live.bilibili.com')
             .withPath('/room/v1/Room/startLive')
