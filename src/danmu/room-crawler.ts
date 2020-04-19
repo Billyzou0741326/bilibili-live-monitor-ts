@@ -3,7 +3,9 @@ import { EventEmitter } from 'events';
 import { sleep } from '../async/index';
 import { cprint } from '../fmt/index';
 import { Bilibili } from '../bilibili/index';
-import { DelayedTask } from '../task/index';
+import {
+    DelayedTask,
+    RateLimiter, } from '../task/index';
 import {
     RoomCollector,
     RoomidHandler, } from './index';
@@ -19,7 +21,7 @@ export class RoomCrawler extends EventEmitter {
     constructor(collector?: RoomCollector) {
         super();
         this.collector_ = collector || new RoomCollector();
-        this.roomidHandler_ = new RoomidHandler();
+        this.roomidHandler_ = new RoomidHandler().withRateLimiter(new RateLimiter(40, 1000));
 
         for (const cate in RaffleCategory) {
             this.roomidHandler_.on(cate, (g: Raffle) => { this.emit(cate, g) });

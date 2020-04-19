@@ -2,7 +2,9 @@ import * as chalk from 'chalk';
 import { cprint } from '../fmt/index';
 import { EventEmitter } from 'events';
 import { Bilibili } from '../bilibili/index';
-import { DelayedTask } from '../task/index';
+import {
+    DelayedTask,
+    RateLimiter, } from '../task/index';
 import {
     Gift,
     Guard,
@@ -15,6 +17,7 @@ export class RoomidHandler extends EventEmitter {
     private _task:              DelayedTask;
     private _roomids:           Set<number>;
     private _onDoneCallbacks:   (Array<()=>void>);
+    private _rateLimiter:       RateLimiter | null;
 
     public constructor() {
         super();
@@ -29,6 +32,12 @@ export class RoomidHandler extends EventEmitter {
             this._task.start();
         });
         this._onDoneCallbacks = [];
+        this._rateLimiter = null;
+    }
+
+    public withRateLimiter(limiter: RateLimiter): this {
+        this._rateLimiter = limiter;
+        return this;
     }
 
     public stop(): void {
@@ -68,13 +77,26 @@ export class RoomidHandler extends EventEmitter {
         const promises: Promise<void>[] = [];
 
         roomids.forEach((roomid: number): void => {
-            const t = Bilibili.appGetLottery(roomid).then((resp: any): void => {
-                if (resp['code'] !== 0) {
-                    throw new Error(`${resp['message']}`);
+            const queryRoom = (): Promise<void> => {
+                return Bilibili.appGetLottery(roomid)
+                    .then((resp: any): void => {
+                        if (resp['code'] !== 0) {
+                            throw new Error(`${resp['message']}`);
+                        }
+                        this.handleResult(roomid, resp);
+                    }).catch((error: Error) => {
+                        cprint(`RoomidHandler - ${error.message}`, chalk.red);
+                    });
+            }
+
+            const t: Promise<void> = new Promise((resolve) => {
+                if (this._rateLimiter !== null) {
+                    const task = (): void => { resolve(queryRoom()) };
+                    this._rateLimiter.add(task);
                 }
-                this.handleResult(roomid, resp);
-            }).catch((error: Error) => {
-                cprint(`RoomidHandler - ${error.message}`, chalk.red);
+                else {
+                    resolve(queryRoom());
+                }
             });
             promises.push(t);
         });
