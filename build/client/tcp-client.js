@@ -93,7 +93,7 @@ var TCPClientLK = /** @class */ (function (_super) {
             },
         });
         var header = Buffer.alloc(4);
-        header.writeUInt32BE(data.length);
+        header.writeUInt32BE(data.length, 0);
         this.socket_.write(Buffer.concat([header, Buffer.from(data)]));
     };
     TCPClientLK.prototype.onClose = function (hadError) {

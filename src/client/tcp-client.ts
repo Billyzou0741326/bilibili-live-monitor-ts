@@ -98,7 +98,7 @@ export class TCPClientLK extends TCPConn {
             },
         });
         const header = Buffer.alloc(4);
-        header.writeUInt32BE(data.length);
+        header.writeUInt32BE(data.length, 0);
         this.socket_.write(Buffer.concat([ header, Buffer.from(data) ]));
     }
 
