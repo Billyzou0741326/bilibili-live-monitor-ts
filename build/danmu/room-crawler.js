@@ -53,19 +53,20 @@ var chalk = require("chalk");
 var events_1 = require("events");
 var index_1 = require("../fmt/index");
 var index_2 = require("../bilibili/index");
-var index_3 = require("./index");
-var index_4 = require("../danmu/index");
+var index_3 = require("../task/index");
+var index_4 = require("./index");
+var index_5 = require("../danmu/index");
 var RoomCrawler = /** @class */ (function (_super) {
     __extends(RoomCrawler, _super);
     function RoomCrawler(collector) {
         var _this = _super.call(this) || this;
-        _this.collector_ = collector || new index_3.RoomCollector();
-        _this.roomidHandler_ = new index_3.RoomidHandler();
+        _this.collector_ = collector || new index_4.RoomCollector();
+        _this.roomidHandler_ = new index_4.RoomidHandler().withRateLimiter(new index_3.RateLimiter(40, 1000));
         var _loop_1 = function (cate) {
             this_1.roomidHandler_.on(cate, function (g) { _this.emit(cate, g); });
         };
         var this_1 = this;
-        for (var cate in index_4.RaffleCategory) {
+        for (var cate in index_5.RaffleCategory) {
             _loop_1(cate);
         }
         return _this;

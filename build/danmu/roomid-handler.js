@@ -34,8 +34,13 @@ var RoomidHandler = /** @class */ (function (_super) {
             _this._task.start();
         });
         _this._onDoneCallbacks = [];
+        _this._rateLimiter = null;
         return _this;
     }
+    RoomidHandler.prototype.withRateLimiter = function (limiter) {
+        this._rateLimiter = limiter;
+        return this;
+    };
     RoomidHandler.prototype.stop = function () {
         this._task.stop();
     };
@@ -68,13 +73,25 @@ var RoomidHandler = /** @class */ (function (_super) {
         this._onDoneCallbacks = [];
         var promises = [];
         roomids.forEach(function (roomid) {
-            var t = index_2.Bilibili.appGetLottery(roomid).then(function (resp) {
-                if (resp['code'] !== 0) {
-                    throw new Error("" + resp['message']);
+            var queryRoom = function () {
+                return index_2.Bilibili.appGetLottery(roomid)
+                    .then(function (resp) {
+                    if (resp['code'] !== 0) {
+                        throw new Error("" + resp['message']);
+                    }
+                    _this.handleResult(roomid, resp);
+                }).catch(function (error) {
+                    index_1.cprint("RoomidHandler - " + error.message, chalk.red);
+                });
+            };
+            var t = new Promise(function (resolve) {
+                if (_this._rateLimiter !== null) {
+                    var task = function () { resolve(queryRoom()); };
+                    _this._rateLimiter.add(task);
                 }
-                _this.handleResult(roomid, resp);
-            }).catch(function (error) {
-                index_1.cprint("RoomidHandler - " + error.message, chalk.red);
+                else {
+                    resolve(queryRoom());
+                }
             });
             promises.push(t);
         });
