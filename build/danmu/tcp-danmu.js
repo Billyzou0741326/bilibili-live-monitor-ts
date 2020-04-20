@@ -24,7 +24,8 @@ var index_4 = require("../task/index");
 var index_5 = require("./index");
 var AbstractDanmuTCP = /** @class */ (function (_super) {
     __extends(AbstractDanmuTCP, _super);
-    function AbstractDanmuTCP(addr, info) {
+    function AbstractDanmuTCP(addr, info, token) {
+        if (token === void 0) { token = ''; }
         var _this = _super.call(this) || this;
         _this.bind();
         _this._host = addr.host || '127.0.0.1';
@@ -39,12 +40,17 @@ var AbstractDanmuTCP = /** @class */ (function (_super) {
         _this._heartbeatTask = new index_4.RecurrentTask();
         _this._reader = new DanmuTCPReader();
         _this._heartbeat = _this.prepareData(2);
-        _this._handshake = _this.prepareData(7, JSON.stringify({
+        var hs = {
+            uid: 0,
             roomid: _this.roomid,
             platform: 'web',
             clientver: '1.10.6',
             protover: 2,
-        }));
+            type: 2,
+        };
+        if (token !== '')
+            hs['key'] = token;
+        _this._handshake = _this.prepareData(7, JSON.stringify(hs));
         var sendHeartBeat = function () {
             _this._socket && _this._socket.write(_this._heartbeat);
         };
@@ -147,7 +153,7 @@ var AbstractDanmuTCP = /** @class */ (function (_super) {
     AbstractDanmuTCP.prototype.onClose = function (hadError) {
         this.reset();
         if (this._closedByUs === false) {
-            this.start();
+            this.emit('error', this);
         }
         else {
             this.emit('close', this);
@@ -235,9 +241,10 @@ var DanmuTarget;
 })(DanmuTarget || (DanmuTarget = {}));
 var DanmuTCP = /** @class */ (function (_super) {
     __extends(DanmuTCP, _super);
-    function DanmuTCP(addr, info, targets) {
+    function DanmuTCP(addr, info, token, targets) {
+        if (token === void 0) { token = ''; }
         if (targets === void 0) { targets = 255; }
-        var _this = _super.call(this, addr, info) || this;
+        var _this = _super.call(this, addr, info, token) || this;
         _this.targets = targets;
         _this._peak_popularity = 0;
         return _this;
@@ -455,7 +462,7 @@ exports.DanmuTCP = DanmuTCP;
 var DanmuMonitor = /** @class */ (function (_super) {
     __extends(DanmuMonitor, _super);
     function DanmuMonitor(addr, info) {
-        return _super.call(this, addr, info, DanmuTarget.DANMU) || this;
+        return _super.call(this, addr, info, '', DanmuTarget.DANMU) || this;
     }
     DanmuMonitor.prototype.onDanmu = function (msg) {
         var data = _super.prototype.onDanmu.call(this, msg);
@@ -469,13 +476,14 @@ var DanmuMonitor = /** @class */ (function (_super) {
 exports.DanmuMonitor = DanmuMonitor;
 var FixedGuardMonitor = /** @class */ (function (_super) {
     __extends(FixedGuardMonitor, _super);
-    function FixedGuardMonitor(addr, info) {
+    function FixedGuardMonitor(addr, info, token) {
+        if (token === void 0) { token = ''; }
         var _this = this;
         var targets = (DanmuTarget.GIFT
             | DanmuTarget.GUARD
             | DanmuTarget.STORM
             | DanmuTarget.ANCHOR);
-        _this = _super.call(this, addr, info, targets) || this;
+        _this = _super.call(this, addr, info, token, targets) || this;
         _this._delayedTasks = [];
         return _this;
     }
@@ -543,8 +551,9 @@ var FixedGuardMonitor = /** @class */ (function (_super) {
 exports.FixedGuardMonitor = FixedGuardMonitor;
 var DynamicGuardMonitor = /** @class */ (function (_super) {
     __extends(DynamicGuardMonitor, _super);
-    function DynamicGuardMonitor(addr, info) {
-        var _this = _super.call(this, addr, info) || this;
+    function DynamicGuardMonitor(addr, info, token) {
+        if (token === void 0) { token = ''; }
+        var _this = _super.call(this, addr, info, token) || this;
         _this._offTimes = 0;
         _this._newAnchorCount = 0;
         _this._newGuardCount = 0;
@@ -637,10 +646,11 @@ var DynamicGuardMonitor = /** @class */ (function (_super) {
 exports.DynamicGuardMonitor = DynamicGuardMonitor;
 var RaffleMonitor = /** @class */ (function (_super) {
     __extends(RaffleMonitor, _super);
-    function RaffleMonitor(addr, info) {
+    function RaffleMonitor(addr, info, token) {
+        if (token === void 0) { token = ''; }
         var _this = this;
         var targets = DanmuTarget.NOTICE;
-        _this = _super.call(this, addr, info, targets) || this;
+        _this = _super.call(this, addr, info, '', targets) || this;
         return _this;
     }
     RaffleMonitor.prototype.onNoticeMsg = function (msg) {

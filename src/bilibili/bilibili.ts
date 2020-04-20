@@ -19,6 +19,11 @@ import {
     Storm, } from '../danmu/index';
 import {
     AppConfig, } from '../global/index';
+import {
+    RateLimiter, } from '../task/index';
+
+
+const rateLimiter = new RateLimiter(10, 1000);
 
 
 const config = new AppConfig();
@@ -738,6 +743,40 @@ export class Bilibili extends BilibiliBase {
         );
 
         return Bilibili.request(request);
+    }
+
+    public static getLiveDanmuConf(roomid: number): Promise<any> {
+        const params: any = {
+            'room_id': roomid,
+            'platform': 'pc',
+            'player': 'web',
+        };
+
+        return new Promise((resolve, reject): void => {
+            const request: Request = Request.Builder().
+                withHost('api.live.bilibili.com').
+                withPath('/room/v1/Danmu/getConf').
+                withMethod(Request.GET).
+                withParams(params).
+                withHeaders(config.webHeaders).
+                build();
+
+            rateLimiter.add((): void => {
+                Bilibili.request(request).
+                    then((resp: any) => { resolve(resp); }).
+                    catch((error: any) => { reject(error); });
+            });
+        });
+    }
+    
+    public static getLiveDanmuToken(roomid: number): Promise<string> {
+        return (async(): Promise<string> => {
+            const resp: any = await Bilibili.getLiveDanmuConf(roomid);
+            if (resp['code'] !== 0) {
+                throw new BilibiliError(`live token failed ${resp['msg'] || resp['message'] || ''}`);
+            }
+            return resp['data']['token'];
+        })();
     }
 
     /**

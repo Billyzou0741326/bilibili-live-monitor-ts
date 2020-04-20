@@ -19,9 +19,7 @@ import {
     DynamicGuardMonitor, } from './index';
 
 
-class DownRate {}
-
-const tcpaddr: any = new AppConfig().danmuAddr;
+const tcp_addr = new AppConfig().danmuAddr;
 
 export abstract class AbstractRoomController extends EventEmitter {
 
@@ -31,7 +29,7 @@ export abstract class AbstractRoomController extends EventEmitter {
     protected constructor() {
         super();
         this._connections = new Map();
-        this._taskQueue = new RateLimiter(50, 1000);
+        this._taskQueue = new RateLimiter(10, 1000);
     }
 
     public get connections(): Map<number, DanmuTCP> {
@@ -53,15 +51,16 @@ abstract class GuardController extends AbstractRoomController {
         super();
     }
 
-    public add(rooms: number | number[]): void {
+    public add(rooms: number | number[]): Promise<void>[] {
         const roomids: number[] = ([] as number[]).concat(rooms);
         const filtered = roomids.filter((roomid: number): boolean => !this.roomExists(roomid));
-        for (const roomid of filtered) {
-            this.setupRoom(roomid);
-        }
+        const tasks: Promise<void>[] = filtered.map((roomid: number): Promise<void> => {
+            return this.setupRoom(roomid);
+        });
+        return tasks;
     }
 
-    protected abstract createListener(addr: TCPAddress, info: RoomInfo): DanmuTCP;
+    protected abstract createListener(addr: TCPAddress, info: RoomInfo, token: string): DanmuTCP;
 
     protected roomExists(roomid: number): boolean {
         return this._connections.has(roomid);
@@ -72,23 +71,31 @@ abstract class GuardController extends AbstractRoomController {
         this._connections.delete(roomid);
     }
 
-    protected setupRoom(roomid: number): void {
+    protected setupRoom(roomid: number): Promise<void> {
         if (this.roomExists(roomid)) {
-            return;
+            return Promise.resolve();
         }
 
         const roomInfo: any = {
             roomid: roomid,
         };
-        const listener = this.createListener(tcpaddr, roomInfo);
-        this._connections.set(roomid, listener);
-        this._taskQueue.add((): void => { listener.start() });
-        listener
-            .on('close', (): void => { this.onClose(roomid, listener) })
-            .on('add_to_db', (): void => { this.emit('add_to_db', roomid) });
-        for (const category in RaffleCategory) {
-            listener.on(category, (g: Raffle): void => { this.emit(category, g) });
-        }
+        return (async(): Promise<void> => {
+            try {
+                const token = await Bilibili.getLiveDanmuToken(roomid);
+                const listener = this.createListener(tcp_addr, roomInfo, token);
+                this._connections.set(roomid, listener);
+                this._taskQueue.add((): void => { listener.start() });
+                listener.
+                    on('close', (): void => { this.onClose(roomid, listener) }).
+                    on('add_to_db', (): void => { this.emit('add_to_db', roomid) }).
+                    on('error', (): void => { this._taskQueue.add((): void => { listener.start() }) });
+                for (const category in RaffleCategory) {
+                    listener.on(category, (g: Raffle): void => { this.emit(category, g) });
+                }
+            } catch (error) {
+                cprint(`(Listener) - ${error.message}`, chalk.red);
+            }
+        })();
     }
 }
 
@@ -98,8 +105,8 @@ export class FixedGuardController extends GuardController {
         super();
     }
 
-    protected createListener(addr: TCPAddress, info: RoomInfo): DanmuTCP {
-        return new FixedGuardMonitor(addr, info);
+    protected createListener(addr: TCPAddress, info: RoomInfo, token: string = ''): DanmuTCP {
+        return new FixedGuardMonitor(addr, info, token);
     }
 }
 
@@ -109,8 +116,8 @@ export class DynamicGuardController extends GuardController {
         super();
     }
 
-    protected createListener(addr: TCPAddress, info: RoomInfo): DanmuTCP {
-        return new DynamicGuardMonitor(addr, info);
+    protected createListener(addr: TCPAddress, info: RoomInfo, token: string = ''): DanmuTCP {
+        return new DynamicGuardMonitor(addr, info, token);
     }
 
     protected onClose(roomid: number, listener: DanmuTCP): void {
@@ -207,7 +214,7 @@ export class RaffleController extends AbstractRoomController {
             return;
         }
 
-        const listener = new RaffleMonitor(tcpaddr, { roomid: roomid, areaid: areaid });
+        const listener = new RaffleMonitor(tcp_addr, { roomid: roomid, areaid: areaid });
 
         cprint(`Setting up monitor @room ${roomid.toString().padEnd(13)} in ${this._nameOfArea[areaid]}区`, chalk.green);
 

@@ -2,6 +2,7 @@ import * as chalk from 'chalk';
 import * as settings from '../settings.json';
 import { table } from 'table';
 import { EventEmitter } from 'events';
+import { sleep } from '../async/index';
 import { cprint } from '../fmt/index';
 import { Database } from '../db/index';
 import { Bilibili } from '../bilibili/index';
@@ -90,7 +91,8 @@ export class App {
                     const roomids: number[] = Array.from(roomidSet).filter((roomid: number): boolean => {
                         return !establishedFix.has(roomid);
                     });
-                    this._dynamicController.add(roomids);
+                    const tasks = this._dynamicController.add(roomids);
+                    await Promise.all(tasks);
                     this._dynamicRefreshTask.start();
                 }
                 catch (error) {
@@ -216,8 +218,28 @@ export class App {
                     this._fixedController.add(Array.from(fixedRooms));
                     const dynamicRooms: number[] = Array.from(await dynamicTask);
                     const filtered: number[] = dynamicRooms.filter((roomid: number): boolean => !fixedRooms.has(roomid));
-                    this._dynamicController.add(filtered);
-                    this._dynamicRefreshTask.start();
+                    const tasks = this._dynamicController.add(filtered);
+                    await Promise.all([ ...tasks, sleep(10 * 1000) ]);
+                    while (this._running) {
+                        try {
+                            const dynamicTask = this._roomCollector.getDynamicRooms();
+                            const roomidSet: Set<number> = await dynamicTask;
+                            const establishedFix: Map<number, DanmuTCP> = this._fixedController.connections;
+                            const establishedDyn: Map<number, DanmuTCP> = this._dynamicController.connections;
+                            cprint(`Monitoring (静态) ${establishedFix.size} + (动态) ${establishedDyn.size}`, chalk.green);
+
+                            const roomids: number[] = Array.from(roomidSet).filter((roomid: number): boolean => {
+                                return !establishedFix.has(roomid);
+                            });
+                            const tasks = this._dynamicController.add(roomids);
+                            await Promise.all([ ...tasks, sleep(10 * 1000) ]);
+                            this._dynamicRefreshTask.start();
+                        }
+                        catch (error) {
+                            cprint(`(Dynamic) - ${error.message}`, chalk.red);
+                            this._dynamicRefreshTask.start();
+                        }
+                    }
                 })();
             }
         }

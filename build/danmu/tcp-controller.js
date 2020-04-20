@@ -56,18 +56,13 @@ var index_2 = require("../bilibili/index");
 var index_3 = require("../global/index");
 var index_4 = require("../task/index");
 var index_5 = require("./index");
-var DownRate = /** @class */ (function () {
-    function DownRate() {
-    }
-    return DownRate;
-}());
-var tcpaddr = new index_3.AppConfig().danmuAddr;
+var tcp_addr = new index_3.AppConfig().danmuAddr;
 var AbstractRoomController = /** @class */ (function (_super) {
     __extends(AbstractRoomController, _super);
     function AbstractRoomController() {
         var _this = _super.call(this) || this;
         _this._connections = new Map();
-        _this._taskQueue = new index_4.RateLimiter(50, 1000);
+        _this._taskQueue = new index_4.RateLimiter(10, 1000);
         return _this;
     }
     Object.defineProperty(AbstractRoomController.prototype, "connections", {
@@ -94,10 +89,10 @@ var GuardController = /** @class */ (function (_super) {
         var _this = this;
         var roomids = [].concat(rooms);
         var filtered = roomids.filter(function (roomid) { return !_this.roomExists(roomid); });
-        for (var _i = 0, filtered_1 = filtered; _i < filtered_1.length; _i++) {
-            var roomid = filtered_1[_i];
-            this.setupRoom(roomid);
-        }
+        var tasks = filtered.map(function (roomid) {
+            return _this.setupRoom(roomid);
+        });
+        return tasks;
     };
     GuardController.prototype.roomExists = function (roomid) {
         return this._connections.has(roomid);
@@ -109,23 +104,43 @@ var GuardController = /** @class */ (function (_super) {
     GuardController.prototype.setupRoom = function (roomid) {
         var _this = this;
         if (this.roomExists(roomid)) {
-            return;
+            return Promise.resolve();
         }
         var roomInfo = {
             roomid: roomid,
         };
-        var listener = this.createListener(tcpaddr, roomInfo);
-        this._connections.set(roomid, listener);
-        this._taskQueue.add(function () { listener.start(); });
-        listener
-            .on('close', function () { _this.onClose(roomid, listener); })
-            .on('add_to_db', function () { _this.emit('add_to_db', roomid); });
-        var _loop_1 = function (category) {
-            listener.on(category, function (g) { _this.emit(category, g); });
-        };
-        for (var category in index_5.RaffleCategory) {
-            _loop_1(category);
-        }
+        return (function () { return __awaiter(_this, void 0, void 0, function () {
+            var token, listener_1, _loop_1, category, error_1;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, index_2.Bilibili.getLiveDanmuToken(roomid)];
+                    case 1:
+                        token = _a.sent();
+                        listener_1 = this.createListener(tcp_addr, roomInfo, token);
+                        this._connections.set(roomid, listener_1);
+                        this._taskQueue.add(function () { listener_1.start(); });
+                        listener_1.
+                            on('close', function () { _this.onClose(roomid, listener_1); }).
+                            on('add_to_db', function () { _this.emit('add_to_db', roomid); }).
+                            on('error', function () { _this._taskQueue.add(function () { listener_1.start(); }); });
+                        _loop_1 = function (category) {
+                            listener_1.on(category, function (g) { _this.emit(category, g); });
+                        };
+                        for (category in index_5.RaffleCategory) {
+                            _loop_1(category);
+                        }
+                        return [3 /*break*/, 3];
+                    case 2:
+                        error_1 = _a.sent();
+                        index_1.cprint("(Listener) - " + error_1.message, chalk.red);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
+                }
+            });
+        }); })();
     };
     return GuardController;
 }(AbstractRoomController));
@@ -134,8 +149,9 @@ var FixedGuardController = /** @class */ (function (_super) {
     function FixedGuardController() {
         return _super.call(this) || this;
     }
-    FixedGuardController.prototype.createListener = function (addr, info) {
-        return new index_5.FixedGuardMonitor(addr, info);
+    FixedGuardController.prototype.createListener = function (addr, info, token) {
+        if (token === void 0) { token = ''; }
+        return new index_5.FixedGuardMonitor(addr, info, token);
     };
     return FixedGuardController;
 }(GuardController));
@@ -145,8 +161,9 @@ var DynamicGuardController = /** @class */ (function (_super) {
     function DynamicGuardController() {
         return _super.call(this) || this;
     }
-    DynamicGuardController.prototype.createListener = function (addr, info) {
-        return new index_5.DynamicGuardMonitor(addr, info);
+    DynamicGuardController.prototype.createListener = function (addr, info, token) {
+        if (token === void 0) { token = ''; }
+        return new index_5.DynamicGuardMonitor(addr, info, token);
     };
     DynamicGuardController.prototype.onClose = function (roomid, listener) {
         _super.prototype.onClose.call(this, roomid, listener);
@@ -204,7 +221,7 @@ var RaffleController = /** @class */ (function (_super) {
         var _this = this;
         if (numRoomsQueried === void 0) { numRoomsQueried = 10; }
         var task = function () { return __awaiter(_this, void 0, void 0, function () {
-            var done, max, i, roomid, error_1;
+            var done, max, i, roomid, error_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -227,8 +244,8 @@ var RaffleController = /** @class */ (function (_super) {
                         }
                         return [3 /*break*/, 5];
                     case 4:
-                        error_1 = _a.sent();
-                        index_1.cprint("Bilibili.isLive - " + error_1.message, chalk.red);
+                        error_2 = _a.sent();
+                        index_1.cprint("Bilibili.isLive - " + error_2.message, chalk.red);
                         return [3 /*break*/, 5];
                     case 5:
                         ++i;
@@ -254,7 +271,7 @@ var RaffleController = /** @class */ (function (_super) {
         if (this._connections.has(areaid)) {
             return;
         }
-        var listener = new index_5.RaffleMonitor(tcpaddr, { roomid: roomid, areaid: areaid });
+        var listener = new index_5.RaffleMonitor(tcp_addr, { roomid: roomid, areaid: areaid });
         index_1.cprint("Setting up monitor @room " + roomid.toString().padEnd(13) + " in " + this._nameOfArea[areaid] + "\u533A", chalk.green);
         this._taskQueue.add(function () { listener.start(); });
         this._connections.set(areaid, listener);

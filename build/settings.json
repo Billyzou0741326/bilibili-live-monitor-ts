@@ -29,13 +29,13 @@
         "lk-tcp-client": {
             "host": "47.102.120.84",
             "port": 10010,
-            "enable": true
+            "enable": false
         },
         "bilibili-tcp": {
             "enable": false
         },
         "bilibili-http": {
-            "enable": false
+            "enable": true
         }
     },
     "load-balancing": {
@@ -43,7 +43,7 @@
         "serverIndex": 0
     },
     "room-collector-strategy": {
-        "fixedRoomExpiry": 30,
-        "dynamicRoomsQueryInterval": 120
+        "fixedRoomExpiry": 3,
+        "dynamicRoomsQueryInterval": 360
     }
 }

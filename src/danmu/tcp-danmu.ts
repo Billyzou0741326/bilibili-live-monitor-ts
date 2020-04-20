@@ -49,7 +49,7 @@ export abstract class AbstractDanmuTCP extends EventEmitter implements Startable
     private _heartbeat:     Buffer;
     private _handshake:     Buffer;
 
-    protected constructor(addr: TCPAddress, info: RoomInfo) {
+    protected constructor(addr: TCPAddress, info: RoomInfo, token: string = '') {
         super();
         this.bind();
         this._host = addr.host || '127.0.0.1';
@@ -64,12 +64,16 @@ export abstract class AbstractDanmuTCP extends EventEmitter implements Startable
         this._heartbeatTask = new RecurrentTask();
         this._reader = new DanmuTCPReader();
         this._heartbeat = this.prepareData(2);
-        this._handshake = this.prepareData(7, JSON.stringify({
+        const hs: any = {
+            uid: 0,
             roomid: this.roomid,
             platform: 'web',
             clientver: '1.10.6',
             protover: 2,
-        }));
+            type: 2,
+        };
+        if (token !== '') hs['key'] = token;
+        this._handshake = this.prepareData(7, JSON.stringify(hs));
 
         const sendHeartBeat: () => void = (): void => {
             this._socket && this._socket.write(this._heartbeat);
@@ -172,7 +176,7 @@ export abstract class AbstractDanmuTCP extends EventEmitter implements Startable
     private onClose(hadError: boolean): void {
         this.reset();
         if (this._closedByUs === false) {
-            this.start();
+            this.emit('error', this);
         }
         else {
             this.emit('close', this);
@@ -275,8 +279,8 @@ export abstract class DanmuTCP extends AbstractDanmuTCP {
     private targets:            number;
     protected _peak_popularity: number;
 
-    protected constructor(addr: TCPAddress, info: RoomInfo, targets: number = 0b11111111) {
-        super(addr, info);
+    protected constructor(addr: TCPAddress, info: RoomInfo, token: string = '', targets: number = 0b11111111) {
+        super(addr, info, token);
         this.targets = targets;
         this._peak_popularity = 0;
     }
@@ -523,7 +527,7 @@ export abstract class DanmuTCP extends AbstractDanmuTCP {
 export class DanmuMonitor extends DanmuTCP {
 
     public constructor(addr: TCPAddress, info: RoomInfo) {
-        super(addr, info, DanmuTarget.DANMU);
+        super(addr, info, '', DanmuTarget.DANMU);
     }
 
     protected onDanmu(msg: any): Danmu | null {
@@ -541,14 +545,14 @@ export class FixedGuardMonitor extends DanmuTCP {
 
     private _delayedTasks:  DelayedTask[];
 
-    public constructor(addr: TCPAddress, info: RoomInfo) {
+    public constructor(addr: TCPAddress, info: RoomInfo, token: string = '') {
         const targets: number = (
             DanmuTarget.GIFT
             | DanmuTarget.GUARD
             | DanmuTarget.STORM
             | DanmuTarget.ANCHOR
         );
-        super(addr, info, targets);
+        super(addr, info, token, targets);
         this._delayedTasks = ([] as DelayedTask[]);
     }
 
@@ -629,8 +633,8 @@ export class DynamicGuardMonitor extends FixedGuardMonitor {
     private _toFixed:           boolean;
     private _canClose:          boolean;
 
-    public constructor(addr: TCPAddress, info: RoomInfo) {
-        super(addr, info);
+    public constructor(addr: TCPAddress, info: RoomInfo, token: string = '') {
+        super(addr, info, token);
         this._offTimes = 0;
         this._newAnchorCount = 0;
         this._newGuardCount = 0;
@@ -734,9 +738,9 @@ export class DynamicGuardMonitor extends FixedGuardMonitor {
 
 export class RaffleMonitor extends DanmuTCP {
 
-    public constructor(addr: TCPAddress, info: RoomInfo) {
+    public constructor(addr: TCPAddress, info: RoomInfo, token: string = '') {
         const targets: number = DanmuTarget.NOTICE
-        super(addr, info, targets);
+        super(addr, info, '', targets);
     }
 
     protected onNoticeMsg(msg: any): void {

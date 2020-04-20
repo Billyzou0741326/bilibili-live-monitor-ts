@@ -35,68 +35,79 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __spreadArrays = (this && this.__spreadArrays) || function () {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var chalk = require("chalk");
 var settings = require("../settings.json");
 var table_1 = require("table");
 var events_1 = require("events");
-var index_1 = require("../fmt/index");
-var index_2 = require("../db/index");
-var index_3 = require("../global/index");
-var index_4 = require("../task/index");
-var index_5 = require("../client/index");
-var index_6 = require("../server/index");
-var index_7 = require("../danmu/index");
+var index_1 = require("../async/index");
+var index_2 = require("../fmt/index");
+var index_3 = require("../db/index");
+var index_4 = require("../global/index");
+var index_5 = require("../task/index");
+var index_6 = require("../client/index");
+var index_7 = require("../server/index");
+var index_8 = require("../danmu/index");
 var App = /** @class */ (function () {
     function App() {
         var _this = this;
-        this._appConfig = new index_3.AppConfig();
+        this._appConfig = new index_4.AppConfig();
         this._appConfig.init();
-        this._db = new index_2.Database({ expiry: this._appConfig.roomCollectorStrategy.fixedRoomExpiry });
-        this._history = new index_7.History();
+        this._db = new index_3.Database({ expiry: this._appConfig.roomCollectorStrategy.fixedRoomExpiry });
+        this._history = new index_8.History();
         this._emitter = new events_1.EventEmitter();
-        this._wsServer = new index_6.WsServer(this._appConfig.wsAddr);
-        this._biliveServer = new index_6.WsServerBilive(this._appConfig.biliveAddr);
-        this._bilihelperServer = new index_6.TCPServerBiliHelper(this._appConfig.bilihelperAddr);
-        this._httpServer = new index_6.HttpServer(this._appConfig.httpAddr);
+        this._wsServer = new index_7.WsServer(this._appConfig.wsAddr);
+        this._biliveServer = new index_7.WsServerBilive(this._appConfig.biliveAddr);
+        this._bilihelperServer = new index_7.TCPServerBiliHelper(this._appConfig.bilihelperAddr);
+        this._httpServer = new index_7.HttpServer(this._appConfig.httpAddr);
         this._roomCollector = (this._appConfig.loadBalancing.totalServers > 1
-            ? new index_7.SimpleLoadBalancingRoomDistributor(this._appConfig.loadBalancing)
-            : new index_7.RoomCollector());
-        this._roomidHandler = new index_7.RoomidHandler();
-        this._roomCrawler = new index_7.RoomCrawler(this._roomCollector);
-        this._fixedController = new index_7.FixedGuardController();
-        this._raffleController = new index_7.RaffleController(this._roomCollector);
-        this._dynamicController = new index_7.DynamicGuardController();
-        this._lkclient = new index_5.TCPClientLK();
-        this._dynamicRefreshTask = new index_4.DelayedTask();
+            ? new index_8.SimpleLoadBalancingRoomDistributor(this._appConfig.loadBalancing)
+            : new index_8.RoomCollector());
+        this._roomidHandler = new index_8.RoomidHandler();
+        this._roomCrawler = new index_8.RoomCrawler(this._roomCollector);
+        this._fixedController = new index_8.FixedGuardController();
+        this._raffleController = new index_8.RaffleController(this._roomCollector);
+        this._dynamicController = new index_8.DynamicGuardController();
+        this._lkclient = new index_6.TCPClientLK();
+        this._dynamicRefreshTask = new index_5.DelayedTask();
         this._running = false;
         var dynRefreshInterval = this._appConfig.roomCollectorStrategy.dynamicRoomsQueryInterval * 1000;
         this._dynamicRefreshTask.withTime(dynRefreshInterval).withCallback(function () {
             var dynamicTask = _this._roomCollector.getDynamicRooms();
             (function () { return __awaiter(_this, void 0, void 0, function () {
-                var roomidSet, establishedFix_1, establishedDyn, roomids, error_1;
+                var roomidSet, establishedFix_1, establishedDyn, roomids, tasks, error_1;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            _a.trys.push([0, 2, , 3]);
+                            _a.trys.push([0, 3, , 4]);
                             return [4 /*yield*/, dynamicTask];
                         case 1:
                             roomidSet = _a.sent();
                             establishedFix_1 = this._fixedController.connections;
                             establishedDyn = this._dynamicController.connections;
-                            index_1.cprint("Monitoring (\u9759\u6001) " + establishedFix_1.size + " + (\u52A8\u6001) " + establishedDyn.size, chalk.green);
+                            index_2.cprint("Monitoring (\u9759\u6001) " + establishedFix_1.size + " + (\u52A8\u6001) " + establishedDyn.size, chalk.green);
                             roomids = Array.from(roomidSet).filter(function (roomid) {
                                 return !establishedFix_1.has(roomid);
                             });
-                            this._dynamicController.add(roomids);
-                            this._dynamicRefreshTask.start();
-                            return [3 /*break*/, 3];
+                            tasks = this._dynamicController.add(roomids);
+                            return [4 /*yield*/, Promise.all(tasks)];
                         case 2:
-                            error_1 = _a.sent();
-                            index_1.cprint("(Dynamic) - " + error_1.message, chalk.red);
+                            _a.sent();
                             this._dynamicRefreshTask.start();
-                            return [3 /*break*/, 3];
-                        case 3: return [2 /*return*/];
+                            return [3 /*break*/, 4];
+                        case 3:
+                            error_1 = _a.sent();
+                            index_2.cprint("(Dynamic) - " + error_1.message, chalk.red);
+                            this._dynamicRefreshTask.start();
+                            return [3 /*break*/, 4];
+                        case 4: return [2 /*return*/];
                     }
                 });
             }); })();
@@ -136,7 +147,7 @@ var App = /** @class */ (function () {
             emt.
                 on('add_to_db', function (roomid) { _this._db.add(roomid); }).
                 on('to_fixed', function (roomid) {
-                index_1.cprint("Adding " + roomid + " to fixed", chalk.green);
+                index_2.cprint("Adding " + roomid + " to fixed", chalk.green);
                 _this._fixedController.add(roomid);
             }).
                 on('roomid', function (roomid) {
@@ -150,7 +161,7 @@ var App = /** @class */ (function () {
                 }
             });
             // */
-            for (var category in index_7.RaffleCategory) {
+            for (var category in index_8.RaffleCategory) {
                 emt.on(category, handler(category));
             }
         }
@@ -160,15 +171,15 @@ var App = /** @class */ (function () {
             _this._biliveServer.broadcast(g);
             _this._bilihelperServer.broadcast(g);
         };
-        for (var category in index_7.RaffleCategory) {
-            if (category === index_7.RaffleCategory.gift) {
+        for (var category in index_8.RaffleCategory) {
+            if (category === index_8.RaffleCategory.gift) {
                 this._emitter.on(category, function (g) {
                     if (g.wait <= 0) {
                         processGift(g);
                         return;
                     }
                     else {
-                        var t = new index_4.DelayedTask();
+                        var t = new index_5.DelayedTask();
                         t.withTime(g.wait * 1000);
                         t.withCallback(function () {
                             processGift(g);
@@ -185,7 +196,7 @@ var App = /** @class */ (function () {
         }
     };
     App.prototype.setupHttp = function () {
-        for (var category in index_7.RaffleCategory) {
+        for (var category in index_8.RaffleCategory) {
             this._httpServer.mountGetter(category, this._history.retrieveGetter(category));
         }
     };
@@ -211,7 +222,7 @@ var App = /** @class */ (function () {
                 var fixedTask_1 = this._roomCollector.getFixedRooms();
                 var dynamicTask_1 = this._roomCollector.getDynamicRooms();
                 (function () { return __awaiter(_this, void 0, void 0, function () {
-                    var fixedRooms, dynamicRooms, _a, _b, filtered;
+                    var fixedRooms, dynamicRooms, _a, _b, filtered, tasks, _loop_1, this_1;
                     return __generator(this, function (_c) {
                         switch (_c.label) {
                             case 0: return [4 /*yield*/, fixedTask_1];
@@ -223,9 +234,50 @@ var App = /** @class */ (function () {
                             case 2:
                                 dynamicRooms = _b.apply(_a, [_c.sent()]);
                                 filtered = dynamicRooms.filter(function (roomid) { return !fixedRooms.has(roomid); });
-                                this._dynamicController.add(filtered);
-                                this._dynamicRefreshTask.start();
-                                return [2 /*return*/];
+                                tasks = this._dynamicController.add(filtered);
+                                return [4 /*yield*/, Promise.all(__spreadArrays(tasks, [index_1.sleep(10 * 1000)]))];
+                            case 3:
+                                _c.sent();
+                                _loop_1 = function () {
+                                    var dynamicTask_2, roomidSet, establishedFix_2, establishedDyn, roomids, tasks_1, error_2;
+                                    return __generator(this, function (_a) {
+                                        switch (_a.label) {
+                                            case 0:
+                                                _a.trys.push([0, 3, , 4]);
+                                                dynamicTask_2 = this_1._roomCollector.getDynamicRooms();
+                                                return [4 /*yield*/, dynamicTask_2];
+                                            case 1:
+                                                roomidSet = _a.sent();
+                                                establishedFix_2 = this_1._fixedController.connections;
+                                                establishedDyn = this_1._dynamicController.connections;
+                                                index_2.cprint("Monitoring (\u9759\u6001) " + establishedFix_2.size + " + (\u52A8\u6001) " + establishedDyn.size, chalk.green);
+                                                roomids = Array.from(roomidSet).filter(function (roomid) {
+                                                    return !establishedFix_2.has(roomid);
+                                                });
+                                                tasks_1 = this_1._dynamicController.add(roomids);
+                                                return [4 /*yield*/, Promise.all(__spreadArrays(tasks_1, [index_1.sleep(10 * 1000)]))];
+                                            case 2:
+                                                _a.sent();
+                                                this_1._dynamicRefreshTask.start();
+                                                return [3 /*break*/, 4];
+                                            case 3:
+                                                error_2 = _a.sent();
+                                                index_2.cprint("(Dynamic) - " + error_2.message, chalk.red);
+                                                this_1._dynamicRefreshTask.start();
+                                                return [3 /*break*/, 4];
+                                            case 4: return [2 /*return*/];
+                                        }
+                                    });
+                                };
+                                this_1 = this;
+                                _c.label = 4;
+                            case 4:
+                                if (!this._running) return [3 /*break*/, 6];
+                                return [5 /*yield**/, _loop_1()];
+                            case 5:
+                                _c.sent();
+                                return [3 /*break*/, 4];
+                            case 6: return [2 /*return*/];
                         }
                     });
                 }); })();
@@ -304,7 +356,7 @@ var App = /** @class */ (function () {
             default:
                 return;
         }
-        index_1.cprint(msg, chalk.cyan);
+        index_2.cprint(msg, chalk.cyan);
     };
     return App;
 }());
