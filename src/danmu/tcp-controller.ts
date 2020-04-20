@@ -220,17 +220,18 @@ export class RaffleController extends AbstractRoomController {
 
         this._taskQueue.add((): void => { listener.start() });
         this._connections.set(areaid, listener);
-        listener
-            .on('close', (): void => {
+        listener.
+            on('close', (): void => {
                 listener.destroy();
                 this._connections.delete(areaid);
 
                 const reason = `@room ${roomid} in ${this._nameOfArea[areaid]}区 is closed.`;
                 cprint(reason, chalk.yellowBright);
                 this.setupArea(areaid);
-            })
-            .on('add_to_db', (): void => { this.emit('add_to_db', roomid) })
-            .on('roomid', (roomid: number): void => {
+            }).
+            on('error', (): void => { this._taskQueue.add((): void => { listener.start(); }) }).
+            on('add_to_db', (): void => { this.emit('add_to_db', roomid) }).
+            on('roomid', (roomid: number): void => {
                 this._roomidHandler.add(roomid);
                 this.emit('to_dynamic', roomid);
             });

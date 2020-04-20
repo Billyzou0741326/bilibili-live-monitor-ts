@@ -275,16 +275,17 @@ var RaffleController = /** @class */ (function (_super) {
         index_1.cprint("Setting up monitor @room " + roomid.toString().padEnd(13) + " in " + this._nameOfArea[areaid] + "\u533A", chalk.green);
         this._taskQueue.add(function () { listener.start(); });
         this._connections.set(areaid, listener);
-        listener
-            .on('close', function () {
+        listener.
+            on('close', function () {
             listener.destroy();
             _this._connections.delete(areaid);
             var reason = "@room " + roomid + " in " + _this._nameOfArea[areaid] + "\u533A is closed.";
             index_1.cprint(reason, chalk.yellowBright);
             _this.setupArea(areaid);
-        })
-            .on('add_to_db', function () { _this.emit('add_to_db', roomid); })
-            .on('roomid', function (roomid) {
+        }).
+            on('error', function () { _this._taskQueue.add(function () { listener.start(); }); }).
+            on('add_to_db', function () { _this.emit('add_to_db', roomid); }).
+            on('roomid', function (roomid) {
             _this._roomidHandler.add(roomid);
             _this.emit('to_dynamic', roomid);
         });
