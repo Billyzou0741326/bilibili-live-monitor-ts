@@ -130,7 +130,10 @@ var Account = /** @class */ (function () {
             var code = resp['code'];
             var msg = resp['msg'] || resp['message'] || '';
             if (code !== 0) {
-                result = Promise.reject(new Error("(Login) " + code + " - " + msg));
+                return Promise.reject(new Error("(Login) [" + code + "] - " + msg));
+            }
+            if (!resp['data'] || typeof resp['data']['cookie_info'] === 'undefined') {
+                return Promise.reject(new Error("(Login) " + JSON.stringify(resp)));
             }
             return Promise.resolve(result);
         })

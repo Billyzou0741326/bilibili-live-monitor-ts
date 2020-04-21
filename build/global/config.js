@@ -147,6 +147,17 @@ var AppConfig = /** @class */ (function () {
     return AppConfig;
 }());
 exports.AppConfig = AppConfig;
+var rand_hex = function (length) {
+    if (length <= 0)
+        return '';
+    var items = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'];
+    var max = items.length;
+    var result = '';
+    for (var i = 0; i < max; ++i) {
+        result = "" + result + items[Math.floor(Math.random() * max)];
+    }
+    return result;
+};
 var statistics = {
     'appId': 1,
     'platform': 3,
@@ -169,6 +180,7 @@ var appCommon = {
 var appHeaders = {
     'Connection': 'keep-alive',
     'User-Agent': 'Mozilla/5.0 BiliDroid/5.55.1 (bbcallen@gmail.com)',
+    'Buvid': "XZ" + rand_hex(35),
 };
 var webHeaders = {
     'Connection': 'keep-alive',

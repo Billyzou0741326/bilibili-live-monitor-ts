@@ -85,13 +85,7 @@ var TCPClientLK = /** @class */ (function (_super) {
     TCPClientLK.prototype.sendHandshake = function () {
         if (this.socket_.destroyed)
             return;
-        var data = JSON.stringify({
-            "code": 0,
-            "type": "ask",
-            "data": {
-                "key": ",*(?PVl]nIbo35sB",
-            },
-        });
+        var data = JSON.stringify({});
         var header = Buffer.alloc(4);
         header.writeUInt32BE(data.length, 0);
         this.socket_.write(Buffer.concat([header, Buffer.from(data)]));

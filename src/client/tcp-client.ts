@@ -90,13 +90,7 @@ export class TCPClientLK extends TCPConn {
 
     protected sendHandshake(): void {
         if (this.socket_.destroyed) return;
-        const data = JSON.stringify({
-            "code": 0,
-            "type": "ask",
-            "data": {
-                "key": ",*(?PVl]nIbo35sB",
-            },
-        });
+        const data = JSON.stringify({});
         const header = Buffer.alloc(4);
         header.writeUInt32BE(data.length, 0);
         this.socket_.write(Buffer.concat([ header, Buffer.from(data) ]));

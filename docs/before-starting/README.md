@@ -46,26 +46,6 @@
 }
 ```
 
-### 对接
-
-```javascript
-{
-    ...
-    "clients": {
-        "lk-tcp-client": {              // lk - BiliHelper-Personal
-            "host": "47.102.120.84",
-            "port": 10010,
-            "enable": true
-        },
-        "bilibili-tcp": {
-            "enable": false             // 直连b站弹幕 (高连接数)
-        },
-        "bilibili-http": {
-            "enable": false             // 爬取直播间
-        }
-    },
-    ...
-}
 
 ### 房间收集策略
 ```javascript

@@ -119,7 +119,10 @@ export class Account {
                 const code: number = resp['code'];
                 const msg: string = resp['msg'] || resp['message'] || '';
                 if (code !== 0) {
-                    result = Promise.reject(new Error(`(Login) ${code} - ${msg}`));
+                    return Promise.reject(new Error(`(Login) [${code}] - ${msg}`));
+                }
+                if (!resp['data'] || typeof resp['data']['cookie_info'] === 'undefined') {
+                    return Promise.reject(new Error(`(Login) ${JSON.stringify(resp)}`));
                 }
                 return Promise.resolve(result);
             })
@@ -175,7 +178,7 @@ export class Account {
         }
     }
 
-    private saveToFile(): void {
+    public saveToFile(): void {
         const filename = this._filename;
         cprint(`Storing login info into ${filename}`, chalk.green);
 
@@ -193,7 +196,7 @@ export class Account {
         })();
     }
 
-    private toFileFormat(): string {
+    public toFileFormat(): string {
         const data: any = {
             'user':     this._loginInfo,
             'web':      this.cookies,

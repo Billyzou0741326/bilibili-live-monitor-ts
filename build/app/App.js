@@ -52,30 +52,28 @@ var index_2 = require("../fmt/index");
 var index_3 = require("../db/index");
 var index_4 = require("../global/index");
 var index_5 = require("../task/index");
-var index_6 = require("../client/index");
-var index_7 = require("../server/index");
-var index_8 = require("../danmu/index");
+var index_6 = require("../server/index");
+var index_7 = require("../danmu/index");
 var App = /** @class */ (function () {
     function App() {
         var _this = this;
         this._appConfig = new index_4.AppConfig();
         this._appConfig.init();
         this._db = new index_3.Database({ expiry: this._appConfig.roomCollectorStrategy.fixedRoomExpiry });
-        this._history = new index_8.History();
+        this._history = new index_7.History();
         this._emitter = new events_1.EventEmitter();
-        this._wsServer = new index_7.WsServer(this._appConfig.wsAddr);
-        this._biliveServer = new index_7.WsServerBilive(this._appConfig.biliveAddr);
-        this._bilihelperServer = new index_7.TCPServerBiliHelper(this._appConfig.bilihelperAddr);
-        this._httpServer = new index_7.HttpServer(this._appConfig.httpAddr);
+        this._wsServer = new index_6.WsServer(this._appConfig.wsAddr);
+        this._biliveServer = new index_6.WsServerBilive(this._appConfig.biliveAddr);
+        this._bilihelperServer = new index_6.TCPServerBiliHelper(this._appConfig.bilihelperAddr);
+        this._httpServer = new index_6.HttpServer(this._appConfig.httpAddr);
         this._roomCollector = (this._appConfig.loadBalancing.totalServers > 1
-            ? new index_8.SimpleLoadBalancingRoomDistributor(this._appConfig.loadBalancing)
-            : new index_8.RoomCollector());
-        this._roomidHandler = new index_8.RoomidHandler();
-        this._roomCrawler = new index_8.RoomCrawler(this._roomCollector);
-        this._fixedController = new index_8.FixedGuardController();
-        this._raffleController = new index_8.RaffleController(this._roomCollector);
-        this._dynamicController = new index_8.DynamicGuardController();
-        this._lkclient = new index_6.TCPClientLK();
+            ? new index_7.SimpleLoadBalancingRoomDistributor(this._appConfig.loadBalancing)
+            : new index_7.RoomCollector());
+        this._roomidHandler = new index_7.RoomidHandler();
+        this._roomCrawler = new index_7.RoomCrawler(this._roomCollector);
+        this._fixedController = new index_7.FixedGuardController();
+        this._raffleController = new index_7.RaffleController(this._roomCollector);
+        this._dynamicController = new index_7.DynamicGuardController();
         this._dynamicRefreshTask = new index_5.DelayedTask();
         this._running = false;
         var dynRefreshInterval = this._appConfig.roomCollectorStrategy.dynamicRoomsQueryInterval * 1000;
@@ -136,12 +134,7 @@ var App = /** @class */ (function () {
             this._raffleController,
             this._roomidHandler,
             this._roomCrawler,
-            this._lkclient,
         ];
-        this._lkclient.on('close', function () {
-            var info = settings['clients']['lk-tcp-client'];
-            _this._lkclient.connect({ host: info['host'], port: info['port'] });
-        });
         for (var _i = 0, emitters_1 = emitters; _i < emitters_1.length; _i++) {
             var emt = emitters_1[_i];
             emt.
@@ -161,7 +154,7 @@ var App = /** @class */ (function () {
                 }
             });
             // */
-            for (var category in index_8.RaffleCategory) {
+            for (var category in index_7.RaffleCategory) {
                 emt.on(category, handler(category));
             }
         }
@@ -171,8 +164,8 @@ var App = /** @class */ (function () {
             _this._biliveServer.broadcast(g);
             _this._bilihelperServer.broadcast(g);
         };
-        for (var category in index_8.RaffleCategory) {
-            if (category === index_8.RaffleCategory.gift) {
+        for (var category in index_7.RaffleCategory) {
+            if (category === index_7.RaffleCategory.gift) {
                 this._emitter.on(category, function (g) {
                     if (g.wait <= 0) {
                         processGift(g);
@@ -196,7 +189,7 @@ var App = /** @class */ (function () {
         }
     };
     App.prototype.setupHttp = function () {
-        for (var category in index_8.RaffleCategory) {
+        for (var category in index_7.RaffleCategory) {
             this._httpServer.mountGetter(category, this._history.retrieveGetter(category));
         }
     };
@@ -211,10 +204,6 @@ var App = /** @class */ (function () {
             this._raffleController.start();
             if (settings['clients']['bilibili-http']['enable'] === true) {
                 this._roomCrawler.query();
-            }
-            if (settings['clients']['lk-tcp-client']['enable'] === true) {
-                var info = settings['clients']['lk-tcp-client'];
-                this._lkclient.connect({ host: info['host'], port: info['port'] });
             }
             if (settings['clients']['bilibili-tcp']['enable'] === true) {
                 this._fixedController.start();

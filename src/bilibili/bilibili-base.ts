@@ -36,7 +36,7 @@ export class BilibiliBase {
             }
 
             throw err;
-        }
+        };
 
         return requestUntilDone();
     }

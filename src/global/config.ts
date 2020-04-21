@@ -153,6 +153,17 @@ export class AppConfig implements AppSettings {
     }
 }
 
+const rand_hex = (length: number): string => {
+    if (length <= 0) return '';
+    const items = [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' ];
+    const max = items.length;
+
+    let result = '';
+    for (let i = 0; i < max; ++i) {
+        result = `${result}${items[Math.floor(Math.random()*max)]}`;
+    }
+    return result;
+};
 const statistics: {[key:string]:string|number} = {
     'appId': 1,
     'platform': 3,
@@ -175,6 +186,7 @@ const appCommon: {[key:string]:string|number} = {
 const appHeaders: {[key:string]:string} = {
     'Connection': 'keep-alive',
     'User-Agent': 'Mozilla/5.0 BiliDroid/5.55.1 (bbcallen@gmail.com)',
+    'Buvid': `XZ${rand_hex(35)}`,
 };
 
 const webHeaders: {[key:string]:string} = {

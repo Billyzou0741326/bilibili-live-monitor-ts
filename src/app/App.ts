@@ -42,7 +42,6 @@ export class App {
     private _raffleController:      RaffleController;
     private _fixedController:       FixedGuardController;
     private _dynamicController:     DynamicGuardController;
-    private _lkclient:              TCPClientLK;
 
     private _wsServer:              WsServer;
     private _biliveServer:          WsServerBilive;
@@ -73,7 +72,6 @@ export class App {
         this._fixedController = new FixedGuardController();
         this._raffleController = new RaffleController(this._roomCollector);
         this._dynamicController = new DynamicGuardController();
-        this._lkclient = new TCPClientLK();
 
         this._dynamicRefreshTask = new DelayedTask();
         this._running = false;
@@ -125,12 +123,7 @@ export class App {
             this._raffleController,
             this._roomidHandler,
             this._roomCrawler,
-            this._lkclient,
         ];
-        this._lkclient.on('close', (): void => {
-            const info = settings['clients']['lk-tcp-client'];
-            this._lkclient.connect({ host: info['host'], port: info['port'] });
-        });
         for (const emt of emitters) {
             emt.
                 on('add_to_db', (roomid: number): void => { this._db.add(roomid) }).
@@ -201,11 +194,6 @@ export class App {
 
             if (settings['clients']['bilibili-http']['enable'] === true) {
                 this._roomCrawler.query();
-            }
-
-            if (settings['clients']['lk-tcp-client']['enable'] === true) {
-                const info = settings['clients']['lk-tcp-client'];
-                this._lkclient.connect({ host: info['host'], port: info['port'] });
             }
 
             if (settings['clients']['bilibili-tcp']['enable'] === true) {

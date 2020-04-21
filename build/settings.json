@@ -26,11 +26,6 @@
         }
     },
     "clients": {
-        "lk-tcp-client": {
-            "host": "47.102.120.84",
-            "port": 10010,
-            "enable": false
-        },
         "bilibili-tcp": {
             "enable": false
         },
