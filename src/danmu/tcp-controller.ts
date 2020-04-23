@@ -229,7 +229,7 @@ export class RaffleController extends AbstractRoomController {
                 cprint(reason, chalk.yellowBright);
                 this.setupArea(areaid);
             }).
-            on('error', (): void => { this._taskQueue.add((): void => { listener.start(); }) }).
+            on('error', (): void => { listener.start() }).
             on('add_to_db', (): void => { this.emit('add_to_db', roomid) }).
             on('roomid', (roomid: number): void => {
                 this._roomidHandler.add(roomid);

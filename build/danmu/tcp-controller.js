@@ -283,7 +283,7 @@ var RaffleController = /** @class */ (function (_super) {
             index_1.cprint(reason, chalk.yellowBright);
             _this.setupArea(areaid);
         }).
-            on('error', function () { _this._taskQueue.add(function () { listener.start(); }); }).
+            on('error', function () { listener.start(); }).
             on('add_to_db', function () { _this.emit('add_to_db', roomid); }).
             on('roomid', function (roomid) {
             _this._roomidHandler.add(roomid);
