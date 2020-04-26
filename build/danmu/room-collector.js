@@ -54,8 +54,8 @@ var index_1 = require("../db/index");
 var index_2 = require("../bilibili/index");
 var index_3 = require("../fmt/index");
 var RoomCollector = /** @class */ (function () {
-    function RoomCollector() {
-        this._db = new index_1.Database();
+    function RoomCollector(options) {
+        this._db = (options && options.db) || new index_1.Database();
     }
     RoomCollector.prototype.getFixedRooms = function () {
         var _this = this;
@@ -226,9 +226,9 @@ var RoomCollector = /** @class */ (function () {
 exports.RoomCollector = RoomCollector;
 var SimpleLoadBalancingRoomDistributor = /** @class */ (function (_super) {
     __extends(SimpleLoadBalancingRoomDistributor, _super);
-    function SimpleLoadBalancingRoomDistributor(loadBalancing) {
-        var _this = _super.call(this) || this;
-        _this._loadBalancing = loadBalancing || {
+    function SimpleLoadBalancingRoomDistributor(options) {
+        var _this = _super.call(this, options) || this;
+        _this._loadBalancing = (options && options.loadBalancing) || {
             totalServers: 1,
             serverIndex: 0,
         };

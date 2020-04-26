@@ -67,8 +67,8 @@ var App = /** @class */ (function () {
         this._bilihelperServer = new index_6.TCPServerBiliHelper(this._appConfig.bilihelperAddr);
         this._httpServer = new index_6.HttpServer(this._appConfig.httpAddr);
         this._roomCollector = (this._appConfig.loadBalancing.totalServers > 1
-            ? new index_7.SimpleLoadBalancingRoomDistributor(this._appConfig.loadBalancing)
-            : new index_7.RoomCollector());
+            ? new index_7.SimpleLoadBalancingRoomDistributor({ loadBalancing: this._appConfig.loadBalancing })
+            : new index_7.RoomCollector({ db: this._db }));
         this._roomidHandler = new index_7.RoomidHandler();
         this._roomCrawler = new index_7.RoomCrawler(this._roomCollector);
         this._fixedController = new index_7.FixedGuardController();

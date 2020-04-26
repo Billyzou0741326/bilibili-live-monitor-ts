@@ -74,10 +74,11 @@ export class Database {
     private _expiry:    number;
     private _saveTask:  DelayedTask;
     private _watcher:   FileWatcher;
+    private _loaded:    boolean;
 
     public constructor(options?: { expiry?: number, name?: string }) {
         let name: string = 'record.json';                       // name defaults to 'record.json'
-        let expiry: number = 1000 * 60 * 60 * 24 * 3;           // expiry defaults to 3 days
+        let expiry: number = new Date().valueOf();              // expiry defaults to never (threshold === later - now)
 
         if (typeof options !== 'undefined') {
             name = options.name || name;                        // custom configuration
@@ -89,6 +90,7 @@ export class Database {
         this._filename = path.resolve(__dirname, name);
         this._roomData = {};
         this._expiry = expiry; 
+        this._loaded = false;
         this._saveTask = new DelayedTask();
         this._saveTask.withTime(2 * 60 * 1000).withCallback((): void => {
             this.update();
@@ -125,6 +127,9 @@ export class Database {
     private update(): Promise<void> {
         return (async(): Promise<void> => {
             try {
+                if (!this._loaded) {
+                    await this.load();
+                }
                 await this.save();
             }
             catch (error) {
@@ -159,6 +164,7 @@ export class Database {
             const data: string = await this.readFile();
 
             try {
+                this._loaded = true;
                 result = JSON.parse(data);
                 Object.keys(result).forEach((roomid: string): void => {
                     const rid: number = +roomid;

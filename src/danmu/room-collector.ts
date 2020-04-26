@@ -11,8 +11,8 @@ export class RoomCollector {
 
     private _db:            Database;
 
-    public constructor() {
-        this._db = new Database();
+    public constructor(options?: { db?: Database, loadBalancing?: LoadBalancing }) {
+        this._db = (options && options.db) || new Database();
     }
 
     public getFixedRooms(): Promise<Set<number>> {
@@ -141,10 +141,10 @@ export class SimpleLoadBalancingRoomDistributor extends RoomCollector {
 
     private _loadBalancing:  LoadBalancing;
 
-    public constructor(loadBalancing?: LoadBalancing) {
-        super();
+    public constructor(options?: { db?: Database, loadBalancing?: LoadBalancing }) {
+        super(options);
 
-        this._loadBalancing = loadBalancing || {
+        this._loadBalancing = (options && options.loadBalancing) || {
             totalServers:   1,
             serverIndex:    0,
         } as LoadBalancing;

@@ -90,7 +90,7 @@ var Database = /** @class */ (function () {
     function Database(options) {
         var _this = this;
         var name = 'record.json'; // name defaults to 'record.json'
-        var expiry = 1000 * 60 * 60 * 24 * 3; // expiry defaults to 3 days
+        var expiry = new Date().valueOf(); // expiry defaults to never (threshold === later - now)
         if (typeof options !== 'undefined') {
             name = options.name || name; // custom configuration
             if (options.expiry && Number.isInteger(options.expiry)) {
@@ -100,6 +100,7 @@ var Database = /** @class */ (function () {
         this._filename = path.resolve(__dirname, name);
         this._roomData = {};
         this._expiry = expiry;
+        this._loaded = false;
         this._saveTask = new index_1.DelayedTask();
         this._saveTask.withTime(2 * 60 * 1000).withCallback(function () {
             _this.update();
@@ -135,16 +136,21 @@ var Database = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, this.save()];
+                        _a.trys.push([0, 4, , 5]);
+                        if (!!this._loaded) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.load()];
                     case 1:
                         _a.sent();
-                        return [3 /*break*/, 3];
-                    case 2:
+                        _a.label = 2;
+                    case 2: return [4 /*yield*/, this.save()];
+                    case 3:
+                        _a.sent();
+                        return [3 /*break*/, 5];
+                    case 4:
                         error_1 = _a.sent();
                         index_2.cprint("(Database) - " + error_1.message, chalk.red);
-                        return [3 /*break*/, 3];
-                    case 3: return [2 /*return*/];
+                        return [3 /*break*/, 5];
+                    case 5: return [2 /*return*/];
                 }
             });
         }); })();
@@ -189,6 +195,7 @@ var Database = /** @class */ (function () {
                     case 1:
                         data = _a.sent();
                         try {
+                            this._loaded = true;
                             result = JSON.parse(data);
                             Object.keys(result).forEach(function (roomid) {
                                 var rid = +roomid;

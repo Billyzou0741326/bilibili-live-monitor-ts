@@ -65,8 +65,8 @@ export class App {
         this._httpServer = new HttpServer(this._appConfig.httpAddr);
 
         this._roomCollector = (this._appConfig.loadBalancing.totalServers > 1
-            ? new SimpleLoadBalancingRoomDistributor(this._appConfig.loadBalancing)
-            : new RoomCollector());
+            ? new SimpleLoadBalancingRoomDistributor({ loadBalancing: this._appConfig.loadBalancing })
+            : new RoomCollector({ db: this._db }));
         this._roomidHandler = new RoomidHandler();
         this._roomCrawler = new RoomCrawler(this._roomCollector);
         this._fixedController = new FixedGuardController();
