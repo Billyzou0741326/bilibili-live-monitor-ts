@@ -740,7 +740,7 @@ export class RaffleMonitor extends DanmuTCP {
 
     public constructor(addr: TCPAddress, info: RoomInfo, token: string = '') {
         const targets: number = DanmuTarget.NOTICE
-        super(addr, info, '', targets);
+        super(addr, info, token, targets);
     }
 
     protected onNoticeMsg(msg: any): void {

@@ -650,7 +650,7 @@ var RaffleMonitor = /** @class */ (function (_super) {
         if (token === void 0) { token = ''; }
         var _this = this;
         var targets = DanmuTarget.NOTICE;
-        _this = _super.call(this, addr, info, '', targets) || this;
+        _this = _super.call(this, addr, info, token, targets) || this;
         return _this;
     }
     RaffleMonitor.prototype.onNoticeMsg = function (msg) {
