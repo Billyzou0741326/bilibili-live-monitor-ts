@@ -77,28 +77,7 @@ export class App {
         this._running = false;
 
         const dynRefreshInterval = this._appConfig.roomCollectorStrategy.dynamicRoomsQueryInterval * 1000;
-        this._dynamicRefreshTask.withTime(dynRefreshInterval).withCallback((): void => {
-            const dynamicTask = this._roomCollector.getDynamicRooms();
-            (async () => {
-                try {
-                    const roomidSet: Set<number> = await dynamicTask;
-                    const establishedFix: Map<number, DanmuTCP> = this._fixedController.connections;
-                    const establishedDyn: Map<number, DanmuTCP> = this._dynamicController.connections;
-                    cprint(`Monitoring (静态) ${establishedFix.size} + (动态) ${establishedDyn.size}`, chalk.green);
-
-                    const roomids: number[] = Array.from(roomidSet).filter((roomid: number): boolean => {
-                        return !establishedFix.has(roomid);
-                    });
-                    const tasks = this._dynamicController.add(roomids);
-                    await Promise.all(tasks);
-                    this._dynamicRefreshTask.start();
-                }
-                catch (error) {
-                    cprint(`(Dynamic) - ${error.message}`, chalk.red);
-                    this._dynamicRefreshTask.start();
-                }
-            })();
-        });
+        this._dynamicRefreshTask.withTime(dynRefreshInterval).withCallback((): void => {});
     }
 
     private setupListeners(): void {
@@ -202,6 +181,9 @@ export class App {
                 const fixedTask = this._roomCollector.getFixedRooms();
                 const dynamicTask = this._roomCollector.getDynamicRooms();
                 (async () => {
+                    const token = await Bilibili.getLiveDanmuToken();
+                    this._fixedController.setToken(token);
+                    this._dynamicController.setToken(token);
                     const fixedRooms: Set<number> = await fixedTask;
                     this._fixedController.add(Array.from(fixedRooms));
                     const dynamicRooms: number[] = Array.from(await dynamicTask);
@@ -219,8 +201,9 @@ export class App {
                             const roomids: number[] = Array.from(roomidSet).filter((roomid: number): boolean => {
                                 return !establishedFix.has(roomid);
                             });
+                            const wait = this._appConfig.roomCollectorStrategy.dynamicRoomsQueryInterval * 1000
                             const tasks = this._dynamicController.add(roomids);
-                            await Promise.all([ ...tasks, sleep(10 * 1000) ]);
+                            await Promise.all([ ...tasks, sleep(wait) ]);
                             this._dynamicRefreshTask.start();
                         }
                         catch (error) {

@@ -660,10 +660,12 @@ var Bilibili = /** @class */ (function (_super) {
     };
     Bilibili.getLiveDanmuConf = function (roomid) {
         var params = {
-            'room_id': roomid,
             'platform': 'pc',
             'player': 'web',
         };
+        if (typeof roomid !== 'undefined') {
+            params['room_id'] = roomid;
+        }
         return new Promise(function (resolve, reject) {
             var request = index_2.Request.Builder().
                 withHost('api.live.bilibili.com').

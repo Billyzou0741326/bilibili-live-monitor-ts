@@ -25,15 +25,22 @@ export abstract class AbstractRoomController extends EventEmitter {
 
     protected _connections:     Map<number, DanmuTCP>;
     protected _taskQueue:       RateLimiter;
+    protected _token:           string;
 
     protected constructor() {
         super();
         this._connections = new Map();
-        this._taskQueue = new RateLimiter(10, 1000);
+        this._taskQueue = new RateLimiter(50, 1000);
+        this._token = '';
     }
 
     public get connections(): Map<number, DanmuTCP> {
         return this._connections;
+    }
+
+    public setToken(token: string): this {
+        this._token = token;
+        return this;
     }
 
     public start(): void {
@@ -81,8 +88,10 @@ abstract class GuardController extends AbstractRoomController {
         };
         return (async(): Promise<void> => {
             try {
-                const token = await Bilibili.getLiveDanmuToken(roomid);
-                const listener = this.createListener(tcp_addr, roomInfo, token);
+                if (this._token === '') {
+                    this._token = await Bilibili.getLiveDanmuToken();
+                }
+                const listener = this.createListener(tcp_addr, roomInfo, this._token);
                 this._connections.set(roomid, listener);
                 this._taskQueue.add((): void => { listener.start() });
                 listener.
@@ -187,9 +196,11 @@ export class RaffleController extends AbstractRoomController {
                         const roomid = rooms[i];
                         if (await Bilibili.isLive(roomid)) {
 
-                            const token = await Bilibili.getLiveDanmuToken(roomid);
+                            if (this._token === '') {
+                                this._token = await Bilibili.getLiveDanmuToken();
+                            }
                             done = true;
-                            this.setupRoomInArea(roomid, areaid, token);
+                            this.setupRoomInArea(roomid, areaid, this._token);
                         }
                     }
                     catch (error) {

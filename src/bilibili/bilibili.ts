@@ -745,12 +745,14 @@ export class Bilibili extends BilibiliBase {
         return Bilibili.request(request);
     }
 
-    public static getLiveDanmuConf(roomid: number): Promise<any> {
+    public static getLiveDanmuConf(roomid?: number): Promise<any> {
         const params: any = {
-            'room_id': roomid,
             'platform': 'pc',
             'player': 'web',
         };
+        if (typeof roomid !== 'undefined') {
+            params['room_id'] = roomid;
+        }
 
         return new Promise((resolve, reject): void => {
             const request: Request = Request.Builder().
@@ -769,7 +771,7 @@ export class Bilibili extends BilibiliBase {
         });
     }
     
-    public static getLiveDanmuToken(roomid: number): Promise<string> {
+    public static getLiveDanmuToken(roomid?: number): Promise<string> {
         return (async(): Promise<string> => {
             const resp: any = await Bilibili.getLiveDanmuConf(roomid);
             if (resp['code'] !== 0) {
