@@ -221,36 +221,39 @@ var RaffleController = /** @class */ (function (_super) {
         var _this = this;
         if (numRoomsQueried === void 0) { numRoomsQueried = 10; }
         var task = function () { return __awaiter(_this, void 0, void 0, function () {
-            var done, max, i, roomid, error_2;
+            var done, max, i, roomid, token, error_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (!!this._connections.has(areaid)) return [3 /*break*/, 7];
+                        if (!!this._connections.has(areaid)) return [3 /*break*/, 9];
                         done = false;
                         max = rooms.length;
                         i = 0;
                         _a.label = 1;
                     case 1:
-                        if (!(!done && i < max)) return [3 /*break*/, 6];
+                        if (!(!done && i < max)) return [3 /*break*/, 8];
                         _a.label = 2;
                     case 2:
-                        _a.trys.push([2, 4, , 5]);
+                        _a.trys.push([2, 6, , 7]);
                         roomid = rooms[i];
                         return [4 /*yield*/, index_2.Bilibili.isLive(roomid)];
                     case 3:
-                        if (_a.sent()) {
-                            done = true;
-                            this.setupRoomInArea(roomid, areaid);
-                        }
-                        return [3 /*break*/, 5];
+                        if (!_a.sent()) return [3 /*break*/, 5];
+                        return [4 /*yield*/, index_2.Bilibili.getLiveDanmuToken(roomid)];
                     case 4:
+                        token = _a.sent();
+                        done = true;
+                        this.setupRoomInArea(roomid, areaid, token);
+                        _a.label = 5;
+                    case 5: return [3 /*break*/, 7];
+                    case 6:
                         error_2 = _a.sent();
                         index_1.cprint("Bilibili.isLive - " + error_2.message, chalk.red);
-                        return [3 /*break*/, 5];
-                    case 5:
+                        return [3 /*break*/, 7];
+                    case 7:
                         ++i;
                         return [3 /*break*/, 1];
-                    case 6:
+                    case 8:
                         if (!done) {
                             if (numRoomsQueried < 1000) {
                                 this.setupArea(areaid, numRoomsQueried + 10);
@@ -259,19 +262,20 @@ var RaffleController = /** @class */ (function (_super) {
                                 index_1.cprint("RaffleController - Can't find a room to set up monitor in " + this._nameOfArea[areaid] + "\u533A", chalk.red);
                             }
                         }
-                        _a.label = 7;
-                    case 7: return [2 /*return*/];
+                        _a.label = 9;
+                    case 9: return [2 /*return*/];
                 }
             });
         }); };
         task();
     };
-    RaffleController.prototype.setupRoomInArea = function (roomid, areaid) {
+    RaffleController.prototype.setupRoomInArea = function (roomid, areaid, token) {
         var _this = this;
+        if (token === void 0) { token = ''; }
         if (this._connections.has(areaid)) {
             return;
         }
-        var listener = new index_5.RaffleMonitor(tcp_addr, { roomid: roomid, areaid: areaid });
+        var listener = new index_5.RaffleMonitor(tcp_addr, { roomid: roomid, areaid: areaid }, token);
         index_1.cprint("Setting up monitor @room " + roomid.toString().padEnd(13) + " in " + this._nameOfArea[areaid] + "\u533A", chalk.green);
         this._taskQueue.add(function () { listener.start(); });
         this._connections.set(areaid, listener);

@@ -1,6 +1,6 @@
 {
     "bilibili-danmu": {
-        "host": "broadcastlv.chat.bilibili.com",
+        "host": "tx-live-dmcmt-sv-01.chat.bilibili.com",
         "port": 2243
     },
     "servers": {
@@ -27,10 +27,10 @@
     },
     "clients": {
         "bilibili-tcp": {
-            "enable": false
+            "enable": true
         },
         "bilibili-http": {
-            "enable": true
+            "enable": false
         }
     },
     "load-balancing": {

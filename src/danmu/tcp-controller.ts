@@ -187,8 +187,9 @@ export class RaffleController extends AbstractRoomController {
                         const roomid = rooms[i];
                         if (await Bilibili.isLive(roomid)) {
 
+                            const token = await Bilibili.getLiveDanmuToken(roomid);
                             done = true;
-                            this.setupRoomInArea(roomid, areaid);
+                            this.setupRoomInArea(roomid, areaid, token);
                         }
                     }
                     catch (error) {
@@ -209,12 +210,12 @@ export class RaffleController extends AbstractRoomController {
         task();
     }
 
-    private setupRoomInArea(roomid: number, areaid: number): void {
+    private setupRoomInArea(roomid: number, areaid: number, token: string = ''): void {
         if (this._connections.has(areaid)) {
             return;
         }
 
-        const listener = new RaffleMonitor(tcp_addr, { roomid: roomid, areaid: areaid });
+        const listener = new RaffleMonitor(tcp_addr, { roomid: roomid, areaid: areaid }, token);
 
         cprint(`Setting up monitor @room ${roomid.toString().padEnd(13)} in ${this._nameOfArea[areaid]}区`, chalk.green);
 
