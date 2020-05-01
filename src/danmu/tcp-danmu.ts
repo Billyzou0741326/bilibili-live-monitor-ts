@@ -330,8 +330,8 @@ export abstract class DanmuTCP extends AbstractDanmuTCP {
             case 'ROOM_CHANGE':
                 this.onRoomChange(msg);
                 break;
-            case 'PREPARING':
-                this.onPreparing(msg);
+            case 'CUT_OFF':
+                this.onCutoff(msg);
                 break;
             case 'LIVE':
                 this.onLive(msg);
@@ -504,16 +504,19 @@ export abstract class DanmuTCP extends AbstractDanmuTCP {
         return details;
     }
 
-    protected onNoticeMsg(msg: any) {
+    protected onNoticeMsg(msg: any): void {
     }
 
-    protected onPreparing(msg: any) {
+    protected onPreparing(msg: any): void {
     }
 
-    protected onLive(msg: any) {
+    protected onCutoff(msg: any): void {
     }
 
-    protected onRoomChange(msg: any) {
+    protected onLive(msg: any): void {
+    }
+
+    protected onRoomChange(msg: any): void {
     }
 
     protected onPopularity(popularity: number): number {
@@ -706,6 +709,10 @@ export class DynamicGuardMonitor extends FixedGuardMonitor {
         this._canClose = true;
     }
 
+    protected onCutoff(msg: any): void {
+        this._canClose = true;
+    }
+
     protected onLive(msg: any): void {
         this._canClose = false;
     }
@@ -759,6 +766,12 @@ export class RaffleMonitor extends DanmuTCP {
     }
 
     protected onPreparing(msg: any): void {
+        if (this.areaid !== 0) {
+            this.close(true);
+        }
+    }
+
+    protected onCutoff(msg: any): void {
         if (this.areaid !== 0) {
             this.close(true);
         }

@@ -293,8 +293,8 @@ var DanmuTCP = /** @class */ (function (_super) {
             case 'ROOM_CHANGE':
                 this.onRoomChange(msg);
                 break;
-            case 'PREPARING':
-                this.onPreparing(msg);
+            case 'CUT_OFF':
+                this.onCutoff(msg);
                 break;
             case 'LIVE':
                 this.onLive(msg);
@@ -445,6 +445,8 @@ var DanmuTCP = /** @class */ (function (_super) {
     DanmuTCP.prototype.onNoticeMsg = function (msg) {
     };
     DanmuTCP.prototype.onPreparing = function (msg) {
+    };
+    DanmuTCP.prototype.onCutoff = function (msg) {
     };
     DanmuTCP.prototype.onLive = function (msg) {
     };
@@ -619,6 +621,9 @@ var DynamicGuardMonitor = /** @class */ (function (_super) {
     DynamicGuardMonitor.prototype.onPreparing = function (msg) {
         this._canClose = true;
     };
+    DynamicGuardMonitor.prototype.onCutoff = function (msg) {
+        this._canClose = true;
+    };
     DynamicGuardMonitor.prototype.onLive = function (msg) {
         this._canClose = false;
     };
@@ -667,6 +672,11 @@ var RaffleMonitor = /** @class */ (function (_super) {
         }
     };
     RaffleMonitor.prototype.onPreparing = function (msg) {
+        if (this.areaid !== 0) {
+            this.close(true);
+        }
+    };
+    RaffleMonitor.prototype.onCutoff = function (msg) {
         if (this.areaid !== 0) {
             this.close(true);
         }
