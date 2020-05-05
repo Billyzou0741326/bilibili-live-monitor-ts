@@ -188,6 +188,7 @@ var WsServerBilive = /** @class */ (function (_super) {
             'roomid': 'roomID',
             'name': 'title',
             'type': 'type',
+            'expireAt': 'expireAt',
         };
         var translated = {};
         Object.keys(toKey).forEach(function (key) {

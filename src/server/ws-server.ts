@@ -212,6 +212,7 @@ export class WsServerBilive extends AbstractWsServer {
             'roomid':   'roomID',
             'name':     'title',
             'type':     'type',
+            'expireAt': 'expireAt',
         };
 
         const translated: any = {};
