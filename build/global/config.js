@@ -161,7 +161,7 @@ var rand_hex = function (length) {
 var statistics = {
     'appId': 1,
     'platform': 3,
-    'version': '5.55.1',
+    'version': '5.58.0',
     'abtest': '',
 };
 // const appkey: string = 'fb2c5b71e05297d0';                          // Alternative  APP_KEY
@@ -170,7 +170,7 @@ var appkey = '1d8b6e7d45233436';
 var appSecret = '560c52ccd288fed045859ed18bffd973';
 var appCommon = {
     'appkey': appkey,
-    'build': 5551100,
+    'build': 5580400,
     'channel': 'bili',
     'device': 'android',
     'mobi_app': 'android',
@@ -179,10 +179,10 @@ var appCommon = {
 };
 var appHeaders = {
     'Connection': 'keep-alive',
-    'User-Agent': 'Mozilla/5.0 BiliDroid/5.55.1 (bbcallen@gmail.com)',
-    'Buvid': "XZ" + rand_hex(35),
+    'User-Agent': 'Mozilla/5.0 BiliDroid/5.58.0 (bbcallen@gmail.com)',
+    'buvid': "XZ" + rand_hex(35),
 };
 var webHeaders = {
     'Connection': 'keep-alive',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:75.0) Gecko/20100101 Firefox/75.0',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0',
 };

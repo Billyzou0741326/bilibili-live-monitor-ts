@@ -7,7 +7,8 @@ import {
     WebSession, } from './index';
 import {
     Request,
-    Response, } from '../net/index';
+    Response,
+    Xhr, } from '../net/index';
 import {
     cprint,
     Cookies,
@@ -98,6 +99,199 @@ export class Bilibili extends BilibiliBase {
             .build()
         );
         return Bilibili.request(request);
+    }
+
+    public static sessionInfo(session: {app: AppSession, web: WebSession}): Promise<any> {
+        const access_token = session.app.access_token;
+        const params: any = Object.assign(new Object(), config.appCommon);
+
+        params['access_token'] = access_token;
+        params['device'] = 'phone';
+        params['buvid'] = config.appHeaders.buvid;
+        params['bili_jct'] = session.web.bili_jct;
+        params['SESSDATA'] = session.web.SESSDATA;
+        params['DedeUserID'] = session.web.DedeUserID;
+        params['DedeUserID__ckMd5'] = session.web.DedeUserID__ckMd5;
+        params['sid'] = session.web.sid;
+        params['ts'] = Math.floor(0.001 * new Date().valueOf());
+        const payload: string = Bilibili.parseAppParams(sort(params));
+
+        const request: Request = Request.Builder().
+            withHost('passport.bilibili.com').
+            withPath('/api/v3/oauth2/info').
+            withMethod(Request.GET).
+            withHeaders(config.appHeaders).
+            withParams(payload).
+            build();
+        return Bilibili.request(request);
+
+        ////////////////////////////// return value ////////////////////////////////
+        //// After refreshing / expired, the refresh token and access token
+        //// becomes invalid, and it is ILLEGAL to reuse the token
+        // {
+        //     "message": "您的账号存在高危异常行为，为了您的账号安全，请验证后登录帐号。",
+        //     "ts": 1589223636,
+        //     "code": 61000
+        // }
+        //// Otherwise, it's fine
+        // {
+        //     "ts": 1589225399,
+        //     "code": 0,
+        //     "data": {
+        //         "mid": 26293612,
+        //         "access_token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx551",
+        //         "expires_in": 2587299
+        //     }
+        // }
+    }
+
+    public static getCookiesFromToken(appSession: AppSession | string): Promise<{[key:string]: string}> {
+        let access_token: string = '';
+        if (typeof appSession === 'string') {
+            access_token = appSession;
+        } else {
+            access_token = appSession.access_token;
+        }
+
+        const params: any = Object.assign(new Object(), config.appCommon);
+        params['access_key'] = access_token;
+        params['domain'] = '.bigfunapp.cn';
+        params['ts'] = Math.floor(0.001 * new Date().valueOf());
+        params['webview_cookie'] = 1;
+        const query: string = Bilibili.parseAppParams(sort(params));
+
+        const request: Request = Request.Builder().
+            withHost('passport.bigfunapp.cn').
+            withPath('/api/login/sso').
+            withMethod(Request.GET).
+            withHeaders(config.appHeaders).
+            withParams(query).
+            build();
+        return (async(): Promise<{[key:string]: string}> => {
+            const response: Response = await new Xhr().request(request);
+            const headers = response.headers;
+            if (typeof headers['set-cookie'] === 'undefined') {
+                return {};
+            }
+            const cookies = Cookies.parseSetCookie(headers['set-cookie']);
+            return cookies;
+        })();
+
+        ////////////////////////////// return value ////////////////////////////////
+        ////// The access_token has expired or invalidified
+        // {
+        //     "sid": "xxxxxxxx"
+        // }
+        //
+        ////// Otherwise, all is good
+        // {
+        //     "sid": "ijy21zh8",
+        //     "DedeUserID": "26293612",
+        //     "SESSDATA": "5e72c94d%2C1591818209%2C33b6ca51",
+        //     "bili_jct": "968c1adc067b2b9296fea53d2acf5664"
+        // }
+    }
+
+    public static refreshToken(appSession: AppSession): Promise<any> {
+        const access_token = appSession.access_token;
+        const refresh_token = appSession.refresh_token;
+
+        const data: any = Object.assign(new Object(), config.appCommon);
+        data['access_token'] = access_token;
+        data['refresh_token'] = refresh_token;
+        const payload: string = Bilibili.parseAppParams(sort(data));
+
+        const request: Request = Request.Builder().
+            withHost('passport.bilibili.com').
+            withPath('/api/v2/oauth2/refresh_token').
+            withMethod(Request.POST).
+            withHeaders(config.appHeaders).
+            withData(payload).
+            withContentType('application/x-www-form-urlencoded').
+            build();
+        return Bilibili.request(request);
+
+        ////////////////////////////// return value ////////////////////////////////
+        ////// After refreshing, the refresh token and access token becomes
+        ////// invalid, and it is ILLEGAL to reuse the tokens for refreshing
+        // {
+        //     "ts": 1589166077,
+        //     "message": "Account is not logined.",
+        //     "code": -101
+        // }
+        //
+        ////// A pair of mismatch refresh(access) tokens
+        // {
+        //     "ts": 1589165904,
+        //     "message": "refresh_token not match.",
+        //     "code": -903
+        // }
+        //
+        ////// Otherwise, all is good (same return value as oauth2/login)
+        // {
+        //     "ts": 1589225400,
+        //     "code": 0,
+        //     "data": {
+        //         "token_info": {
+        //             "mid": xxxxxxxx,
+        //             "access_token": "xxxxxxxxxxxxxxxxxxxxxxxxa53df351",
+        //             "refresh_token": "xxxxxxxxxxxxxxxxxxxxxxxx6caeab51",
+        //             "expires_in": 2592000
+        //         },
+        //         "cookie_info": {
+        //             "cookies": [
+        //                 {
+        //                     "name": "bili_jct",
+        //                     "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        //                     "http_only": 0,
+        //                     "expires": 1591817400,
+        //                     "type": 0
+        //                 },
+        //                 {
+        //                     "name": "DedeUserID",
+        //                     "value": "xxxxxx12",
+        //                     "http_only": 0,
+        //                     "expires": 1591817400,
+        //                     "type": 0
+        //                 },
+        //                 {
+        //                     "name": "DedeUserID__ckMd5",
+        //                     "value": "xxxxxxxxxxxxx6eb",
+        //                     "http_only": 0,
+        //                     "expires": 1591817400,
+        //                     "type": 0
+        //                 },
+        //                 {
+        //                     "name": "sid",
+        //                     "value": "k5iy6q0w",
+        //                     "http_only": 0,
+        //                     "expires": 1591817400,
+        //                     "type": 0
+        //                 },
+        //                 {
+        //                     "name": "SESSDATA",
+        //                     "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        //                     "http_only": 1,
+        //                     "expires": 1591817400,
+        //                     "type": 0
+        //                 }
+        //             ],
+        //             "domains": [
+        //                 ".bilibili.com",
+        //                 ".biligame.com",
+        //                 ".im9.com",
+        //                 ".bigfunapp.cn"
+        //             ]
+        //         },
+        //         "sso": [
+        //             "https://passport.bilibili.com/api/v2/sso",
+        //             "https://passport.biligame.com/api/v2/sso",
+        //             "https://passport.im9.com/api/v2/sso",
+        //             "https://passport.bigfunapp.cn/api/v2/sso"
+        //         ],
+        //         "is_tourist": false
+        //     }
+        // }
     }
 
     /**
@@ -989,22 +1183,6 @@ export class Bilibili extends BilibiliBase {
             .build()
         );
 
-        return Bilibili.request(request);
-    }
-
-    public static sessionInfo(appSession: AppSession): Promise<any> {
-        const params: any = Object.assign(new Object(), config.appCommon);
-        params['access_token'] = appSession.access_token;
-        const paramstr = Bilibili.parseAppParams(sort(params));
-
-        const request = (Request.Builder()
-            .withHost('passport.bilibili.com')
-            .withPath('/api/v3/oauth2/info')
-            .withMethod(Request.GET)
-            .withHeaders(config.appHeaders)
-            .withParams(paramstr)
-            .build()
-        );
         return Bilibili.request(request);
     }
 
