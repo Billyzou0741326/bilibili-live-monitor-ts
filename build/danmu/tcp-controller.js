@@ -115,20 +115,16 @@ var GuardController = /** @class */ (function (_super) {
             roomid: roomid,
         };
         return (function () { return __awaiter(_this, void 0, void 0, function () {
-            var _a, listener_1, _loop_1, category, error_1;
+            var token, listener_1, _loop_1, category, error_1;
             var _this = this;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0:
-                        _b.trys.push([0, 3, , 4]);
-                        if (!(this._token === '')) return [3 /*break*/, 2];
-                        _a = this;
-                        return [4 /*yield*/, index_2.Bilibili.getLiveDanmuToken()];
+                        _a.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, index_2.Bilibili.appGetLiveDanmuToken(roomid)];
                     case 1:
-                        _a._token = _b.sent();
-                        _b.label = 2;
-                    case 2:
-                        listener_1 = this.createListener(tcp_addr, roomInfo, this._token);
+                        token = _a.sent();
+                        listener_1 = this.createListener(tcp_addr, roomInfo, token);
                         this._connections.set(roomid, listener_1);
                         this._taskQueue.add(function () { listener_1.start(); });
                         listener_1.
@@ -141,12 +137,12 @@ var GuardController = /** @class */ (function (_super) {
                         for (category in index_5.RaffleCategory) {
                             _loop_1(category);
                         }
-                        return [3 /*break*/, 4];
-                    case 3:
-                        error_1 = _b.sent();
+                        return [3 /*break*/, 3];
+                    case 2:
+                        error_1 = _a.sent();
                         index_1.cprint("(Listener) - " + error_1.message, chalk.red);
-                        return [3 /*break*/, 4];
-                    case 4: return [2 /*return*/];
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
                 }
             });
         }); })();
@@ -230,43 +226,39 @@ var RaffleController = /** @class */ (function (_super) {
         var _this = this;
         if (numRoomsQueried === void 0) { numRoomsQueried = 10; }
         var task = function () { return __awaiter(_this, void 0, void 0, function () {
-            var done, max, i, roomid, _a, error_2;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            var done, max, i, roomid, token, error_2;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0:
-                        if (!!this._connections.has(areaid)) return [3 /*break*/, 10];
+                        if (!!this._connections.has(areaid)) return [3 /*break*/, 9];
                         done = false;
                         max = rooms.length;
                         i = 0;
-                        _b.label = 1;
+                        _a.label = 1;
                     case 1:
-                        if (!(!done && i < max)) return [3 /*break*/, 9];
-                        _b.label = 2;
+                        if (!(!done && i < max)) return [3 /*break*/, 8];
+                        _a.label = 2;
                     case 2:
-                        _b.trys.push([2, 7, , 8]);
+                        _a.trys.push([2, 6, , 7]);
                         roomid = rooms[i];
                         return [4 /*yield*/, index_2.Bilibili.isLive(roomid)];
                     case 3:
-                        if (!_b.sent()) return [3 /*break*/, 6];
-                        if (!(this._token === '')) return [3 /*break*/, 5];
-                        _a = this;
-                        return [4 /*yield*/, index_2.Bilibili.getLiveDanmuToken()];
+                        if (!_a.sent()) return [3 /*break*/, 5];
+                        return [4 /*yield*/, index_2.Bilibili.webGetLiveDanmuToken(roomid)];
                     case 4:
-                        _a._token = _b.sent();
-                        _b.label = 5;
-                    case 5:
+                        token = _a.sent();
                         done = true;
-                        this.setupRoomInArea(roomid, areaid, this._token);
-                        _b.label = 6;
-                    case 6: return [3 /*break*/, 8];
-                    case 7:
-                        error_2 = _b.sent();
+                        this.setupRoomInArea(roomid, areaid, token);
+                        _a.label = 5;
+                    case 5: return [3 /*break*/, 7];
+                    case 6:
+                        error_2 = _a.sent();
                         index_1.cprint("Bilibili.isLive - " + error_2.message, chalk.red);
-                        return [3 /*break*/, 8];
-                    case 8:
+                        return [3 /*break*/, 7];
+                    case 7:
                         ++i;
                         return [3 /*break*/, 1];
-                    case 9:
+                    case 8:
                         if (!done) {
                             if (numRoomsQueried < 1000) {
                                 this.setupArea(areaid, numRoomsQueried + 10);
@@ -275,8 +267,8 @@ var RaffleController = /** @class */ (function (_super) {
                                 index_1.cprint("RaffleController - Can't find a room to set up monitor in " + this._nameOfArea[areaid] + "\u533A", chalk.red);
                             }
                         }
-                        _b.label = 10;
-                    case 10: return [2 /*return*/];
+                        _a.label = 9;
+                    case 9: return [2 /*return*/];
                 }
             });
         }); };

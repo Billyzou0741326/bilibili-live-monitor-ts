@@ -540,6 +540,41 @@ export class Bilibili extends BilibiliBase {
         return Bilibili.request(request);
     }
 
+    public static appGetLiveDanmuConf(roomid: number): Promise<any> {
+        const params: any = Object.assign(new Object(), config.appCommon);
+        params['ts'] = Math.floor(0.001 * new Date().valueOf());
+        if (typeof roomid !== 'undefined') {
+            params['room_id'] = roomid;
+        }
+        const paramstr = Bilibili.parseAppParams(sort(params));
+
+        return new Promise((resolve, reject): void => {
+            const request: Request = Request.Builder().
+                withHost('api.live.bilibili.com').
+                withPath('/xlive/app-room/v1/index/getDanmuInfo').
+                withMethod(Request.GET).
+                withParams(paramstr).
+                withHeaders(config.appHeaders).
+                build();
+
+            rateLimiter.add((): void => {
+                Bilibili.request(request).
+                    then((resp: any) => { resolve(resp); }).
+                    catch((error: any) => { reject(error); });
+            });
+        });
+    }
+    
+    public static appGetLiveDanmuToken(roomid: number): Promise<string> {
+        return (async(): Promise<string> => {
+            const resp: any = await Bilibili.appGetLiveDanmuConf(roomid);
+            if (resp['code'] !== 0) {
+                throw new BilibiliError(`live token failed ${resp['msg'] || resp['message'] || ''}`);
+            }
+            return resp['data']['token'];
+        })();
+    }
+
     /**
      * @param   access_key  String      
      * @param   info        Object
@@ -939,7 +974,7 @@ export class Bilibili extends BilibiliBase {
         return Bilibili.request(request);
     }
 
-    public static getLiveDanmuConf(roomid?: number): Promise<any> {
+    public static webGetLiveDanmuConf(roomid?: number): Promise<any> {
         const params: any = {
             'platform': 'pc',
             'player': 'web',
@@ -965,9 +1000,9 @@ export class Bilibili extends BilibiliBase {
         });
     }
     
-    public static getLiveDanmuToken(roomid?: number): Promise<string> {
+    public static webGetLiveDanmuToken(roomid?: number): Promise<string> {
         return (async(): Promise<string> => {
-            const resp: any = await Bilibili.getLiveDanmuConf(roomid);
+            const resp: any = await Bilibili.webGetLiveDanmuConf(roomid);
             if (resp['code'] !== 0) {
                 throw new BilibiliError(`live token failed ${resp['msg'] || resp['message'] || ''}`);
             }

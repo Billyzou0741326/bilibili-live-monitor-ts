@@ -181,7 +181,7 @@ export class App {
                 const fixedTask = this._roomCollector.getFixedRooms();
                 const dynamicTask = this._roomCollector.getDynamicRooms();
                 (async () => {
-                    const token = await Bilibili.getLiveDanmuToken();
+                    const token = '';
                     this._fixedController.setToken(token);
                     this._dynamicController.setToken(token);
                     const fixedRooms: Set<number> = await fixedTask;

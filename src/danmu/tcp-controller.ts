@@ -88,10 +88,8 @@ abstract class GuardController extends AbstractRoomController {
         };
         return (async(): Promise<void> => {
             try {
-                if (this._token === '') {
-                    this._token = await Bilibili.getLiveDanmuToken();
-                }
-                const listener = this.createListener(tcp_addr, roomInfo, this._token);
+                const token = await Bilibili.appGetLiveDanmuToken(roomid);
+                const listener = this.createListener(tcp_addr, roomInfo, token);
                 this._connections.set(roomid, listener);
                 this._taskQueue.add((): void => { listener.start() });
                 listener.
@@ -196,11 +194,9 @@ export class RaffleController extends AbstractRoomController {
                         const roomid = rooms[i];
                         if (await Bilibili.isLive(roomid)) {
 
-                            if (this._token === '') {
-                                this._token = await Bilibili.getLiveDanmuToken();
-                            }
+                            const token = await Bilibili.webGetLiveDanmuToken(roomid);
                             done = true;
-                            this.setupRoomInArea(roomid, areaid, this._token);
+                            this.setupRoomInArea(roomid, areaid, token);
                         }
                     }
                     catch (error) {

@@ -515,6 +515,45 @@ var Bilibili = /** @class */ (function (_super) {
             .build());
         return Bilibili.request(request);
     };
+    Bilibili.appGetLiveDanmuConf = function (roomid) {
+        var params = Object.assign(new Object(), config.appCommon);
+        params['ts'] = Math.floor(0.001 * new Date().valueOf());
+        if (typeof roomid !== 'undefined') {
+            params['room_id'] = roomid;
+        }
+        var paramstr = Bilibili.parseAppParams(sort(params));
+        return new Promise(function (resolve, reject) {
+            var request = index_2.Request.Builder().
+                withHost('api.live.bilibili.com').
+                withPath('/xlive/app-room/v1/index/getDanmuInfo').
+                withMethod(index_2.Request.GET).
+                withParams(paramstr).
+                withHeaders(config.appHeaders).
+                build();
+            rateLimiter.add(function () {
+                Bilibili.request(request).
+                    then(function (resp) { resolve(resp); }).
+                    catch(function (error) { reject(error); });
+            });
+        });
+    };
+    Bilibili.appGetLiveDanmuToken = function (roomid) {
+        var _this = this;
+        return (function () { return __awaiter(_this, void 0, void 0, function () {
+            var resp;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, Bilibili.appGetLiveDanmuConf(roomid)];
+                    case 1:
+                        resp = _a.sent();
+                        if (resp['code'] !== 0) {
+                            throw new index_1.BilibiliError("live token failed " + (resp['msg'] || resp['message'] || ''));
+                        }
+                        return [2 /*return*/, resp['data']['token']];
+                }
+            });
+        }); })();
+    };
     /**
      * @param   access_key  String
      * @param   info        Object
@@ -848,7 +887,7 @@ var Bilibili = /** @class */ (function (_super) {
             .build());
         return Bilibili.request(request);
     };
-    Bilibili.getLiveDanmuConf = function (roomid) {
+    Bilibili.webGetLiveDanmuConf = function (roomid) {
         var params = {
             'platform': 'pc',
             'player': 'web',
@@ -871,13 +910,13 @@ var Bilibili = /** @class */ (function (_super) {
             });
         });
     };
-    Bilibili.getLiveDanmuToken = function (roomid) {
+    Bilibili.webGetLiveDanmuToken = function (roomid) {
         var _this = this;
         return (function () { return __awaiter(_this, void 0, void 0, function () {
             var resp;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, Bilibili.getLiveDanmuConf(roomid)];
+                    case 0: return [4 /*yield*/, Bilibili.webGetLiveDanmuConf(roomid)];
                     case 1:
                         resp = _a.sent();
                         if (resp['code'] !== 0) {
