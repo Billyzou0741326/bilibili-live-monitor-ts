@@ -25,22 +25,17 @@ export abstract class AbstractRoomController extends EventEmitter {
 
     protected _connections:     Map<number, DanmuTCP>;
     protected _taskQueue:       RateLimiter;
-    protected _token:           string;
+    protected _tokenPool:       Map<number, string>;
 
     protected constructor() {
         super();
         this._connections = new Map();
         this._taskQueue = new RateLimiter(50, 1000);
-        this._token = '';
+        this._tokenPool = new Map();
     }
 
     public get connections(): Map<number, DanmuTCP> {
         return this._connections;
-    }
-
-    public setToken(token: string): this {
-        this._token = token;
-        return this;
     }
 
     public start(): void {
@@ -88,7 +83,11 @@ abstract class GuardController extends AbstractRoomController {
         };
         return (async(): Promise<void> => {
             try {
-                const token = await Bilibili.appGetLiveDanmuToken(roomid);
+                let token = this._tokenPool.get(roomid);
+                if (typeof token === 'undefined') {
+                    token = await Bilibili.webGetLiveDanmuToken(roomid);
+                    this._tokenPool.set(roomid, token);
+                }
                 const listener = this.createListener(tcp_addr, roomInfo, token);
                 this._connections.set(roomid, listener);
                 this._taskQueue.add((): void => { listener.start() });
@@ -194,7 +193,11 @@ export class RaffleController extends AbstractRoomController {
                         const roomid = rooms[i];
                         if (await Bilibili.isLive(roomid)) {
 
-                            const token = await Bilibili.webGetLiveDanmuToken(roomid);
+                            let token = this._tokenPool.get(roomid);
+                            if (typeof token === 'undefined') {
+                                token = await Bilibili.webGetLiveDanmuToken(roomid);
+                                this._tokenPool.set(roomid, token);
+                            }
                             done = true;
                             this.setupRoomInArea(roomid, areaid, token);
                         }

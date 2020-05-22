@@ -1,5 +1,6 @@
 import * as http from 'http';
 import * as https from 'https';
+import * as http2 from 'http2';
 import * as querystring from 'querystring';
 
 let httpAgent: any = null;
@@ -13,6 +14,11 @@ export enum RequestMethods {
     POST = 'POST',
     HEAD = 'HEAD',
     DELETE = 'DELETE',
+}
+
+export enum HttpVersion {
+    HTTP_VERSION_1 = 1,
+    HTTP_VERSION_2 = 2,
 }
 
 export interface RequestOptions {
@@ -40,6 +46,7 @@ export class Request {
     protected _contentType: string;
     protected _agent:       http.Agent;
     protected _timeout:     number;
+    protected _version:     HttpVersion;
 
     public constructor() {
         this._host = '';
@@ -53,7 +60,8 @@ export class Request {
         this._cookies = {};
         this._contentType = '';
         this._agent = httpAgent;
-        this._timeout = 4000;
+        this._timeout = 8000;
+        this._version = HttpVersion.HTTP_VERSION_2;
     }
 
     public toHttpOptions(): RequestOptions {
@@ -81,7 +89,8 @@ export class Request {
         }
         Object.assign(headers, this.headers);
         this._headers = headers;
-        return {
+
+        const options: any = {
             host:       this.host,
             path:       path,
             port:       this.port,
@@ -90,6 +99,15 @@ export class Request {
             agent:      this.agent,
             timeout:    timeout,
         };
+        if (this.version === Request.HTTP_VERSION_2) {
+            delete options.headers['Connection'];
+            options.headers['timeout'] = timeout;
+            options.headers[http2.constants.HTTP2_HEADER_PATH] = path;
+            options.headers[http2.constants.HTTP2_HEADER_METHOD] = this.method;
+            options.headers[http2.constants.HTTP2_HEADER_SCHEME] = this.https ? 'https' : 'http';
+            return options.headers;
+        }
+        return options;
     }
 
     public static Builder(): RequestBuilder {
@@ -114,6 +132,14 @@ export class Request {
 
     public static get DELETE(): RequestMethods {
         return RequestMethods.DELETE;
+    }
+
+    public static get HTTP_VERSION_1(): HttpVersion {
+        return HttpVersion.HTTP_VERSION_1;
+    }
+
+    public static get HTTP_VERSION_2(): HttpVersion {
+        return HttpVersion.HTTP_VERSION_2;
     }
 
     public get host(): string {
@@ -160,6 +186,10 @@ export class Request {
         return this._timeout;
     }
 
+    public get version(): HttpVersion {
+        return this._version;
+    }
+
 }
 
 export class RequestBuilder extends Request {
@@ -184,6 +214,12 @@ export class RequestBuilder extends Request {
 
     public withPort(port: number): this {
         this._port = port;
+        return this;
+    }
+
+    /** ``version``: HTTP_VERSION_1 or HTTP_VERSION_2 */
+    public withHttpVersion(version: HttpVersion): this {
+        this._version = version;
         return this;
     }
 
@@ -212,7 +248,9 @@ export class RequestBuilder extends Request {
     }
 
     public withHeaders(headers: object): this {
-        this._headers = headers;
+        if (headers) {
+            this._headers = headers;
+        }
         return this;
     }
 

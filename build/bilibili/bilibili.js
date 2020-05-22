@@ -56,7 +56,7 @@ var index_2 = require("../net/index");
 var index_3 = require("../fmt/index");
 var index_4 = require("../global/index");
 var index_5 = require("../task/index");
-var rateLimiter = new index_5.RateLimiter(10, 1000);
+var tokenRateLimiter = new index_5.RateLimiter(15, 1000);
 var config = new index_4.AppConfig();
 var Bilibili = /** @class */ (function (_super) {
     __extends(Bilibili, _super);
@@ -530,7 +530,7 @@ var Bilibili = /** @class */ (function (_super) {
                 withParams(paramstr).
                 withHeaders(config.appHeaders).
                 build();
-            rateLimiter.add(function () {
+            tokenRateLimiter.add(function () {
                 Bilibili.request(request).
                     then(function (resp) { resolve(resp); }).
                     catch(function (error) { reject(error); });
@@ -903,7 +903,7 @@ var Bilibili = /** @class */ (function (_super) {
                 withParams(params).
                 withHeaders(config.webHeaders).
                 build();
-            rateLimiter.add(function () {
+            tokenRateLimiter.add(function () {
                 Bilibili.request(request).
                     then(function (resp) { resolve(resp); }).
                     catch(function (error) { reject(error); });

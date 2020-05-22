@@ -15,6 +15,7 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var http = require("http");
 var https = require("https");
+var http2 = require("http2");
 var querystring = require("querystring");
 var httpAgent = null;
 var httpsAgent = null;
@@ -27,6 +28,11 @@ var RequestMethods;
     RequestMethods["HEAD"] = "HEAD";
     RequestMethods["DELETE"] = "DELETE";
 })(RequestMethods = exports.RequestMethods || (exports.RequestMethods = {}));
+var HttpVersion;
+(function (HttpVersion) {
+    HttpVersion[HttpVersion["HTTP_VERSION_1"] = 1] = "HTTP_VERSION_1";
+    HttpVersion[HttpVersion["HTTP_VERSION_2"] = 2] = "HTTP_VERSION_2";
+})(HttpVersion = exports.HttpVersion || (exports.HttpVersion = {}));
 var Request = /** @class */ (function () {
     function Request() {
         this._host = '';
@@ -40,7 +46,8 @@ var Request = /** @class */ (function () {
         this._cookies = {};
         this._contentType = '';
         this._agent = httpAgent;
-        this._timeout = 4000;
+        this._timeout = 8000;
+        this._version = HttpVersion.HTTP_VERSION_2;
     }
     Request.prototype.toHttpOptions = function () {
         var path = this.path;
@@ -67,7 +74,7 @@ var Request = /** @class */ (function () {
         }
         Object.assign(headers, this.headers);
         this._headers = headers;
-        return {
+        var options = {
             host: this.host,
             path: path,
             port: this.port,
@@ -76,6 +83,15 @@ var Request = /** @class */ (function () {
             agent: this.agent,
             timeout: timeout,
         };
+        if (this.version === Request.HTTP_VERSION_2) {
+            delete options.headers['Connection'];
+            options.headers['timeout'] = timeout;
+            options.headers[http2.constants.HTTP2_HEADER_PATH] = path;
+            options.headers[http2.constants.HTTP2_HEADER_METHOD] = this.method;
+            options.headers[http2.constants.HTTP2_HEADER_SCHEME] = this.https ? 'https' : 'http';
+            return options.headers;
+        }
+        return options;
     };
     Request.Builder = function () {
         return new RequestBuilder();
@@ -111,6 +127,20 @@ var Request = /** @class */ (function () {
     Object.defineProperty(Request, "DELETE", {
         get: function () {
             return RequestMethods.DELETE;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Request, "HTTP_VERSION_1", {
+        get: function () {
+            return HttpVersion.HTTP_VERSION_1;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Request, "HTTP_VERSION_2", {
+        get: function () {
+            return HttpVersion.HTTP_VERSION_2;
         },
         enumerable: true,
         configurable: true
@@ -192,6 +222,13 @@ var Request = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(Request.prototype, "version", {
+        get: function () {
+            return this._version;
+        },
+        enumerable: true,
+        configurable: true
+    });
     return Request;
 }());
 exports.Request = Request;
@@ -215,6 +252,11 @@ var RequestBuilder = /** @class */ (function (_super) {
         this._port = port;
         return this;
     };
+    /** ``version``: HTTP_VERSION_1 or HTTP_VERSION_2 */
+    RequestBuilder.prototype.withHttpVersion = function (version) {
+        this._version = version;
+        return this;
+    };
     RequestBuilder.prototype.withHttps = function () {
         this._https = true;
         if ([80, 443].includes(this._port)) {
@@ -236,7 +278,9 @@ var RequestBuilder = /** @class */ (function (_super) {
         return this;
     };
     RequestBuilder.prototype.withHeaders = function (headers) {
-        this._headers = headers;
+        if (headers) {
+            this._headers = headers;
+        }
         return this;
     };
     RequestBuilder.prototype.withCookies = function (cookies) {

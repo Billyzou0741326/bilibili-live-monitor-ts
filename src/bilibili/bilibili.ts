@@ -24,7 +24,7 @@ import {
     RateLimiter, } from '../task/index';
 
 
-const rateLimiter = new RateLimiter(10, 1000);
+const tokenRateLimiter = new RateLimiter(15, 1000);
 
 
 const config = new AppConfig();
@@ -557,7 +557,7 @@ export class Bilibili extends BilibiliBase {
                 withHeaders(config.appHeaders).
                 build();
 
-            rateLimiter.add((): void => {
+            tokenRateLimiter.add((): void => {
                 Bilibili.request(request).
                     then((resp: any) => { resolve(resp); }).
                     catch((error: any) => { reject(error); });
@@ -992,7 +992,7 @@ export class Bilibili extends BilibiliBase {
                 withHeaders(config.webHeaders).
                 build();
 
-            rateLimiter.add((): void => {
+            tokenRateLimiter.add((): void => {
                 Bilibili.request(request).
                     then((resp: any) => { resolve(resp); }).
                     catch((error: any) => { reject(error); });

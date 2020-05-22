@@ -178,14 +178,10 @@ var App = /** @class */ (function () {
                 var fixedTask_1 = this._roomCollector.getFixedRooms();
                 var dynamicTask_1 = this._roomCollector.getDynamicRooms();
                 (function () { return __awaiter(_this, void 0, void 0, function () {
-                    var token, fixedRooms, dynamicRooms, _a, _b, filtered, tasks, _loop_1, this_1;
+                    var fixedRooms, dynamicRooms, _a, _b, filtered, tasks, _loop_1, this_1;
                     return __generator(this, function (_c) {
                         switch (_c.label) {
-                            case 0:
-                                token = '';
-                                this._fixedController.setToken(token);
-                                this._dynamicController.setToken(token);
-                                return [4 /*yield*/, fixedTask_1];
+                            case 0: return [4 /*yield*/, fixedTask_1];
                             case 1:
                                 fixedRooms = _c.sent();
                                 this._fixedController.add(Array.from(fixedRooms));
