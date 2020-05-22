@@ -1,5 +1,7 @@
 import * as HttpType from 'http';
 import * as http2 from 'http2';
+import * as chalk from 'chalk';
+import * as os from 'os';
 import {
     http,
     https, } from 'follow-redirects';
@@ -9,7 +11,9 @@ import {
     HttpError,
     ResponseBuilder, } from './index';
 import {
+    DelayedTask,
     RateLimiter, } from '../task/index';
+import { cprint } from '../fmt/index';
 
 
 
@@ -58,38 +62,48 @@ export class Xhr implements Sender {
         return result;
     }
 
+    private createSessionHttp2(hostPort: string, useHttps: boolean): http2.ClientHttp2Session {
+        const protocol = useHttps ? 'https:' : 'http:';
+        const sessionOptions: http2.ClientSessionOptions = {
+            'protocol': protocol,
+        };
+        const conn: http2.ClientHttp2Session = http2.connect(`${protocol}//${hostPort}`, sessionOptions);
+        conn.setMaxListeners(50);
+        conn.on('error', (error: NodeJS.ErrnoException) => {
+            // console.log(`${new Date()} http2 session closed`);
+            if (error.errno === os.constants.errno.EMFILE) {
+                cprint(`(http2) ${error.message} (Recommend: Increase nofile limit)`);
+            }
+            else if (error.errno === os.constants.errno.ECONNREFUSED) {
+                cprint(`(http2) ${error.message} (Remote refuses to connect)`);
+            }
+        });
+        conn.on('close', () => {
+            // console.log(`${new Date()} http2 session closed`);
+            conn.unref();
+        });
+
+        return conn;
+    }
+
     private prepareRequestHttp2(request: Request): (() => Promise<Response>) {
-        let xhr: any = null;
-        const options = request.toHttpOptions();
-        const hostPort = `${request.host}:443`;
-
-        xhr = this._http2Client.get(hostPort);
-        if (typeof xhr === 'undefined') {
-            const protocol = 'https:';
-            const sessionOptions: http2.ClientSessionOptions = {
-                'protocol': protocol,
-            };
-            const conn: http2.ClientHttp2Session = http2.connect(`${protocol}//${hostPort}`, sessionOptions);
-            conn.setMaxListeners(50);
-            conn.on('error', (error: Error) => {
-                this._http2Client.delete(hostPort);
-            });
-            conn.on('goaway', () => {
-                this._http2Client.delete(hostPort);
-            });
-            conn.on('close', () => {
-                this._http2Client.delete(hostPort);
-            });
-            this._http2Client.set(hostPort, conn);
-            xhr = conn;
-        }
-
         const sendRequest = (): Promise<Response> => {
 
             const promise = new Promise<Response>((resolve, reject) => {
+
+                let xhr: any = null;
+                const options = request.toHttpOptions();
+                const hostPort = `${request.host}:${request.port}`;
+
+                xhr = this._http2Client.get(hostPort);
+                if (typeof xhr === 'undefined' || xhr.closed || xhr.destroyed) {
+                    xhr = this.createSessionHttp2(hostPort, request.https);
+                    this._http2Client.set(hostPort, xhr);
+                }
+
+                let respHeaders: http2.IncomingHttpHeaders = {};
                 const dataSequence: Array<Buffer> = [];
-                const req: http2.ClientHttp2Stream = xhr.request(options);
-                (req
+                const req: http2.ClientHttp2Stream = (xhr.request(options)
                     .on('timeout', () => {
                         req.close(http2.constants.NGHTTP2_SETTINGS_TIMEOUT);
                         reject(new HttpError('Http request timed out'));
@@ -103,6 +117,7 @@ export class Xhr implements Sender {
                             req.close(http2.constants.NGHTTP2_NO_ERROR);
                             reject((new HttpError(`Http status ${code}`)).withStatus(code));
                         }
+                        respHeaders = headers;
                     })
                     .on('data', (data: Buffer) => dataSequence.push(data))
                     .on('end', () => {
@@ -113,6 +128,8 @@ export class Xhr implements Sender {
                             .withUrl(url)
                             .withMethod(method)
                             .withData(data)
+                            .withHeaders(respHeaders)
+                            .withHttpVersion(Request.HTTP_VERSION_2)
                             .build()
                         );
                         resolve(res);
@@ -168,6 +185,7 @@ export class Xhr implements Sender {
                                         .withHttpResponse(response)
                                         .withUrl(url)
                                         .withMethod(method)
+                                        .withHttpVersion(Request.HTTP_VERSION_1)
                                         .withData(data)
                                         .build()
                                     );

@@ -25,7 +25,11 @@ var Response = /** @class */ (function () {
         this._cookies = {};
         this._data = Buffer.alloc(0);
         this._text = '';
+        this._version = index_1.HttpVersion.HTTP_VERSION_2;
     }
+    Response.Builder = function () {
+        return new ResponseBuilder();
+    };
     Object.defineProperty(Response.prototype, "url", {
         get: function () {
             return this._url;
@@ -71,6 +75,13 @@ var Response = /** @class */ (function () {
     Object.defineProperty(Response.prototype, "data", {
         get: function () {
             return this._data;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Response.prototype, "version", {
+        get: function () {
+            return this._version;
         },
         enumerable: true,
         configurable: true
@@ -134,6 +145,10 @@ var ResponseBuilder = /** @class */ (function (_super) {
     ResponseBuilder.prototype.withData = function (data) {
         this._text = '';
         this._data = data;
+        return this;
+    };
+    ResponseBuilder.prototype.withHttpVersion = function (version) {
+        this._version = version;
         return this;
     };
     ResponseBuilder.prototype.build = function () {

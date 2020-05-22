@@ -82,24 +82,28 @@ abstract class GuardController extends AbstractRoomController {
             roomid: roomid,
         };
         return (async(): Promise<void> => {
-            try {
-                let token = this._tokenPool.get(roomid);
-                if (typeof token === 'undefined') {
+            let token = this._tokenPool.get(roomid);
+            for (let tries = 1; tries < 4 && !token; ++tries) {
+                try {
                     token = await Bilibili.webGetLiveDanmuToken(roomid);
-                    this._tokenPool.set(roomid, token);
+                } catch (error) {
+                    token = this._tokenPool.get(roomid);
+                    cprint(`(Listener) (failed ${tries}) - ${error.message}`, chalk.red);
                 }
-                const listener = this.createListener(tcp_addr, roomInfo, token);
-                this._connections.set(roomid, listener);
-                this._taskQueue.add((): void => { listener.start() });
-                listener.
-                    on('close', (): void => { this.onClose(roomid, listener) }).
-                    on('add_to_db', (): void => { this.emit('add_to_db', roomid) }).
-                    on('error', (): void => { this._taskQueue.add((): void => { listener.start() }) });
-                for (const category in RaffleCategory) {
-                    listener.on(category, (g: Raffle): void => { this.emit(category, g) });
-                }
-            } catch (error) {
-                cprint(`(Listener) - ${error.message}`, chalk.red);
+            }
+            if (!token) {
+                return;
+            }
+            this._tokenPool.set(roomid, token);
+            const listener = this.createListener(tcp_addr, roomInfo, token);
+            this._connections.set(roomid, listener);
+            this._taskQueue.add((): void => { listener.start() });
+            listener.
+                on('close', (): void => { this.onClose(roomid, listener) }).
+                on('add_to_db', (): void => { this.emit('add_to_db', roomid) }).
+                on('error', (): void => { this._taskQueue.add((): void => { listener.start() }) });
+            for (const category in RaffleCategory) {
+                listener.on(category, (g: Raffle): void => { this.emit(category, g) });
             }
         })();
     }
@@ -194,10 +198,18 @@ export class RaffleController extends AbstractRoomController {
                         if (await Bilibili.isLive(roomid)) {
 
                             let token = this._tokenPool.get(roomid);
-                            if (typeof token === 'undefined') {
-                                token = await Bilibili.webGetLiveDanmuToken(roomid);
-                                this._tokenPool.set(roomid, token);
+                            for (let tries = 1; tries < 4 && !token; ++tries) {
+                                try {
+                                    token = await Bilibili.webGetLiveDanmuToken(roomid);
+                                } catch (error) {
+                                    token = this._tokenPool.get(roomid);
+                                    cprint(`(Listener) (failed ${tries}) - ${error.message}`, chalk.red);
+                                }
                             }
+                            if (!token) {
+                                continue;
+                            }
+                            this._tokenPool.set(roomid, token);
                             done = true;
                             this.setupRoomInArea(roomid, areaid, token);
                         }

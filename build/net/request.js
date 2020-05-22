@@ -37,24 +37,24 @@ var Request = /** @class */ (function () {
     function Request() {
         this._host = '';
         this._path = '';
-        this._port = 80;
-        this._https = false;
+        this._port = 443;
+        this._https = true;
         this._method = RequestMethods.GET;
         this._params = {};
         this._data = undefined;
         this._headers = {};
         this._cookies = {};
         this._contentType = '';
-        this._agent = httpAgent;
+        this._agent = httpsAgent;
         this._timeout = 8000;
-        this._version = HttpVersion.HTTP_VERSION_2;
+        this._version = HttpVersion.HTTP_VERSION_1;
     }
     Request.prototype.toHttpOptions = function () {
         var path = this.path;
         var paramstr = '';
         var cookiestr = '';
         var headers = {};
-        var timeout = 4000;
+        var timeout = 8000;
         if (typeof this._params !== 'string') {
             paramstr = formatParams(this._params);
         }
@@ -85,7 +85,6 @@ var Request = /** @class */ (function () {
         };
         if (this.version === Request.HTTP_VERSION_2) {
             delete options.headers['Connection'];
-            options.headers['timeout'] = timeout;
             options.headers[http2.constants.HTTP2_HEADER_PATH] = path;
             options.headers[http2.constants.HTTP2_HEADER_METHOD] = this.method;
             options.headers[http2.constants.HTTP2_HEADER_SCHEME] = this.https ? 'https' : 'http';
@@ -263,6 +262,14 @@ var RequestBuilder = /** @class */ (function (_super) {
             this._port = 443;
         }
         this.withAgent(httpsAgent);
+        return this;
+    };
+    RequestBuilder.prototype.noHttps = function () {
+        this._https = false;
+        if ([80, 443].includes(this._port)) {
+            this._port = 80;
+        }
+        this.withAgent(httpAgent);
         return this;
     };
     RequestBuilder.prototype.withMethod = function (method) {

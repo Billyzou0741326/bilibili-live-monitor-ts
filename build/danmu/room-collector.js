@@ -105,7 +105,7 @@ var RoomCollector = /** @class */ (function () {
             numDynamicRooms = Infinity;
         }
         return (function () { return __awaiter(_this, void 0, void 0, function () {
-            var sets, result_1, error_3;
+            var sets, result_1, balanced, error_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -120,7 +120,8 @@ var RoomCollector = /** @class */ (function () {
                         sets[1].forEach(function (roomid) {
                             result_1.add(roomid);
                         });
-                        return [2 /*return*/, result_1];
+                        balanced = this.filterRooms(Array.from(result_1));
+                        return [2 /*return*/, new Set(balanced)];
                     case 2:
                         error_3 = _a.sent();
                         index_3.cprint("(Collector) - " + error_3.message, chalk.red);

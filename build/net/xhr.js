@@ -1,8 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var http2 = require("http2");
+var os = require("os");
 var follow_redirects_1 = require("follow-redirects");
 var index_1 = require("./index");
+var index_2 = require("../fmt/index");
 var Xhr = /** @class */ (function () {
     function Xhr() {
         this._rateLimiter = null;
@@ -36,36 +38,43 @@ var Xhr = /** @class */ (function () {
         });
         return result;
     };
+    Xhr.prototype.createSessionHttp2 = function (hostPort, useHttps) {
+        var protocol = useHttps ? 'https:' : 'http:';
+        var sessionOptions = {
+            'protocol': protocol,
+        };
+        var conn = http2.connect(protocol + "//" + hostPort, sessionOptions);
+        conn.setMaxListeners(50);
+        conn.on('error', function (error) {
+            // console.log(`${new Date()} http2 session closed`);
+            if (error.errno === os.constants.errno.EMFILE) {
+                index_2.cprint("(http2) " + error.message + " (Recommend: Increase nofile limit)");
+            }
+            else if (error.errno === os.constants.errno.ECONNREFUSED) {
+                index_2.cprint("(http2) " + error.message + " (Remote refuses to connect)");
+            }
+        });
+        conn.on('close', function () {
+            // console.log(`${new Date()} http2 session closed`);
+            conn.unref();
+        });
+        return conn;
+    };
     Xhr.prototype.prepareRequestHttp2 = function (request) {
         var _this = this;
-        var xhr = null;
-        var options = request.toHttpOptions();
-        var hostPort = request.host + ":443";
-        xhr = this._http2Client.get(hostPort);
-        if (typeof xhr === 'undefined') {
-            var protocol = 'https:';
-            var sessionOptions = {
-                'protocol': protocol,
-            };
-            var conn = http2.connect(protocol + "//" + hostPort, sessionOptions);
-            conn.setMaxListeners(50);
-            conn.on('error', function (error) {
-                _this._http2Client.delete(hostPort);
-            });
-            conn.on('goaway', function () {
-                _this._http2Client.delete(hostPort);
-            });
-            conn.on('close', function () {
-                _this._http2Client.delete(hostPort);
-            });
-            this._http2Client.set(hostPort, conn);
-            xhr = conn;
-        }
         var sendRequest = function () {
             var promise = new Promise(function (resolve, reject) {
+                var xhr = null;
+                var options = request.toHttpOptions();
+                var hostPort = request.host + ":" + request.port;
+                xhr = _this._http2Client.get(hostPort);
+                if (typeof xhr === 'undefined' || xhr.closed || xhr.destroyed) {
+                    xhr = _this.createSessionHttp2(hostPort, request.https);
+                    _this._http2Client.set(hostPort, xhr);
+                }
+                var respHeaders = {};
                 var dataSequence = [];
-                var req = xhr.request(options);
-                (req
+                var req = (xhr.request(options)
                     .on('timeout', function () {
                     req.close(http2.constants.NGHTTP2_SETTINGS_TIMEOUT);
                     reject(new index_1.HttpError('Http request timed out'));
@@ -79,6 +88,7 @@ var Xhr = /** @class */ (function () {
                         req.close(http2.constants.NGHTTP2_NO_ERROR);
                         reject((new index_1.HttpError("Http status " + code)).withStatus(code));
                     }
+                    respHeaders = headers;
                 })
                     .on('data', function (data) { return dataSequence.push(data); })
                     .on('end', function () {
@@ -89,6 +99,8 @@ var Xhr = /** @class */ (function () {
                         .withUrl(url)
                         .withMethod(method)
                         .withData(data)
+                        .withHeaders(respHeaders)
+                        .withHttpVersion(index_1.Request.HTTP_VERSION_2)
                         .build());
                     resolve(res);
                 }));
@@ -137,6 +149,7 @@ var Xhr = /** @class */ (function () {
                                 .withHttpResponse(response)
                                 .withUrl(url)
                                 .withMethod(method)
+                                .withHttpVersion(index_1.Request.HTTP_VERSION_1)
                                 .withData(data)
                                 .build());
                             resolve(res);

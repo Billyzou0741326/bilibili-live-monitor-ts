@@ -1,5 +1,6 @@
 import * as http from 'http';
-import { RequestMethods } from './index';
+import * as http2 from 'http2';
+import { RequestMethods, HttpVersion } from './index';
 
 export class Response {
 
@@ -12,6 +13,7 @@ export class Response {
     protected _cookies:         {[key:string]:string};
     protected _data:            Buffer;
     protected _text:            string;
+    protected _version:         HttpVersion;
 
     public constructor() {
         this._url = '';
@@ -23,6 +25,11 @@ export class Response {
         this._cookies = {};
         this._data = Buffer.alloc(0);
         this._text = '';
+        this._version = HttpVersion.HTTP_VERSION_2;
+    }
+
+    public static Builder(): ResponseBuilder {
+        return new ResponseBuilder();
     }
 
     public get url(): string {
@@ -51,6 +58,10 @@ export class Response {
 
     public get data(): Buffer {
         return this._data;
+    }
+
+    public get version(): HttpVersion {
+        return this._version;
     }
 
     public get text(): string {
@@ -117,6 +128,11 @@ export class ResponseBuilder extends Response {
     public withData(data: Buffer): this {
         this._text = '';
         this._data = data;
+        return this;
+    }
+
+    public withHttpVersion(version: HttpVersion): this {
+        this._version = version;
         return this;
     }
 

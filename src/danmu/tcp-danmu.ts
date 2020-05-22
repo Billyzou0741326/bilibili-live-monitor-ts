@@ -1,6 +1,7 @@
+import * as os from 'os';
 import * as net from 'net';
-import * as chalk from 'chalk';
 import * as zlib from 'zlib';
+import * as chalk from 'chalk';
 import { EventEmitter } from 'events';
 import { cprint } from '../fmt/index';
 import { Bilibili } from '../bilibili/index';
@@ -230,7 +231,10 @@ export abstract class AbstractDanmuTCP extends EventEmitter implements Startable
     private onEnd(): void {
     }
 
-    private onError(error: Error): void {
+    private onError(error: NodeJS.ErrnoException): void {
+        if (error.errno === os.constants.errno.EMFILE) {
+            cprint(`(TCP) ${error.message} (Recommend: Increase nofile limit)`);
+        }
         if (config.tcp_error) {
             const roomid = `${this.roomid}`;
             const remoteAddr = (this._socket && this._socket.remoteAddress) || '';

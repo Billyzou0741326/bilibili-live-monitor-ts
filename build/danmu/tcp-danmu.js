@@ -13,9 +13,10 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+var os = require("os");
 var net = require("net");
-var chalk = require("chalk");
 var zlib = require("zlib");
+var chalk = require("chalk");
 var events_1 = require("events");
 var index_1 = require("../fmt/index");
 var index_2 = require("../bilibili/index");
@@ -201,6 +202,9 @@ var AbstractDanmuTCP = /** @class */ (function (_super) {
     AbstractDanmuTCP.prototype.onEnd = function () {
     };
     AbstractDanmuTCP.prototype.onError = function (error) {
+        if (error.errno === os.constants.errno.EMFILE) {
+            index_1.cprint("(TCP) " + error.message + " (Recommend: Increase nofile limit)");
+        }
         if (config.tcp_error) {
             var roomid = "" + this.roomid;
             var remoteAddr = (this._socket && this._socket.remoteAddress) || '';
