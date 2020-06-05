@@ -57,7 +57,8 @@ export class RoomCollector {
                 sets[1].forEach((roomid: number): void => {
                     result.add(roomid);
                 });
-                return result;
+                const balanced: number[] = this.filterRooms(Array.from(result));
+                return new Set(balanced);
             }
             catch (error) {
                 cprint(`(Collector) - ${error.message}`, chalk.red);
