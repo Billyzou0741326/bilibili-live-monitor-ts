@@ -3,11 +3,13 @@
 ## Execution (运行方式)
 
 ### 普通运行
+
  1. 命令行切换到package.json所在的目录
  2. `npm install`                       (执行一次就好)
  3. `npm start`                         (正常运行)
 
 ### pm2运行
+
 > 详情前往[pm2官网](https://pm2.io/docs/plus/overview/)
  1. 命令行切换到package.json所在的目录
  2. `npm install`                       (执行一次就好)
@@ -15,10 +17,12 @@
  4. `pm2 start ecosystem.config.js`
 
 ### Docker
-docker run --publish 8999:8999 --publish 9001:9001 <image-name>
+
+`docker run -d --name=live -p 8999:8999 -p 9001:9001 --restart=on-failure museaqours/bilibili-live-monitor`
 
 
 ### API
+
 | API           | Url                           |
 |---------------|-------------------------------|
 | 大航海        | http://{ip}:9001/guard        |
