@@ -668,9 +668,9 @@ var RaffleMonitor = /** @class */ (function (_super) {
         switch (msg_type) {
             case 2:
             // fall through
-            case 4:
-            // fall through
             case 6:
+            // fall through
+            case 8:
                 this.emit('roomid', roomid);
                 break;
         }
