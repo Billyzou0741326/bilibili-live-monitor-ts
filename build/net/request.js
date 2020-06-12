@@ -13,6 +13,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.RequestBuilder = exports.Request = exports.RequestMethods = void 0;
 var http = require("http");
 var https = require("https");
 var querystring = require("querystring");
@@ -84,112 +85,112 @@ var Request = /** @class */ (function () {
         get: function () {
             return RequestMethods.GET;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Request, "PUT", {
         get: function () {
             return RequestMethods.PUT;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Request, "POST", {
         get: function () {
             return RequestMethods.POST;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Request, "HEAD", {
         get: function () {
             return RequestMethods.HEAD;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Request, "DELETE", {
         get: function () {
             return RequestMethods.DELETE;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Request.prototype, "host", {
         get: function () {
             return this._host;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Request.prototype, "path", {
         get: function () {
             return this._path;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Request.prototype, "port", {
         get: function () {
             return this._port;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Request.prototype, "https", {
         get: function () {
             return this._https;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Request.prototype, "method", {
         get: function () {
             return this._method;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Request.prototype, "params", {
         get: function () {
             return this._params;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Request.prototype, "data", {
         get: function () {
             return this._data;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Request.prototype, "headers", {
         get: function () {
             return this._headers;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Request.prototype, "agent", {
         get: function () {
             return this._agent;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Request.prototype, "contentType", {
         get: function () {
             return this._contentType;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Request.prototype, "timeout", {
         get: function () {
             return this._timeout;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     return Request;

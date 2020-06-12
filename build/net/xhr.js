@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Xhr = void 0;
 var follow_redirects_1 = require("follow-redirects");
 var index_1 = require("./index");
 var Xhr = /** @class */ (function () {

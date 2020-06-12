@@ -49,6 +49,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.SimpleLoadBalancingRoomDistributor = exports.RoomCollector = void 0;
 var chalk = require("chalk");
 var index_1 = require("../db/index");
 var index_2 = require("../bilibili/index");

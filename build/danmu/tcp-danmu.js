@@ -13,6 +13,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.RaffleMonitor = exports.DynamicGuardMonitor = exports.FixedGuardMonitor = exports.DanmuMonitor = exports.DanmuTCP = exports.AbstractDanmuTCP = void 0;
 var net = require("net");
 var chalk = require("chalk");
 var zlib = require("zlib");
@@ -77,21 +78,21 @@ var AbstractDanmuTCP = /** @class */ (function (_super) {
         get: function () {
             return this._running;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AbstractDanmuTCP.prototype, "roomid", {
         get: function () {
             return this._roomid;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AbstractDanmuTCP.prototype, "areaid", {
         get: function () {
             return this._areaid;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     AbstractDanmuTCP.prototype.start = function () {
@@ -573,7 +574,7 @@ var DynamicGuardMonitor = /** @class */ (function (_super) {
                 || this._newStormCount > 0
                 || this._newGiftCount > 1);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     DynamicGuardMonitor.prototype.onAnchorLottery = function (msg) {

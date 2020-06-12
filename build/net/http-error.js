@@ -13,6 +13,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HttpError = void 0;
 var HttpError = /** @class */ (function (_super) {
     __extends(HttpError, _super);
     function HttpError() {
@@ -34,14 +35,14 @@ var HttpError = /** @class */ (function (_super) {
         get: function () {
             return this._code;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(HttpError.prototype, "status", {
         get: function () {
             return this._status;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     return HttpError;

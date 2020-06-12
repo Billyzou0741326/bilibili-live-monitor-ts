@@ -36,6 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Account = void 0;
 var fs = require("fs");
 var path = require("path");
 var chalk = require("chalk");
@@ -86,28 +87,28 @@ var Account = /** @class */ (function () {
         get: function () {
             return this._webSession;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Account.prototype, "tokens", {
         get: function () {
             return this._appSession;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Account.prototype, "username", {
         get: function () {
             return this._loginInfo.username;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Account.prototype, "password", {
         get: function () {
             return this._loginInfo.password;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Account.prototype.isUsable = function () {

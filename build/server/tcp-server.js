@@ -13,6 +13,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.TCPServerBiliHelper = void 0;
 var net = require("net");
 var chalk = require("chalk");
 var index_1 = require("../fmt/index");
@@ -125,14 +126,14 @@ var AbstractTCPServer = /** @class */ (function () {
         get: function () {
             return this._host;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AbstractTCPServer.prototype, "port", {
         get: function () {
             return this._port;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     return AbstractTCPServer;

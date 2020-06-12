@@ -20,6 +20,7 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
     return r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.DelayedTask = exports.RecurrentTask = void 0;
 var AbstractTask = /** @class */ (function () {
     function AbstractTask() {
         this._time = 0;
@@ -29,7 +30,7 @@ var AbstractTask = /** @class */ (function () {
         get: function () {
             return this._time;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     AbstractTask.prototype.withCallback = function (callback) {
@@ -59,7 +60,7 @@ var RecurrentTask = /** @class */ (function (_super) {
         get: function () {
             return this._stopper !== null;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     RecurrentTask.prototype.start = function () {
@@ -87,7 +88,7 @@ var DelayedTask = /** @class */ (function (_super) {
         get: function () {
             return this._stopper !== null;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     DelayedTask.prototype.start = function () {

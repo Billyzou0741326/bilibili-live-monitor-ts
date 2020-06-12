@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.cprint = void 0;
 var chalk = require("chalk");
 function cprint(msg, color) {
     if (color === void 0) { color = chalk.reset; }

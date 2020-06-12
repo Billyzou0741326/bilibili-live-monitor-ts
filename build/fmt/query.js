@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Params = exports.Cookies = void 0;
 var querystring = require("querystring");
 var Cookies = /** @class */ (function () {
     function Cookies() {

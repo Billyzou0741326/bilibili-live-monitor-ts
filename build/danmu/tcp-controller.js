@@ -49,6 +49,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.RaffleController = exports.DynamicGuardController = exports.FixedGuardController = exports.AbstractRoomController = void 0;
 var chalk = require("chalk");
 var events_1 = require("events");
 var index_1 = require("../fmt/index");
@@ -70,7 +71,7 @@ var AbstractRoomController = /** @class */ (function (_super) {
         get: function () {
             return this._connections;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     AbstractRoomController.prototype.setToken = function (token) {

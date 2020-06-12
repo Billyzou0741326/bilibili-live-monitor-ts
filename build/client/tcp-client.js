@@ -13,6 +13,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.TCPClientLK = exports.TCPConn = void 0;
 var net = require("net");
 var chalk = require("chalk");
 var events_1 = require("events");

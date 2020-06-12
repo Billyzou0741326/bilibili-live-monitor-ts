@@ -43,6 +43,7 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
     return r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.App = void 0;
 var chalk = require("chalk");
 var settings = require("../settings.json");
 var table_1 = require("table");
@@ -177,70 +178,80 @@ var App = /** @class */ (function () {
                 this._fixedController.start();
                 this._dynamicController.start();
                 var fixedTask_1 = this._roomCollector.getFixedRooms();
-                var dynamicTask_1 = this._roomCollector.getDynamicRooms();
+                var dynamicStrm_1 = index_4.Bilibili.getRoomV2Stream();
                 (function () { return __awaiter(_this, void 0, void 0, function () {
-                    var token, fixedRooms, dynamicRooms, _a, _b, filtered, tasks, _loop_1, this_1;
-                    return __generator(this, function (_c) {
-                        switch (_c.label) {
+                    var token, fixedRooms, tasks, _loop_1, this_1;
+                    var _this = this;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
                             case 0: return [4 /*yield*/, index_4.Bilibili.getLiveDanmuToken()];
                             case 1:
-                                token = _c.sent();
+                                token = _a.sent();
                                 this._fixedController.setToken(token);
                                 this._dynamicController.setToken(token);
                                 return [4 /*yield*/, fixedTask_1];
                             case 2:
-                                fixedRooms = _c.sent();
+                                fixedRooms = _a.sent();
                                 this._fixedController.add(Array.from(fixedRooms));
-                                _b = (_a = Array).from;
-                                return [4 /*yield*/, dynamicTask_1];
-                            case 3:
-                                dynamicRooms = _b.apply(_a, [_c.sent()]);
-                                filtered = dynamicRooms.filter(function (roomid) { return !fixedRooms.has(roomid); });
-                                tasks = this._dynamicController.add(filtered);
+                                tasks = [];
+                                tasks.push((new Promise(function (resolve, reject) {
+                                    dynamicStrm_1.
+                                        on('roomids', function (r) {
+                                        tasks.push.apply(tasks, _this._dynamicController.add(r.filter(function (roomid) {
+                                            return !fixedRooms.has(roomid);
+                                        })));
+                                    }).
+                                        on('error', function (error) { }).
+                                        on('done', function () { resolve(); });
+                                })));
                                 return [4 /*yield*/, Promise.all(__spreadArrays(tasks, [index_1.sleep(10 * 1000)]))];
-                            case 4:
-                                _c.sent();
+                            case 3:
+                                _a.sent();
                                 _loop_1 = function () {
-                                    var dynamicTask_2, roomidSet, establishedFix_1, establishedDyn, roomids, wait, tasks_1, error_1;
+                                    var establishedFix_1, establishedDyn, tasks_1, dynamicStrm_2, wait, error_1;
                                     return __generator(this, function (_a) {
                                         switch (_a.label) {
                                             case 0:
-                                                _a.trys.push([0, 3, , 4]);
-                                                dynamicTask_2 = this_1._roomCollector.getDynamicRooms();
-                                                return [4 /*yield*/, dynamicTask_2];
-                                            case 1:
-                                                roomidSet = _a.sent();
+                                                _a.trys.push([0, 2, , 3]);
                                                 establishedFix_1 = this_1._fixedController.connections;
                                                 establishedDyn = this_1._dynamicController.connections;
                                                 index_2.cprint("Monitoring (\u9759\u6001) " + establishedFix_1.size + " + (\u52A8\u6001) " + establishedDyn.size, chalk.green);
-                                                roomids = Array.from(roomidSet).filter(function (roomid) {
-                                                    return !establishedFix_1.has(roomid);
-                                                });
+                                                tasks_1 = [];
+                                                dynamicStrm_2 = index_4.Bilibili.getRoomV2Stream();
+                                                tasks_1.push((new Promise(function (resolve, reject) {
+                                                    dynamicStrm_2.
+                                                        on('roomids', function (r) {
+                                                        tasks_1.push.apply(tasks_1, _this._dynamicController.add(r.filter(function (roomid) {
+                                                            return !establishedFix_1.has(roomid);
+                                                        })));
+                                                    }).
+                                                        on('error', function (error) { }).
+                                                        on('done', function () { resolve(); });
+                                                })));
                                                 wait = this_1._appConfig.roomCollectorStrategy.dynamicRoomsQueryInterval * 1000;
-                                                tasks_1 = this_1._dynamicController.add(roomids);
                                                 return [4 /*yield*/, Promise.all(__spreadArrays(tasks_1, [index_1.sleep(wait)]))];
-                                            case 2:
+                                            case 1:
                                                 _a.sent();
                                                 this_1._dynamicRefreshTask.start();
-                                                return [3 /*break*/, 4];
-                                            case 3:
+                                                return [3 /*break*/, 3];
+                                            case 2:
                                                 error_1 = _a.sent();
                                                 index_2.cprint("(Dynamic) - " + error_1.message, chalk.red);
                                                 this_1._dynamicRefreshTask.start();
-                                                return [3 /*break*/, 4];
-                                            case 4: return [2 /*return*/];
+                                                return [3 /*break*/, 3];
+                                            case 3: return [2 /*return*/];
                                         }
                                     });
                                 };
                                 this_1 = this;
-                                _c.label = 5;
-                            case 5:
-                                if (!this._running) return [3 /*break*/, 7];
+                                _a.label = 4;
+                            case 4:
+                                if (!this._running) return [3 /*break*/, 6];
                                 return [5 /*yield**/, _loop_1()];
-                            case 6:
-                                _c.sent();
-                                return [3 /*break*/, 5];
-                            case 7: return [2 /*return*/];
+                            case 5:
+                                _a.sent();
+                                return [3 /*break*/, 4];
+                            case 6: return [2 /*return*/];
                         }
                     });
                 }); })();

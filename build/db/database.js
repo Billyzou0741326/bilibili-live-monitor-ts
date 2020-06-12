@@ -36,6 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Database = exports.FileWatcher = void 0;
 var fs = require("fs");
 var path = require("path");
 var chalk = require("chalk");

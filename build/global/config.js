@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.AppConfig = void 0;
 var settings = require("../settings.json");
 var AppConfig = /** @class */ (function () {
     function AppConfig() {
@@ -43,105 +44,105 @@ var AppConfig = /** @class */ (function () {
         get: function () {
             return this._danmuAddr;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AppConfig.prototype, "wsAddr", {
         get: function () {
             return this._wsAddr;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AppConfig.prototype, "httpAddr", {
         get: function () {
             return this._httpAddr;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AppConfig.prototype, "biliveAddr", {
         get: function () {
             return this._biliveAddr;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AppConfig.prototype, "bilihelperAddr", {
         get: function () {
             return this._bilihelperAddr;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AppConfig.prototype, "loadBalancing", {
         get: function () {
             return this._loadBalancing;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AppConfig.prototype, "roomCollectorStrategy", {
         get: function () {
             return this._roomCollectorStrategy;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AppConfig.prototype, "debug", {
         get: function () {
             return this._debug;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AppConfig.prototype, "verbose", {
         get: function () {
             return this._verbose;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AppConfig.prototype, "tcp_error", {
         get: function () {
             return this._tcp_error;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AppConfig.prototype, "appkey", {
         get: function () {
             return this._appkey;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AppConfig.prototype, "appSecret", {
         get: function () {
             return this._appSecret;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AppConfig.prototype, "appCommon", {
         get: function () {
             return this._appCommon;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AppConfig.prototype, "appHeaders", {
         get: function () {
             return this._appHeaders;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AppConfig.prototype, "webHeaders", {
         get: function () {
             return this._webHeaders;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     return AppConfig;

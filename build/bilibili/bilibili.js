@@ -49,8 +49,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Bilibili = void 0;
 var crypto = require("crypto");
 var chalk = require("chalk");
+var events_1 = require("events");
 var index_1 = require("./index");
 var index_2 = require("../net/index");
 var index_3 = require("../fmt/index");
@@ -949,6 +951,86 @@ var Bilibili = /** @class */ (function (_super) {
             var isLive = jsonObj['data']['room_info']['live_status'] === 1 ? true : false;
             return isLive;
         });
+    };
+    Bilibili.getRoomCountV2 = function () {
+        var params = {
+            'areaId': 0,
+        };
+        var request = index_2.Request.Builder().
+            withHost('api.live.bilibili.com').
+            withPath('/room/v1/Area/getLiveRoomCountByAreaID').
+            withMethod(index_2.Request.GET).
+            withParams(params).
+            withHeaders(config.webHeaders);
+        return Bilibili.request(request).
+            then(function (json) {
+            return json['data']['num'];
+        });
+    };
+    /**
+     * Get rooms in each area, with stream-like api
+     *
+     * @static
+     * @param   {Integer}       size (page size)        default 99
+     * @param   {Integer}       count (rooms to get)    don't use this.
+     * @returns {EventEmitter}  'roomids'   (number[]) => {}
+     *          {EventEmitter}  'done'      () => {}
+     *          {EventEmitter}  'Error'     (error) => {}
+     */
+    Bilibili.getRoomV2Stream = function (size, count) {
+        var _this = this;
+        if (size === void 0) { size = 500; }
+        if (count === void 0) { count = Infinity; }
+        var emitter = new events_1.EventEmitter;
+        size = size <= 0 ? 10 : size;
+        (function () { return __awaiter(_this, void 0, void 0, function () {
+            var room_count, PAGES, pageTasks, _loop_1, i;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, Bilibili.getRoomCountV2().catch(function (error) { return 10000; })];
+                    case 1:
+                        room_count = _a.sent();
+                        room_count = Math.min(room_count, count);
+                        PAGES = Math.ceil(room_count / size) + (count === Infinity ? 1 : 0);
+                        pageTasks = [];
+                        _loop_1 = function (i) {
+                            var params = {
+                                'page': i,
+                                'pageSize': size,
+                            };
+                            var request = index_2.Request.Builder().
+                                withHost('api.live.bilibili.com').
+                                withPath('/room/v1/Area/getListByAreaID').
+                                withMethod(index_2.Request.GET).
+                                withParams(params).
+                                withHeaders(config.webHeaders);
+                            pageTasks.push((function () { return __awaiter(_this, void 0, void 0, function () {
+                                var res, roomids;
+                                return __generator(this, function (_a) {
+                                    switch (_a.label) {
+                                        case 0: return [4 /*yield*/, Bilibili.request(request).catch(function (error) { emitter.emit('error', error); })];
+                                        case 1:
+                                            res = _a.sent();
+                                            roomids = res['data'].map(function (data) { return data['roomid']; });
+                                            emitter.emit('roomids', roomids);
+                                            return [2 /*return*/];
+                                    }
+                                });
+                            }); })());
+                        };
+                        for (i = 0; i < PAGES; ++i) {
+                            _loop_1(i);
+                        }
+                        return [4 /*yield*/, Promise.all(pageTasks).catch(function (error) { emitter.emit('error', error); })];
+                    case 2:
+                        _a.sent();
+                        emitter.emit('done');
+                        return [2 /*return*/];
+                }
+            });
+        }); })();
+        return emitter;
     };
     /**
      * Get streaming roomd in area ``areaid``

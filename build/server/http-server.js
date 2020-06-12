@@ -13,6 +13,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HttpServer = void 0;
 var http = require("http");
 var express = require("express");
 var chalk = require("chalk");
@@ -57,21 +58,21 @@ var HttpServer = /** @class */ (function (_super) {
         get: function () {
             return this._host;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(HttpServer.prototype, "port", {
         get: function () {
             return this._port;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(HttpServer.prototype, "app", {
         get: function () {
             return this._app;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     HttpServer.prototype.bind = function () {

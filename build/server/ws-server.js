@@ -13,6 +13,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.WsServerBilive = exports.WsServer = void 0;
 var WebSocket = require("ws");
 var chalk = require("chalk");
 var index_1 = require("../task/index");
@@ -54,14 +55,14 @@ var AbstractWsServer = /** @class */ (function () {
         get: function () {
             return this._host;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AbstractWsServer.prototype, "port", {
         get: function () {
             return this._port;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     AbstractWsServer.prototype.reset = function () {

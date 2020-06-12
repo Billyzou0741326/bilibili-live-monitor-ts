@@ -13,6 +13,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Anchor = exports.Storm = exports.PK = exports.Guard = exports.Gift = exports.Raffle = exports.RaffleCategory = void 0;
 var RaffleCategory;
 (function (RaffleCategory) {
     RaffleCategory["pk"] = "pk";
@@ -35,49 +36,49 @@ var Raffle = /** @class */ (function () {
         get: function () {
             return this._id;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Raffle.prototype, "category", {
         get: function () {
             return this._category;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Raffle.prototype, "roomid", {
         get: function () {
             return this._roomid;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Raffle.prototype, "type", {
         get: function () {
             return this._type;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Raffle.prototype, "name", {
         get: function () {
             return this._name;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Raffle.prototype, "wait", {
         get: function () {
             return this._wait;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Raffle.prototype, "expireAt", {
         get: function () {
             return this._expireAt;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Raffle.prototype.withId = function (id) {
@@ -266,49 +267,49 @@ var Anchor = /** @class */ (function (_super) {
         get: function () {
             return this._award_name;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Anchor.prototype, "award_num", {
         get: function () {
             return this._award_num;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Anchor.prototype, "gift_name", {
         get: function () {
             return this._gift_name;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Anchor.prototype, "gift_price", {
         get: function () {
             return this._gift_price;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Anchor.prototype, "gift_num", {
         get: function () {
             return this._gift_num;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Anchor.prototype, "danmu", {
         get: function () {
             return this._danmu;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Anchor.prototype, "requirement", {
         get: function () {
             return this._require_text;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Anchor.prototype.withName = function (award_name) {

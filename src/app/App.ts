@@ -8,7 +8,6 @@ import { Database } from '../db/index';
 import { Bilibili } from '../bilibili/index';
 import { AppConfig } from '../global/index';
 import { DelayedTask } from '../task/index';
-import { TCPClientLK } from '../client/index';
 import {
     WsServer,
     WsServerBilive,
@@ -179,30 +178,46 @@ export class App {
                 this._fixedController.start();
                 this._dynamicController.start();
                 const fixedTask = this._roomCollector.getFixedRooms();
-                const dynamicTask = this._roomCollector.getDynamicRooms();
+                const dynamicStrm = Bilibili.getRoomV2Stream();
                 (async () => {
                     const token = await Bilibili.getLiveDanmuToken();
                     this._fixedController.setToken(token);
                     this._dynamicController.setToken(token);
                     const fixedRooms: Set<number> = await fixedTask;
                     this._fixedController.add(Array.from(fixedRooms));
-                    const dynamicRooms: number[] = Array.from(await dynamicTask);
-                    const filtered: number[] = dynamicRooms.filter((roomid: number): boolean => !fixedRooms.has(roomid));
-                    const tasks = this._dynamicController.add(filtered);
+                    const tasks: Promise<void>[] = [];
+                    tasks.push((new Promise((resolve, reject) => {
+                        dynamicStrm.
+                            on('roomids', (r) => {
+                                tasks.push(...this._dynamicController.add(r.filter((roomid: number) => {
+                                    return !fixedRooms.has(roomid);
+                                })));
+                            }).
+                            on('error', (error) => {}).
+                            on('done', (): void => { resolve() })
+                        ;
+                    })));
                     await Promise.all([ ...tasks, sleep(10 * 1000) ]);
                     while (this._running) {
                         try {
-                            const dynamicTask = this._roomCollector.getDynamicRooms();
-                            const roomidSet: Set<number> = await dynamicTask;
                             const establishedFix: Map<number, DanmuTCP> = this._fixedController.connections;
                             const establishedDyn: Map<number, DanmuTCP> = this._dynamicController.connections;
                             cprint(`Monitoring (静态) ${establishedFix.size} + (动态) ${establishedDyn.size}`, chalk.green);
 
-                            const roomids: number[] = Array.from(roomidSet).filter((roomid: number): boolean => {
-                                return !establishedFix.has(roomid);
-                            });
-                            const wait = this._appConfig.roomCollectorStrategy.dynamicRoomsQueryInterval * 1000
-                            const tasks = this._dynamicController.add(roomids);
+                            const tasks: Promise<void>[] = [];
+                            const dynamicStrm = Bilibili.getRoomV2Stream();
+                            tasks.push((new Promise((resolve, reject) => {
+                                dynamicStrm.
+                                    on('roomids', (r) => {
+                                        tasks.push(...this._dynamicController.add(r.filter((roomid: number) => {
+                                            return !establishedFix.has(roomid);
+                                        })));
+                                    }).
+                                    on('error', (error) => {}).
+                                    on('done', (): void => { resolve() })
+                                ;
+                            })));
+                            const wait = this._appConfig.roomCollectorStrategy.dynamicRoomsQueryInterval * 1000;
                             await Promise.all([ ...tasks, sleep(wait) ]);
                             this._dynamicRefreshTask.start();
                         }

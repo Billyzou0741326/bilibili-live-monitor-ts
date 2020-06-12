@@ -13,6 +13,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ResponseBuilder = exports.Response = void 0;
 var index_1 = require("./index");
 var Response = /** @class */ (function () {
     function Response() {
@@ -30,49 +31,49 @@ var Response = /** @class */ (function () {
         get: function () {
             return this._url;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Response.prototype, "statusCode", {
         get: function () {
             return this._statusCode;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Response.prototype, "statusMessage", {
         get: function () {
             return this._statusMessage;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Response.prototype, "method", {
         get: function () {
             return this._method;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Response.prototype, "contentType", {
         get: function () {
             return this._contentType;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Response.prototype, "headers", {
         get: function () {
             return this._headers;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Response.prototype, "data", {
         get: function () {
             return this._data;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Response.prototype, "text", {
@@ -82,7 +83,7 @@ var Response = /** @class */ (function () {
             }
             return this._text;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Response.prototype.json = function () {

@@ -49,6 +49,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.RoomCrawler = void 0;
 var chalk = require("chalk");
 var events_1 = require("events");
 var index_1 = require("../fmt/index");

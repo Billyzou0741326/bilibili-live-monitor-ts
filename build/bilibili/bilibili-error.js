@@ -13,6 +13,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.BilibiliError = void 0;
 var BilibiliError = /** @class */ (function (_super) {
     __extends(BilibiliError, _super);
     function BilibiliError() {
@@ -35,14 +36,14 @@ var BilibiliError = /** @class */ (function (_super) {
         get: function () {
             return this._code;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(BilibiliError.prototype, "status", {
         get: function () {
             return this._status;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     return BilibiliError;

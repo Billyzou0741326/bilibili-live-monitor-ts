@@ -1,5 +1,6 @@
 import * as crypto from 'crypto';
 import * as chalk from 'chalk';
+import { EventEmitter } from 'events';
 import {
     BilibiliError,
     BilibiliBase,
@@ -1041,6 +1042,65 @@ export class Bilibili extends BilibiliBase {
             const isLive: boolean = jsonObj['data']['room_info']['live_status'] === 1 ? true : false;
             return isLive;
         });
+    }
+
+    public static getRoomCountV2(): Promise<number> {
+        const params: any = {
+            'areaId': 0,
+        };
+        const request: Request = Request.Builder().
+            withHost('api.live.bilibili.com').
+            withPath('/room/v1/Area/getLiveRoomCountByAreaID').
+            withMethod(Request.GET).
+            withParams(params).
+            withHeaders(config.webHeaders)
+        ;
+        return Bilibili.request(request).
+            then((json: any): number => {
+                return json['data']['num'];
+            });
+    }
+
+    /**
+     * Get rooms in each area, with stream-like api
+     *
+     * @static
+     * @param   {Integer}       size (page size)        default 99
+     * @param   {Integer}       count (rooms to get)    don't use this.
+     * @returns {EventEmitter}  'roomids'   (number[]) => {}
+     *          {EventEmitter}  'done'      () => {}
+     *          {EventEmitter}  'Error'     (error) => {}
+     */
+    public static getRoomV2Stream(size: number = 500, count: number = Infinity): EventEmitter {
+        const emitter = new EventEmitter;
+        size = size <= 0 ? 10 : size;
+        (async(): Promise<void> => {
+            let room_count = await Bilibili.getRoomCountV2().catch((error: Error): number => 10000);
+            room_count = Math.min(room_count, count);
+            const PAGES: number = Math.ceil(room_count / size) + (count === Infinity ? 1 : 0); // If querying all rooms, add one page to query
+            const pageTasks: Promise<void>[] = [];
+            for (let i = 0; i < PAGES; ++i) {
+                const params: any = {
+                    'page': i,
+                    'pageSize': size,
+                };
+                const request: Request = Request.Builder().
+                    withHost('api.live.bilibili.com').
+                    withPath('/room/v1/Area/getListByAreaID').
+                    withMethod(Request.GET).
+                    withParams(params).
+                    withHeaders(config.webHeaders)
+                ;
+                pageTasks.push((async(): Promise<void> => {
+                    const res = await Bilibili.request(request).catch((error: Error): void => { emitter.emit('error', error) });
+                    const roomids: number[] = res['data'].map((data: any): number => data['roomid']);
+                    emitter.emit('roomids', roomids);
+                })());
+            }
+            await Promise.all(pageTasks).catch((error: Error): void => { emitter.emit('error', error) });
+            emitter.emit('done');
+        })();
+        return emitter;
     }
 
     /** 

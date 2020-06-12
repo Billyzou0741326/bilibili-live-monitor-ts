@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Queue = void 0;
 var LLNode = /** @class */ (function () {
     function LLNode(item) {
         this._next = null;
@@ -12,7 +13,7 @@ var LLNode = /** @class */ (function () {
         set: function (n) {
             this._next = n;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(LLNode.prototype, "value", {
@@ -22,7 +23,7 @@ var LLNode = /** @class */ (function () {
         set: function (v) {
             this._item = v;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     return LLNode;
@@ -68,7 +69,7 @@ var Queue = /** @class */ (function () {
         get: function () {
             return this._size;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     return Queue;

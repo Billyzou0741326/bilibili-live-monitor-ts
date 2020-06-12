@@ -36,6 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.BilibiliBase = void 0;
 var index_1 = require("../net/index");
 var index_2 = require("../task/index");
 var xhr = new index_1.Xhr().withRateLimiter(new index_2.RateLimiter(35, 1000));
