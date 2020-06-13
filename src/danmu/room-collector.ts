@@ -132,7 +132,7 @@ export class RoomCollector {
         );
     }
 
-    protected filterRooms(rooms: number[]): number[] {
+    public filterRooms(rooms: number[]): number[] {
         return rooms;
     }
 
@@ -151,7 +151,7 @@ export class SimpleLoadBalancingRoomDistributor extends RoomCollector {
         } as LoadBalancing;
     }
 
-    protected filterRooms(rooms: number[]): number[] {
+    public filterRooms(rooms: number[]): number[] {
         return rooms.filter((roomid: number): boolean => roomid % this._loadBalancing.totalServers === this._loadBalancing.serverIndex);
     }
 

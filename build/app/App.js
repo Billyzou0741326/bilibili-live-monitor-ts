@@ -178,7 +178,7 @@ var App = /** @class */ (function () {
                 this._fixedController.start();
                 this._dynamicController.start();
                 var fixedTask_1 = this._roomCollector.getFixedRooms();
-                var dynamicStrm_1 = index_4.Bilibili.getRoomV2Stream();
+                var dynamicStrm_1 = index_4.Bilibili.getRoomV1Stream();
                 (function () { return __awaiter(_this, void 0, void 0, function () {
                     var token, fixedRooms, tasks, _loop_1, this_1;
                     var _this = this;
@@ -197,7 +197,7 @@ var App = /** @class */ (function () {
                                 tasks.push((new Promise(function (resolve, reject) {
                                     dynamicStrm_1.
                                         on('roomids', function (r) {
-                                        tasks.push.apply(tasks, _this._dynamicController.add(r.filter(function (roomid) {
+                                        tasks.push.apply(tasks, _this._dynamicController.add(_this._roomCollector.filterRooms(r).filter(function (roomid) {
                                             return !fixedRooms.has(roomid);
                                         })));
                                     }).
@@ -217,11 +217,11 @@ var App = /** @class */ (function () {
                                                 establishedDyn = this_1._dynamicController.connections;
                                                 index_2.cprint("Monitoring (\u9759\u6001) " + establishedFix_1.size + " + (\u52A8\u6001) " + establishedDyn.size, chalk.green);
                                                 tasks_1 = [];
-                                                dynamicStrm_2 = index_4.Bilibili.getRoomV2Stream();
+                                                dynamicStrm_2 = index_4.Bilibili.getRoomV1Stream();
                                                 tasks_1.push((new Promise(function (resolve, reject) {
                                                     dynamicStrm_2.
                                                         on('roomids', function (r) {
-                                                        tasks_1.push.apply(tasks_1, _this._dynamicController.add(r.filter(function (roomid) {
+                                                        tasks_1.push.apply(tasks_1, _this._dynamicController.add(_this._roomCollector.filterRooms(r).filter(function (roomid) {
                                                             return !establishedFix_1.has(roomid);
                                                         })));
                                                     }).

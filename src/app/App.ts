@@ -178,7 +178,7 @@ export class App {
                 this._fixedController.start();
                 this._dynamicController.start();
                 const fixedTask = this._roomCollector.getFixedRooms();
-                const dynamicStrm = Bilibili.getRoomV2Stream();
+                const dynamicStrm = Bilibili.getRoomV1Stream();
                 (async () => {
                     const token = await Bilibili.getLiveDanmuToken();
                     this._fixedController.setToken(token);
@@ -189,7 +189,7 @@ export class App {
                     tasks.push((new Promise((resolve, reject) => {
                         dynamicStrm.
                             on('roomids', (r) => {
-                                tasks.push(...this._dynamicController.add(r.filter((roomid: number) => {
+                                tasks.push(...this._dynamicController.add(this._roomCollector.filterRooms(r).filter((roomid: number) => {
                                     return !fixedRooms.has(roomid);
                                 })));
                             }).
@@ -205,11 +205,11 @@ export class App {
                             cprint(`Monitoring (静态) ${establishedFix.size} + (动态) ${establishedDyn.size}`, chalk.green);
 
                             const tasks: Promise<void>[] = [];
-                            const dynamicStrm = Bilibili.getRoomV2Stream();
+                            const dynamicStrm = Bilibili.getRoomV1Stream();
                             tasks.push((new Promise((resolve, reject) => {
                                 dynamicStrm.
                                     on('roomids', (r) => {
-                                        tasks.push(...this._dynamicController.add(r.filter((roomid: number) => {
+                                        tasks.push(...this._dynamicController.add(this._roomCollector.filterRooms(r).filter((roomid: number) => {
                                             return !establishedFix.has(roomid);
                                         })));
                                     }).

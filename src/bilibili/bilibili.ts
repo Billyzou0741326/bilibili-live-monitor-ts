@@ -1044,7 +1044,7 @@ export class Bilibili extends BilibiliBase {
         });
     }
 
-    public static getRoomCountV2(): Promise<number> {
+    public static getRoomCountV1(): Promise<number> {
         const params: any = {
             'areaId': 0,
         };
@@ -1071,15 +1071,15 @@ export class Bilibili extends BilibiliBase {
      *          {EventEmitter}  'done'      () => {}
      *          {EventEmitter}  'Error'     (error) => {}
      */
-    public static getRoomV2Stream(size: number = 500, count: number = Infinity): EventEmitter {
+    public static getRoomV1Stream(size: number = 500, count: number = Infinity): EventEmitter {
         const emitter = new EventEmitter;
         size = size <= 0 ? 10 : size;
         (async(): Promise<void> => {
-            let room_count = await Bilibili.getRoomCountV2().catch((error: Error): number => 10000);
+            let room_count = await Bilibili.getRoomCountV1().catch((error: Error): number => 10000);
             room_count = Math.min(room_count, count);
             const PAGES: number = Math.ceil(room_count / size) + (count === Infinity ? 1 : 0); // If querying all rooms, add one page to query
             const pageTasks: Promise<void>[] = [];
-            for (let i = 0; i < PAGES; ++i) {
+            for (let i = 1; i < PAGES; ++i) {
                 const params: any = {
                     'page': i,
                     'pageSize': size,

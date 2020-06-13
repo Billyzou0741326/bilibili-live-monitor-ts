@@ -952,7 +952,7 @@ var Bilibili = /** @class */ (function (_super) {
             return isLive;
         });
     };
-    Bilibili.getRoomCountV2 = function () {
+    Bilibili.getRoomCountV1 = function () {
         var params = {
             'areaId': 0,
         };
@@ -977,7 +977,7 @@ var Bilibili = /** @class */ (function (_super) {
      *          {EventEmitter}  'done'      () => {}
      *          {EventEmitter}  'Error'     (error) => {}
      */
-    Bilibili.getRoomV2Stream = function (size, count) {
+    Bilibili.getRoomV1Stream = function (size, count) {
         var _this = this;
         if (size === void 0) { size = 500; }
         if (count === void 0) { count = Infinity; }
@@ -988,7 +988,7 @@ var Bilibili = /** @class */ (function (_super) {
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, Bilibili.getRoomCountV2().catch(function (error) { return 10000; })];
+                    case 0: return [4 /*yield*/, Bilibili.getRoomCountV1().catch(function (error) { return 10000; })];
                     case 1:
                         room_count = _a.sent();
                         room_count = Math.min(room_count, count);
@@ -1019,7 +1019,7 @@ var Bilibili = /** @class */ (function (_super) {
                                 });
                             }); })());
                         };
-                        for (i = 0; i < PAGES; ++i) {
+                        for (i = 1; i < PAGES; ++i) {
                             _loop_1(i);
                         }
                         return [4 /*yield*/, Promise.all(pageTasks).catch(function (error) { emitter.emit('error', error); })];
